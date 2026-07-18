@@ -428,6 +428,7 @@
       </div>
       <div class="top-actions">
         <button id="reloadButton" class="btn btn-secondary" type="button">再読込</button>
+        <a id="migrationSettingsLink" href="./migration.html">既存システム移行</a>
         <a id="releaseCheckSettingsLink" href="./release-check.html">営業前最終検査</a>
         <a id="ownerLink" href="./owner.html">オーナー管理へ戻る</a>
       </div>
@@ -929,6 +930,9 @@
           $("#ownerLink").href = isDemo
             ? "./owner.html?demo=1"
             : "./owner.html";
+          $("#migrationSettingsLink").href = isDemo
+            ? "./migration.html?demo=1"
+            : "./migration.html";
           $("#releaseCheckSettingsLink").href = isDemo
             ? "./release-check.html?demo=1"
             : "./release-check.html";

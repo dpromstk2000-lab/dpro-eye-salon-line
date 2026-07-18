@@ -723,6 +723,9 @@
         <a id="settingsNavLink" class="nav-link" href="./settings.html">
           <span class="nav-icon">⚙</span>店舗設定
         </a>
+        <a id="migrationNavLink" class="nav-link" href="./migration.html">
+          <span class="nav-icon">⇄</span>既存システム移行
+        </a>
       </nav>
       <div class="sidebar-footer">
         <a href="./?demo=1" target="_blank" rel="noopener">お客様予約を開く</a>
@@ -2257,6 +2260,9 @@
       $("#settingsNavLink").href = isDemo
         ? "./settings.html?demo=1"
         : "./settings.html";
+      $("#migrationNavLink").href = isDemo
+        ? "./migration.html?demo=1"
+        : "./migration.html";
       $("#releaseCheckOwnerLink").href = isDemo
         ? "./release-check.html?demo=1"
         : "./release-check.html";

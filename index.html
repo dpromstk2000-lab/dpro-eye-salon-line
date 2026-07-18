@@ -364,6 +364,24 @@
     .lookup-status.ok { color:#40513B; background:#E7EFE4; }
     .lookup-status.info { color:#60474E; background:#F4EAEC; }
     .lookup-status.ng { color:#7E343A; background:#F7E6E7; }
+    .relink-box {
+      margin:14px 0;
+      padding:16px;
+      border:2px solid #CDAEB4;
+      border-radius:14px;
+      background:#FCF6F6;
+    }
+    .relink-box h3 { margin:0; }
+    .relink-actions {
+      display:grid;
+      grid-template-columns:minmax(180px,1fr) auto;
+      gap:10px;
+      align-items:end;
+      margin-top:12px;
+    }
+    @media (max-width:620px) {
+      .relink-actions { grid-template-columns:1fr; }
+    }
 
     .check-list { display:grid; gap:10px; }
     .check-line {
@@ -632,6 +650,24 @@
 
       <div id="lookupStatus" class="lookup-status"></div>
 
+      <div id="migrationRelinkBox" class="relink-box" hidden>
+        <h3>以前からご利用のお客様</h3>
+        <p style="margin:5px 0 0;color:var(--muted)">
+          旧予約システムから移行された顧客情報を、電話番号と本人確認後に
+          このLINEアカウントへ再連携します。
+        </p>
+        <div class="relink-actions">
+          <label class="field">
+            生年月日（登録がある場合）
+            <input id="migrationRelinkBirthday" type="date">
+          </label>
+          <button id="migrationRelinkButton" class="btn btn-primary" type="button">
+            移行済み顧客を確認
+          </button>
+        </div>
+        <div id="migrationRelinkStatus" class="lookup-status"></div>
+      </div>
+
       <div class="field-grid">
         <label class="field">
           お名前 <span class="required-mark">必須</span>
@@ -833,6 +869,7 @@
         existingCustomer: null,
         idempotencyKey: crypto.randomUUID(),
         submitting: false,
+        migrationLinkToken: "",
       };
 
       const categoryTypeByServiceId = new Map();
@@ -1226,6 +1263,7 @@
       function fillCustomer(customer) {
         if (!customer) return;
         state.existingCustomer = customer;
+        $("#migrationRelinkBox").hidden = true;
         $("#fullName").value = customer.full_name || "";
         $("#fullNameKana").value = customer.full_name_kana || "";
         $("#phone").value = customer.phone || "";
@@ -1258,6 +1296,93 @@
         return null;
       }
 
+      function showMigrationRelink(message, mode = "info") {
+        const node = $("#migrationRelinkStatus");
+        node.textContent = message;
+        node.className = `lookup-status show ${mode}`;
+      }
+
+      async function migrationRelink() {
+        if (!state.lineUserId) {
+          showMigrationRelink(
+            "LINE公式アカウント内から開いてください。",
+            "ng"
+          );
+          return;
+        }
+        const fullName = $("#fullName").value.trim();
+        const tel = $("#phone").value.trim();
+        if (!fullName || !tel) {
+          showMigrationRelink(
+            "お名前と電話番号を入力してください。",
+            "ng"
+          );
+          return;
+        }
+        const button = $("#migrationRelinkButton");
+        button.disabled = true;
+        try {
+          showMigrationRelink("移行済み顧客を確認しています…");
+          const requested = await fetchJson(config.API.migration_link_request, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+              line_user_id:state.lineUserId,
+              phone:tel,
+            }),
+          });
+          if (!requested.found) {
+            showMigrationRelink(
+              "移行済み顧客は見つかりませんでした。初回のお客様として進めます。",
+              "info"
+            );
+            return;
+          }
+          if (requested.already_linked && requested.customer) {
+            fillCustomer(requested.customer);
+            return;
+          }
+          state.migrationLinkToken = requested.request_token || "";
+          const birthday = $("#migrationRelinkBirthday").value;
+          if (
+            requested.verification_method === "name_birthday" &&
+            !birthday
+          ) {
+            showMigrationRelink(
+              `登録候補 ${requested.masked_customer?.name || ""} が見つかりました。生年月日を入力して、もう一度押してください。`,
+              "info"
+            );
+            return;
+          }
+          const confirmed = await fetchJson(config.API.migration_link_confirm, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+              request_token:state.migrationLinkToken,
+              line_user_id:state.lineUserId,
+              full_name:fullName,
+              birthday:birthday || null,
+            }),
+          });
+          if (confirmed.linked && confirmed.customer) {
+            fillCustomer(confirmed.customer);
+            showLookup(
+              "以前の顧客情報とLINEを再連携しました。基本情報の再入力は不要です。",
+              "ok"
+            );
+          } else if (confirmed.pending_approval) {
+            showMigrationRelink(
+              "店舗確認の申請を受け付けました。承認後、次回から自動表示されます。",
+              "info"
+            );
+          }
+        } catch (error) {
+          showMigrationRelink(error.message, "ng");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
       async function resolveLineUser() {
         if (isDemo) {
           state.lineUserId = config.DEMO.line_user_id;
@@ -1274,7 +1399,8 @@
         if (supplied) {
           state.lineUserId = supplied;
           try {
-            await lookupCustomer({ line_user_id: supplied });
+            const found = await lookupCustomer({ line_user_id: supplied });
+            if (!found) $("#migrationRelinkBox").hidden = false;
           } catch (error) {
             showLookup(`顧客情報を取得できません：${error.message}`, "ng");
           }
@@ -1301,8 +1427,9 @@
           if (state.lineUserId) {
             const found = await lookupCustomer({ line_user_id: state.lineUserId });
             if (!found) {
+              $("#migrationRelinkBox").hidden = false;
               showLookup(
-                "LINE連携が完了しました。初回のみ基本情報をご入力ください。",
+                "初回入力、または以前の顧客情報との再連携を選べます。",
                 "info"
               );
             }
@@ -1516,6 +1643,11 @@
         }
         setStep(3);
       });
+
+      $("#migrationRelinkButton").addEventListener(
+        "click",
+        migrationRelink
+      );
 
       $("#phone").addEventListener("blur", async () => {
         const value = $("#phone").value.trim();

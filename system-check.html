@@ -343,6 +343,7 @@
         private_photo_bucket: "写真Storage（非公開）",
         settings: "店舗設定管理",
         release: "最終リリース検査",
+        migration_foundation: "既存システム移行基盤",
       };
 
       function getAdminCode() {
@@ -426,6 +427,7 @@
           ["オーナーPC", `${config.PAGES.owner}?demo=1`],
           ["店舗iPad", `${config.PAGES.owner_ipad}?demo=1`],
           ["店舗設定", `${config.PAGES.settings}?demo=1`],
+          ["既存システム移行", `${config.PAGES.migration}?demo=1`],
           ["営業前最終検査", `${config.PAGES.release_check}?demo=1`],
           ["システムチェック", config.PAGES.system_check],
           ["Worker API", config.API.root],

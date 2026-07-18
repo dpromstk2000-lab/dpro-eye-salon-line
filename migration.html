@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6F4C55">
+  <meta name="description" content="DPRO まつげ・眉サロン 既存システム移行">
+  <title>既存システム移行｜DPRO EYE SALON</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;
+      --accent:#A86F7D;--accent-dark:#6F4C55;--text:#2F2B2C;
+      --muted:#6E6567;--border:#DED1CA;--success:#64745F;
+      --warning:#A96F32;--danger:#A14E55;--blue:#5D7084;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
+    }
+    *{box-sizing:border-box}[hidden]{display:none!important}
+    body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 27rem),var(--bg);font-size:17px;line-height:1.65}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:inherit}
+    label{display:block;font-weight:850}
+    input,select,textarea{width:100%;min-height:52px;margin-top:6px;padding:10px 13px;border:2px solid var(--border);border-radius:12px;color:var(--text);background:#fff}
+    textarea{min-height:100px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:3px solid rgba(168,111,125,.16);border-color:var(--accent)}
+    input[type=checkbox]{width:22px;min-height:22px;margin:0;accent-color:var(--accent)}
+    .login{min-height:100vh;display:grid;place-items:center;padding:20px}
+    .login-card,.hero,.panel{border:1px solid var(--border);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(78,53,61,.08)}
+    .login-card{width:min(560px,100%);padding:30px}.brand{margin:0 0 5px;color:var(--accent-dark);font-size:14px;font-weight:900;letter-spacing:.12em}
+    h1{margin:0;font-size:34px;line-height:1.3}h2{margin:0;font-size:24px}h3{margin:0;font-size:20px}.muted{color:var(--muted)}
+    .app{width:min(1500px,calc(100% - 24px));margin:auto;padding:18px 0 65px}.hero,.panel{padding:22px}.panel{margin-top:14px}
+    .head{display:flex;justify-content:space-between;gap:15px;align-items:center}.links,.buttons{display:flex;flex-wrap:wrap;gap:9px}
+    .links a{min-height:46px;display:inline-flex;align-items:center;padding:8px 14px;border-radius:12px;background:var(--soft);color:var(--accent-dark);text-decoration:none;font-weight:900}
+    .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}.tab{min-height:52px;border:1px solid var(--border);border-radius:13px;color:var(--accent-dark);background:#fff;font-weight:900}.tab.active{color:#fff;border-color:var(--accent);background:var(--accent)}
+    .view{display:none}.view.active{display:block}.btn{min-height:49px;padding:9px 16px;border:0;border-radius:12px;font-weight:900}.primary{color:#fff;background:var(--accent)}.success{color:#fff;background:var(--success)}.danger{color:#fff;background:var(--danger)}.secondary{color:var(--accent-dark);background:var(--soft)}.blue{color:#fff;background:var(--blue)}.btn:disabled{opacity:.5;cursor:not-allowed}.small{min-height:39px;padding:6px 11px;font-size:14px}
+    .status{margin-top:13px;padding:13px 15px;border-radius:12px;color:var(--muted);background:var(--soft);font-weight:850}.status.ok{color:#40513B;background:#E7EFE4}.status.warn{color:#70481F;background:#FFF3E4}.status.ng{color:#7E343A;background:#F7E6E7}
+    .notice{padding:13px 15px;border-left:5px solid var(--warning);border-radius:10px;color:#70481F;background:#FFF3E4}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.full{grid-column:1/-1}
+    .steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.step{padding:8px 12px;border-radius:999px;color:var(--muted);background:var(--soft);font-weight:850}.step.active{color:#fff;background:var(--accent)}
+    .mapping{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.map-card{padding:12px;border:1px solid var(--border);border-radius:13px;background:#fff}.map-card strong{display:block}.map-card small{display:block;color:var(--muted)}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:13px}.stat{padding:13px;border:1px solid var(--border);border-radius:13px;background:#fff}.stat small{display:block;color:var(--muted);font-weight:750}.stat strong{display:block;margin-top:2px;font-size:24px}
+    .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px;margin-top:13px;background:#fff}table{width:100%;border-collapse:collapse;min-width:1050px}th,td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left}th{position:sticky;top:0;background:var(--soft);color:var(--accent-dark);z-index:2}tr.error{background:#FDF2F3}tr.warning{background:#FFF8EF}.issues{display:flex;flex-wrap:wrap;gap:5px}.issue{display:inline-flex;padding:3px 7px;border-radius:999px;color:#7E343A;background:#F7E6E7;font-size:12px;font-weight:850}.candidate{font-size:14px;color:var(--accent-dark)}
+    .confirm-box{display:flex;gap:9px;align-items:flex-start;padding:13px;border:2px solid #CDAEB4;border-radius:13px;background:#FCF6F6;margin-top:13px;font-weight:850}
+    .search-results,.history-list,.link-list{display:grid;gap:9px;margin-top:12px}.search-card,.history-card,.link-card{padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff}.search-card{cursor:pointer}.search-card:hover{border-color:var(--accent);background:#FCF4F5}.history-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.history-card strong,.link-card strong{display:block;font-size:18px}.history-card span,.link-card span{display:block;color:var(--muted);margin-top:3px}.badge{display:inline-flex;padding:4px 9px;border-radius:999px;color:var(--accent-dark);background:var(--soft);font-size:13px;font-weight:850}.link-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+    .cutover{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.cutover div{padding:13px;border:1px solid var(--border);border-radius:13px;background:#fff}.cutover strong{display:block;color:var(--accent-dark)}
+    .toast{position:fixed;left:50%;bottom:22px;z-index:100;width:min(620px,calc(100% - 24px));padding:15px 18px;border-radius:14px;color:#fff;background:#3B3436;box-shadow:0 14px 36px rgba(0,0,0,.23);transform:translate(-50%,130%);transition:.2s ease;font-weight:850}.toast.show{transform:translate(-50%,0)}.toast.error{background:var(--danger)}
+    @media(max-width:1000px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.mapping,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.cutover{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:700px){body{font-size:16px}.app{width:min(100% - 16px,1500px);padding-top:8px}.head{flex-direction:column;align-items:stretch}.tabs,.mapping,.stats,.grid2,.grid3,.cutover{grid-template-columns:1fr}.full{grid-column:auto}.history-card,.link-card{grid-template-columns:1fr}.buttons .btn{width:100%}}
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login">
+    <div class="login-card">
+      <p class="brand">DPRO EYE SALON LINE</p><h1>既存システム移行</h1>
+      <p class="muted">顧客CSV・将来予約・LINE再連携を確認画面付きで安全に移行します。</p>
+      <label>管理コード<input id="loginCode" type="password" inputmode="numeric" autocomplete="off" maxlength="20"></label>
+      <div class="buttons" style="margin-top:14px"><button id="loginButton" class="btn primary" type="button">移行管理を開く</button><button id="clearCode" class="btn danger" type="button">削除</button></div>
+      <div id="loginStatus" class="status">管理コードを入力してください。</div>
+    </div>
+  </section>
+
+  <main id="app" class="app" hidden>
+    <section class="hero">
+      <div class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>既存システム移行</h1><p class="muted">CSVを即登録せず、プレビュー・重複確認・最終確認を必ず通します。</p></div><div class="links"><a id="settingsLink" href="./settings.html">店舗設定</a><a id="releaseLink" href="./release-check.html">営業前最終検査</a></div></div>
+      <div class="notice" style="margin-top:14px">リピッテ固有の列名やメニュー名は、CSV列マッピングと導入時の店舗別変換表で吸収します。DPROの顧客・予約・カルテ基本設計は変更しません。</div>
+      <div class="tabs"><button class="tab active" data-view="customer" type="button">顧客CSV</button><button class="tab" data-view="reservation" type="button">将来予約CSV</button><button class="tab" data-view="links" type="button">LINE再連携</button><button class="tab" data-view="history" type="button">移行履歴</button></div>
+    </section>
+
+    <section id="viewCustomer" class="view active">
+      <section class="panel">
+        <div class="steps"><span class="step active">1 CSV選択</span><span class="step">2 列対応</span><span class="step">3 プレビュー</span><span class="step">4 本登録</span></div>
+        <div class="head"><div><h2>顧客CSV取り込み</h2><span class="muted">氏名・電話番号を必須として、電話番号を正規化して重複判定します。</span></div></div>
+        <div class="grid3" style="margin-top:13px">
+          <label>移行元<select id="customerSource"><option value="repitte">リピッテ（repitte）</option><option value="other">その他</option></select></label>
+          <label>文字コード<select id="customerEncoding"><option value="utf-8">UTF-8</option><option value="shift_jis">Shift_JIS / CP932</option></select></label>
+          <label>CSVファイル<input id="customerFile" type="file" accept=".csv,text/csv"></label>
+        </div>
+        <div id="customerMapArea" hidden><h3 style="margin-top:16px">CSV列の対応</h3><div id="customerMapping" class="mapping" style="margin-top:9px"></div><div class="buttons" style="margin-top:13px"><button id="customerPreviewButton" class="btn primary" type="button">取り込み前プレビュー</button></div></div>
+        <div id="customerStatus" class="status">CSVを選択してください。</div>
+      </section>
+      <section id="customerPreviewPanel" class="panel" hidden>
+        <div class="head"><div><h2>顧客プレビュー</h2><span class="muted">赤い行は登録されません。重複候補は統合またはスキップを選択します。</span></div></div>
+        <div id="customerStats" class="stats"></div>
+        <div class="table-wrap"><table><thead><tr><th>行</th><th>氏名</th><th>電話番号</th><th>旧顧客ID</th><th>判定</th><th>登録方法</th><th>統合候補</th></tr></thead><tbody id="customerRows"></tbody></table></div>
+        <section class="panel" style="box-shadow:none"><h3>統合先を検索・変更</h3><p id="mergeTargetGuide" class="muted">重複行の「統合先検索」を押すと、氏名・電話番号・顧客番号で検索できます。</p><div class="grid2"><label>検索<input id="mergeSearchQuery" placeholder="氏名・電話番号・顧客番号"></label><div style="align-self:end"><button id="mergeSearchButton" class="btn secondary" type="button">既存顧客検索</button></div></div><div id="mergeSearchResults" class="search-results"></div></section>
+        <label class="confirm-box"><input id="customerConfirm" type="checkbox"><span>プレビュー内容、重複統合先、登録件数を確認しました。確認画面を経ずに登録しないことを理解しています。</span></label>
+        <div class="buttons" style="margin-top:13px"><button id="customerCommitButton" class="btn success" type="button" disabled>確認した内容で顧客を本登録</button></div>
+      </section>
+    </section>
+
+    <section id="viewReservation" class="view">
+      <section class="panel">
+        <div class="steps"><span class="step active">1 顧客移行完了</span><span class="step">2 予約CSV選択</span><span class="step">3 重複検査</span><span class="step">4 本登録</span></div>
+        <div class="head"><div><h2>切り替え日以降の将来予約</h2><span class="muted">スタッフ・施術席・勤務時間の重複検査を通過した予約だけ登録します。</span></div></div>
+        <div class="grid3" style="margin-top:13px"><label>移行元<select id="reservationSource"><option value="repitte">リピッテ（repitte）</option><option value="other">その他</option></select></label><label>文字コード<select id="reservationEncoding"><option value="utf-8">UTF-8</option><option value="shift_jis">Shift_JIS / CP932</option></select></label><label>CSVファイル<input id="reservationFile" type="file" accept=".csv,text/csv"></label></div>
+        <div id="reservationMapArea" hidden><h3 style="margin-top:16px">CSV列の対応</h3><div id="reservationMapping" class="mapping" style="margin-top:9px"></div><div class="buttons" style="margin-top:13px"><button id="reservationPreviewButton" class="btn primary" type="button">将来予約をプレビュー</button></div></div>
+        <div id="reservationStatus" class="status">顧客移行を先に完了し、将来予約CSVを選択してください。</div>
+      </section>
+      <section id="reservationPreviewPanel" class="panel" hidden><div class="head"><div><h2>将来予約プレビュー</h2><span class="muted">顧客・メニュー・スタッフが一致し、空き枠が確保できる行だけ登録します。</span></div></div><div id="reservationStats" class="stats"></div><div class="table-wrap"><table><thead><tr><th>行</th><th>日時</th><th>顧客</th><th>メニュー</th><th>担当</th><th>施術席</th><th>判定</th><th>登録</th></tr></thead><tbody id="reservationRows"></tbody></table></div><label class="confirm-box"><input id="reservationConfirm" type="checkbox"><span>リピッテ側の新規予約受付を切り替え時刻で停止し、DPROとの二重受付を行わない運用を確認しました。</span></label><div class="buttons" style="margin-top:13px"><button id="reservationCommitButton" class="btn success" type="button" disabled>確認した将来予約を本登録</button></div></section>
+      <section class="panel"><h2>安全な切り替え手順</h2><div class="cutover" style="margin-top:12px"><div><strong>1 DPRO全検査</strong><span>顧客・予約・画面・Storageを確認</span></div><div><strong>2 切り替え日時決定</strong><span>店舗と営業担当で日時を確定</span></div><div><strong>3 LINE予約ボタン変更</strong><span>同時刻からDPROへ一本化</span></div><div><strong>4 リピッテ参照専用</strong><span>すぐ解約せず過去データを保持</span></div></div>
+        <h3 style="margin-top:17px">切り替え計画を保存</h3>
+        <div class="grid3" style="margin-top:9px">
+          <label>移行元<select id="cutoverSource"><option value="repitte">リピッテ</option><option value="other">その他</option></select></label>
+          <label>切り替え予定日時<input id="cutoverAt" type="datetime-local"></label>
+          <label>旧システム参照期限<input id="legacyReferenceUntil" type="date"></label>
+          <label>状態<select id="cutoverStatus"><option value="planning">計画中</option><option value="ready">切り替え準備完了</option><option value="switched">切り替え済み</option><option value="completed">移行完了</option><option value="cancelled">中止</option></select></label>
+          <label class="confirm-box"><input id="cutoverFinalCheck" type="checkbox"><span>DPRO最終検査完了</span></label>
+          <label class="confirm-box"><input id="legacyBookingStopped" type="checkbox"><span>旧システムの新規予約受付停止</span></label>
+          <label class="confirm-box"><input id="lineButtonSwitched" type="checkbox"><span>LINE予約ボタンをDPROへ変更</span></label>
+          <label class="full">運用メモ<textarea id="cutoverNotes" placeholder="切り替え担当者、旧システムの解約予定など"></textarea></label>
+        </div>
+        <div class="buttons" style="margin-top:13px"><button id="saveCutoverButton" class="btn blue" type="button">切り替え計画を保存</button></div>
+        <div id="cutoverStatusMessage" class="status">切り替え計画を読み込んでいます…</div>
+      </section>
+    </section>
+
+    <section id="viewLinks" class="view">
+      <section class="panel"><div class="head"><div><h2>既存顧客のLINE再連携</h2><span class="muted">旧システムのLINEユーザーIDは引き継がず、新しいLINEユーザーIDを本人確認後に紐付けます。</span></div><button id="reloadLinks" class="btn secondary" type="button">再読込</button></div><div class="notice" style="margin-top:13px">生年月日が移行されている顧客は氏名＋生年月日で自動確認できます。生年月日がない顧客は、この画面で店舗が確認して承認します。</div><div id="lineLinkStatus" class="status">申請を読み込んでいます…</div><div id="lineLinkList" class="link-list"></div></section>
+    </section>
+
+    <section id="viewHistory" class="view">
+      <section class="panel"><div class="head"><div><h2>移行履歴</h2><span class="muted">日時、ファイル、成功・失敗・重複件数を記録します。</span></div><button id="reloadHistory" class="btn secondary" type="button">再読込</button></div><div id="historyStatus" class="status">移行履歴を読み込んでいます…</div><div id="historyList" class="history-list"></div></section>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+<script>
+(() => {
+  "use strict";
+  const config=window.DPRO_EYE_CONFIG,params=new URLSearchParams(location.search),isDemo=params.get("demo")==="1",$=s=>document.querySelector(s);
+  const state={adminCode:"",customerCsv:null,reservationCsv:null,customerPreview:null,reservationPreview:null,activeMergeRowId:""};
+  const customerFields=[
+    ["legacy_customer_id","旧顧客ID",["顧客id","顧客番号","会員番号","customer_id","legacy_customer_id","id"]],
+    ["customer_no","DPRO顧客番号（任意）",["dpro顧客番号","customer_no"]],
+    ["full_name","氏名（必須）",["氏名","名前","お名前","顧客名","name","full_name"]],
+    ["full_name_kana","フリガナ",["フリガナ","ふりがな","カナ","氏名カナ","full_name_kana"]],
+    ["phone","電話番号（必須）",["電話番号","携帯番号","tel","phone","mobile"]],
+    ["email","メール",["メール","メールアドレス","email"]],
+    ["birthday","生年月日",["生年月日","誕生日","birthday"]],
+    ["internal_note","備考・メモ",["備考","メモ","注意事項","note","memo"]],
+    ["tags","タグ",["タグ","顧客タグ","tags"]]
+  ];
+  const reservationFields=[
+    ["legacy_reservation_id","旧予約ID",["予約id","予約番号","reservation_id","legacy_reservation_id"]],
+    ["date","予約日（必須）",["予約日","日付","date","reservation_date"]],
+    ["time","開始時間（必須）",["予約時間","開始時間","時間","time","start_time"]],
+    ["customer_phone","顧客電話番号",["電話番号","顧客電話番号","phone","customer_phone"]],
+    ["customer_no","顧客番号",["顧客番号","会員番号","customer_no"]],
+    ["legacy_customer_id","旧顧客ID",["顧客id","旧顧客id","legacy_customer_id"]],
+    ["service_code","メニューコード",["メニューコード","service_code"]],
+    ["service_name","施術メニュー",["メニュー","施術メニュー","コース","service_name"]],
+    ["staff_code","スタッフコード",["スタッフコード","staff_code"]],
+    ["staff_name","担当スタッフ",["担当者","スタッフ","担当スタッフ","staff_name"]],
+    ["duration_minutes","所要時間（分）",["所要時間","施術時間","duration","duration_minutes"]],
+    ["note","備考",["備考","メモ","note","owner_note"]]
+  ];
+  function toast(m,e=false){const n=$("#toast");n.textContent=m;n.className=`toast show${e?" error":""}`;clearTimeout(toast.t);toast.t=setTimeout(()=>n.className="toast",3500)}
+  function headers(json=false){const h={"X-DPRO-ADMIN-CODE":state.adminCode};if(json)h["Content-Type"]="application/json";return h}
+  async function fetchJson(url,o={}){const c=new AbortController(),t=setTimeout(()=>c.abort(),30000);try{const r=await fetch(url,{cache:"no-store",...o,signal:c.signal}),d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||`HTTP ${r.status}`);return d}finally{clearTimeout(t)}}
+  function setStatus(id,m,mode=""){const n=$(id);n.textContent=m;n.className=`status ${mode}`.trim()}
+  function parseCsv(text){text=text.replace(/^\uFEFF/,"");const rows=[];let row=[],cell="",quote=false;for(let i=0;i<text.length;i++){const ch=text[i],next=text[i+1];if(quote){if(ch==='"'&&next==='"'){cell+='"';i++}else if(ch==='"')quote=false;else cell+=ch}else{if(ch==='"')quote=true;else if(ch===','){row.push(cell);cell=""}else if(ch==='\n'){row.push(cell);rows.push(row);row=[];cell=""}else if(ch!=='\r')cell+=ch}}row.push(cell);if(row.some(v=>v!==""))rows.push(row);const headers=(rows.shift()||[]).map(v=>v.trim());return{headers,rows:rows.filter(r=>r.some(v=>String(v).trim())).map(r=>Object.fromEntries(headers.map((h,i)=>[h,String(r[i]??"").trim()])))}}
+  async function readCsv(file,encoding){const buf=await file.arrayBuffer();let text;try{text=new TextDecoder(encoding,{fatal:false}).decode(buf)}catch{text=new TextDecoder("utf-8").decode(buf)}return{...parseCsv(text),file,hash:await crypto.subtle.digest("SHA-256",buf).then(b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""))}}
+  function normHeader(v){return String(v||"").normalize("NFKC").replace(/[\s　_\-]/g,"").toLowerCase()}
+  function autoHeader(headers,aliases){const map=new Map(headers.map(h=>[normHeader(h),h]));for(const a of aliases){const hit=map.get(normHeader(a));if(hit)return hit}return""}
+  function renderMapping(target,csv,defs){const box=$(target);box.replaceChildren();defs.forEach(([key,label,aliases])=>{const card=document.createElement("label");card.className="map-card";const strong=document.createElement("strong");strong.textContent=label;const small=document.createElement("small");small.textContent=key;const select=document.createElement("select");select.dataset.mapKey=key;select.append(new Option("使用しない",""));csv.headers.forEach(h=>select.append(new Option(h,h)));select.value=autoHeader(csv.headers,aliases);card.append(strong,small,select);box.append(card)})}
+  function mappedRows(csv,target){const mapping=Object.fromEntries([...document.querySelectorAll(`${target} [data-map-key]`)].map(s=>[s.dataset.mapKey,s.value]));return{mapping,rows:csv.rows.map(r=>Object.fromEntries(Object.entries(mapping).map(([key,h])=>[key,h?r[h]||"":""])))}}
+  function stats(target,batch){const vals=[["全件",batch.total_rows],["新規",batch.new_count],["統合候補",batch.merge_count||batch.duplicate_count],["不正・不足",batch.invalid_count],["確認トークン","発行済み"]];const box=$(target);box.replaceChildren();vals.forEach(([l,v])=>{const d=document.createElement("div");d.className="stat";const s=document.createElement("small");s.textContent=l;const b=document.createElement("strong");b.textContent=v;d.append(s,b);box.append(d)})}
+  const issueLabels={MISSING_NAME:"氏名不足",MISSING_PHONE:"電話不足",INVALID_PHONE:"電話不正",DUPLICATE_IN_FILE:"CSV内重複",EXISTING_CUSTOMER:"既存顧客候補",ALREADY_MIGRATED:"取込済み",INVALID_DATE:"日付不正",PAST_RESERVATION:"過去予約",INVALID_TIME:"時間不正",CUSTOMER_NOT_FOUND:"顧客未一致",SERVICE_NOT_FOUND:"メニュー未一致",STAFF_NOT_FOUND:"スタッフ未一致",INVALID_DURATION:"所要時間不正",STAFF_SERVICE_MISMATCH:"担当不可",SHOP_CLOSED:"定休日",STAFF_NOT_WORKING:"勤務外",OUTSIDE_SHIFT:"勤務時間外",BREAK_TIME:"休憩時間",STAFF_CLOSED:"スタッフ休み",STAFF_OVERLAP:"担当重複",RESOURCE_OVERLAP:"施術席重複",CSV_STAFF_OVERLAP:"CSV内担当重複",CSV_RESOURCE_OVERLAP:"CSV内席重複"};
+  function issuesCell(codes){const d=document.createElement("div");d.className="issues";(codes||[]).forEach(c=>{const s=document.createElement("span");s.className="issue";s.textContent=issueLabels[c]||c;d.append(s)});if(!codes?.length)d.textContent="正常";return d}
+  function renderCustomerPreview(data){state.customerPreview=data;stats("#customerStats",data.batch);const body=$("#customerRows");body.replaceChildren();data.rows.forEach(row=>{const tr=document.createElement("tr");tr.className=row.validation_status;const n=row.normalized_data||{},candidate=n.candidate;const action=document.createElement("select");action.dataset.rowId=row.id;[["新規登録","insert"],["既存顧客へ統合","merge"],["スキップ","skip"]].forEach(([l,v])=>action.append(new Option(l,v)));action.value=row.action;action.addEventListener("change",()=>row.action=action.value);if(row.validation_status==="error")action.disabled=true;const search=document.createElement("button");search.type="button";search.className="btn secondary small";search.textContent="統合先検索";search.disabled=row.validation_status==="error";search.addEventListener("click",()=>{state.activeMergeRowId=row.id;$("#mergeSearchQuery").value=n.phone||n.full_name||"";$("#mergeTargetGuide").textContent=`CSV ${row.row_number}行目「${n.full_name||""}」の統合先を検索しています。`;searchExisting()});const cand=document.createElement("div");cand.className="candidate";cand.textContent=candidate?`${candidate.customer_no} ${candidate.full_name} ${candidate.phone}`:"候補なし";cand.append(document.createElement("br"),search);[row.row_number,n.full_name||"―",n.phone||"―",n.legacy_customer_id||"―",issuesCell(row.issue_codes),action,cand].forEach(v=>{const td=document.createElement("td");if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)});body.append(tr)});$("#customerPreviewPanel").hidden=false;setStatus("#customerStatus","プレビューを作成しました。内容を確認して本登録してください。","ok")}
+  async function searchExisting(){const q=$("#mergeSearchQuery").value.trim();if(!q)return toast("検索語を入力してください。",true);const u=new URL(config.API.admin_customer_search);u.searchParams.set("q",q);try{const d=await fetchJson(u,{headers:headers()});const box=$("#mergeSearchResults");box.replaceChildren();(d.customers||[]).forEach(c=>{const card=document.createElement("article");card.className="search-card";card.innerHTML=`<strong>${c.full_name}</strong><span>${c.phone||""} ／ ${c.customer_no}</span>`;card.addEventListener("click",()=>{const row=state.customerPreview.rows.find(r=>r.id===state.activeMergeRowId);if(!row)return;row.target_customer_id=c.id;row.action="merge";row.normalized_data.candidate={id:c.id,customer_no:c.customer_no,full_name:c.full_name,phone:c.phone};const select=document.querySelector(`#customerRows select[data-row-id="${row.id}"]`);if(select)select.value="merge";renderCustomerPreview(state.customerPreview);$("#mergeSearchResults").replaceChildren();toast(`${c.full_name}を統合先に設定しました。`) });box.append(card)});if(!d.customers?.length)box.textContent="該当する顧客はありません。"}catch(e){toast(e.message,true)}}
+  function customerDecisions(){return state.customerPreview.rows.map(r=>{const s=document.querySelector(`#customerRows select[data-row-id="${r.id}"]`);return{row_id:r.id,action:s?.value||r.action,target_customer_id:r.target_customer_id||r.normalized_data?.candidate?.id||null}})}
+  function renderReservationPreview(data){state.reservationPreview=data;stats("#reservationStats",data.batch);const body=$("#reservationRows");body.replaceChildren();data.rows.forEach(row=>{const tr=document.createElement("tr");tr.className=row.validation_status;const n=row.normalized_data||{},action=document.createElement("select");action.dataset.rowId=row.id;action.append(new Option("登録","insert"),new Option("スキップ","skip"));action.value=row.action;action.addEventListener("change",()=>row.action=action.value);if(row.validation_status==="error")action.disabled=true;[row.row_number,`${n.date||"―"} ${n.time||""}`,n.customer?`${n.customer.full_name} (${n.customer.customer_no})`:"未一致",n.service?.service_name||"未一致",n.staff?.display_name||"未一致",n.slot?.resource_name||"―",issuesCell(row.issue_codes),action].forEach(v=>{const td=document.createElement("td");if(v instanceof Node)td.append(v);else td.textContent=v;tr.append(td)});body.append(tr)});$("#reservationPreviewPanel").hidden=false;setStatus("#reservationStatus","重複・勤務時間・施術席を検査しました。","ok")}
+  function reservationDecisions(){return state.reservationPreview.rows.map(r=>{const s=document.querySelector(`#reservationRows select[data-row-id="${r.id}"]`);return{row_id:r.id,action:s?.value||r.action}})}
+  async function previewCustomer(){try{const {mapping,rows}=mappedRows(state.customerCsv,"#customerMapping");setStatus("#customerStatus","電話番号正規化と重複判定を実行しています…");const d=await fetchJson(config.API.admin_migration_customer_preview,{method:"POST",headers:headers(true),body:JSON.stringify({migration_source:$("#customerSource").value,file_name:state.customerCsv.file.name,file_size_bytes:state.customerCsv.file.size,file_hash:state.customerCsv.hash,mapping,rows})});renderCustomerPreview(d)}catch(e){setStatus("#customerStatus",e.message,"ng")}}
+  async function commitCustomer(){if(!$("#customerConfirm").checked)return;try{$("#customerCommitButton").disabled=true;const b=state.customerPreview.batch;const d=await fetchJson(config.API.admin_migration_customer_commit,{method:"POST",headers:headers(true),body:JSON.stringify({batch_id:b.id,confirmation_token:b.confirmation_token,decisions:customerDecisions()})});toast(`顧客移行：成功${d.batch.success_count}件、失敗${d.batch.failure_count}件`);await loadHistory();setStatus("#customerStatus","顧客の本登録が完了しました。将来予約CSVへ進めます。","ok")}catch(e){toast(e.message,true)}finally{$("#customerCommitButton").disabled=!$("#customerConfirm").checked}}
+  async function previewReservation(){try{const {mapping,rows}=mappedRows(state.reservationCsv,"#reservationMapping");setStatus("#reservationStatus","顧客・スタッフ・施術席の重複を検査しています…");const d=await fetchJson(config.API.admin_migration_reservation_preview,{method:"POST",headers:headers(true),body:JSON.stringify({migration_source:$("#reservationSource").value,file_name:state.reservationCsv.file.name,file_size_bytes:state.reservationCsv.file.size,file_hash:state.reservationCsv.hash,mapping,rows})});renderReservationPreview(d)}catch(e){setStatus("#reservationStatus",e.message,"ng")}}
+  async function commitReservation(){if(!$("#reservationConfirm").checked)return;try{$("#reservationCommitButton").disabled=true;const b=state.reservationPreview.batch,d=await fetchJson(config.API.admin_migration_reservation_commit,{method:"POST",headers:headers(true),body:JSON.stringify({batch_id:b.id,confirmation_token:b.confirmation_token,decisions:reservationDecisions()})});toast(`予約移行：成功${d.batch.success_count}件、失敗${d.batch.failure_count}件`);await loadHistory();setStatus("#reservationStatus","将来予約の本登録が完了しました。","ok")}catch(e){toast(e.message,true)}finally{$("#reservationCommitButton").disabled=!$("#reservationConfirm").checked}}
+  function localDateTimeValue(value){if(!value)return"";const d=new Date(value);if(Number.isNaN(d.getTime()))return"";const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
+  async function loadCutover(){try{const d=await fetchJson(config.API.admin_migration_cutover,{headers:headers()}),c=d.cutover||{};$("#cutoverSource").value=c.migration_source||"repitte";$("#cutoverAt").value=localDateTimeValue(c.planned_cutover_at);$("#legacyReferenceUntil").value=c.legacy_reference_until||"";$("#cutoverStatus").value=c.status||"planning";$("#cutoverFinalCheck").checked=c.dpro_final_check_passed===true;$("#legacyBookingStopped").checked=c.legacy_new_booking_stopped===true;$("#lineButtonSwitched").checked=c.line_button_switched===true;$("#cutoverNotes").value=c.notes||"";setStatus("#cutoverStatusMessage",c.planned_cutover_at?`切り替え予定：${new Date(c.planned_cutover_at).toLocaleString("ja-JP")}`:"切り替え予定は未設定です。",c.status==="switched"||c.status==="completed"?"ok":"warn")}catch(e){setStatus("#cutoverStatusMessage",e.message,"ng")}}
+  async function saveCutover(){try{const raw=$("#cutoverAt").value,payload={migration_source:$("#cutoverSource").value,planned_cutover_at:raw?new Date(raw).toISOString():null,legacy_reference_until:$("#legacyReferenceUntil").value||null,status:$("#cutoverStatus").value,dpro_final_check_passed:$("#cutoverFinalCheck").checked,legacy_new_booking_stopped:$("#legacyBookingStopped").checked,line_button_switched:$("#lineButtonSwitched").checked,notes:$("#cutoverNotes").value.trim()};await fetchJson(config.API.admin_migration_cutover,{method:"PATCH",headers:headers(true),body:JSON.stringify(payload)});toast("切り替え計画を保存しました。");await loadCutover()}catch(e){toast(e.message,true)}}
+  async function loadLinks(){setStatus("#lineLinkStatus","申請を読み込んでいます…");try{const u=new URL(config.API.admin_migration_line_links);u.searchParams.set("status","pending");const d=await fetchJson(u,{headers:headers()}),box=$("#lineLinkList");box.replaceChildren();(d.requests||[]).forEach(r=>{const card=document.createElement("article");card.className="link-card";const info=document.createElement("div");info.innerHTML=`<strong>${r.customer?.full_name||"顧客"}</strong><span>${r.customer?.phone||""} ／ ${r.customer?.customer_no||""}<br>申請：${new Date(r.requested_at).toLocaleString("ja-JP")} ／ ${r.verification_method}</span>`;const acts=document.createElement("div");acts.className="buttons";[["承認","approve","success"],["却下","reject","danger"]].forEach(([l,v,c])=>{const b=document.createElement("button");b.type="button";b.className=`btn ${c} small`;b.textContent=l;b.addEventListener("click",()=>reviewLink(r.id,v));acts.append(b)});card.append(info,acts);box.append(card)});if(!d.requests?.length)box.innerHTML='<div class="status ok">現在、承認待ちのLINE再連携申請はありません。</div>';setStatus("#lineLinkStatus",`${d.requests?.length||0}件の申請があります。`,d.requests?.length?"warn":"ok")}catch(e){setStatus("#lineLinkStatus",e.message,"ng")}}
+  async function reviewLink(id,decision){if(!confirm(decision==="approve"?"このLINE再連携を承認しますか？":"この申請を却下しますか？"))return;try{await fetchJson(config.API.admin_migration_line_link_review,{method:"POST",headers:headers(true),body:JSON.stringify({request_id:id,decision})});toast(decision==="approve"?"再連携を承認しました。":"申請を却下しました。");await loadLinks()}catch(e){toast(e.message,true)}}
+  const statusLabels={draft:"準備中",validated:"プレビュー済み",committing:"登録中",committed:"完了",partially_committed:"一部失敗",rolled_back:"取消済み",rollback_partial:"一部取消",failed:"失敗"};
+  async function loadHistory(){setStatus("#historyStatus","移行履歴を読み込んでいます…");try{const d=await fetchJson(config.API.admin_migrations,{headers:headers()}),box=$("#historyList");box.replaceChildren();(d.batches||[]).forEach(b=>{const card=document.createElement("article");card.className="history-card";const info=document.createElement("div");info.innerHTML=`<strong>${b.entity_type==="customer"?"顧客":"将来予約"}：${b.file_name}</strong><span>${new Date(b.created_at).toLocaleString("ja-JP")} ／ 移行元 ${b.migration_source}<br>成功 ${b.success_count}・失敗 ${b.failure_count}・重複 ${b.duplicate_count}・スキップ ${b.skipped_count}</span><span class="badge">${statusLabels[b.status]||b.status}</span>`;const acts=document.createElement("div");acts.className="buttons";if(["draft","validated","failed"].includes(b.status)){const ds=document.createElement("button");ds.type="button";ds.className="btn secondary small";ds.textContent="プレビュー破棄";ds.addEventListener("click",()=>discardBatch(b));acts.append(ds)}if(["committed","partially_committed"].includes(b.status)){const rb=document.createElement("button");rb.type="button";rb.className="btn danger small";rb.textContent="移行単位で取り消し";rb.addEventListener("click",()=>rollback(b));acts.append(rb)}card.append(info,acts);box.append(card)});if(!d.batches?.length)box.innerHTML='<div class="status">移行履歴はありません。</div>';setStatus("#historyStatus",`${d.batches?.length||0}件の履歴を表示しています。`,"ok")}catch(e){setStatus("#historyStatus",e.message,"ng")}}
+  async function discardBatch(batch){if(!confirm(`未登録のプレビュー「${batch.file_name}」を破棄しますか？`))return;try{await fetchJson(config.API.admin_migration_discard,{method:"POST",headers:headers(true),body:JSON.stringify({batch_id:batch.id})});toast("プレビューを破棄しました。");await loadHistory()}catch(e){toast(e.message,true)}}
+  async function rollback(batch){const typed=prompt(`取り消し確認のため、ファイル名をそのまま入力してください。\n${batch.file_name}`);if(typed!==batch.file_name)return toast("ファイル名が一致しないため中止しました。",true);try{const d=await fetchJson(config.API.admin_migration_rollback,{method:"POST",headers:headers(true),body:JSON.stringify({batch_id:batch.id,confirm_text:typed})});toast(`取消 ${d.rolled_back}件、保護のため取消不可 ${d.blocked}件`);await loadHistory()}catch(e){toast(e.message,true)}}
+  async function login(){const code=$("#loginCode").value.trim();if(!code)return setStatus("#loginStatus","管理コードを入力してください。","ng");try{await fetchJson(config.API.admin_login,{method:"POST",headers:{"X-DPRO-ADMIN-CODE":code}});state.adminCode=code;localStorage.setItem(config.STORAGE_KEYS.admin_code,code);$("#loginScreen").hidden=true;$("#app").hidden=false;$("#settingsLink").href=isDemo?"./settings.html?demo=1":"./settings.html";$("#releaseLink").href=isDemo?"./release-check.html?demo=1":"./release-check.html";await Promise.all([loadHistory(),loadLinks(),loadCutover()])}catch(e){setStatus("#loginStatus",e.message,"ng")}}
+  document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view${b.dataset.view[0].toUpperCase()}${b.dataset.view.slice(1)}`));if(b.dataset.view==="history")loadHistory();if(b.dataset.view==="links")loadLinks()}));
+  $("#customerFile").addEventListener("change",async()=>{const f=$("#customerFile").files?.[0];if(!f)return;try{state.customerCsv=await readCsv(f,$("#customerEncoding").value);renderMapping("#customerMapping",state.customerCsv,customerFields);$("#customerMapArea").hidden=false;setStatus("#customerStatus",`${state.customerCsv.rows.length}行を読み込みました。列の対応を確認してください。`,"ok")}catch(e){setStatus("#customerStatus",e.message,"ng")}});
+  $("#reservationFile").addEventListener("change",async()=>{const f=$("#reservationFile").files?.[0];if(!f)return;try{state.reservationCsv=await readCsv(f,$("#reservationEncoding").value);renderMapping("#reservationMapping",state.reservationCsv,reservationFields);$("#reservationMapArea").hidden=false;setStatus("#reservationStatus",`${state.reservationCsv.rows.length}行を読み込みました。列の対応を確認してください。`,"ok")}catch(e){setStatus("#reservationStatus",e.message,"ng")}});
+  $("#customerPreviewButton").addEventListener("click",previewCustomer);$("#reservationPreviewButton").addEventListener("click",previewReservation);$("#customerConfirm").addEventListener("change",()=>$("#customerCommitButton").disabled=!$("#customerConfirm").checked);$("#reservationConfirm").addEventListener("change",()=>$("#reservationCommitButton").disabled=!$("#reservationConfirm").checked);$("#customerCommitButton").addEventListener("click",commitCustomer);$("#reservationCommitButton").addEventListener("click",commitReservation);$("#mergeSearchButton").addEventListener("click",searchExisting);$("#mergeSearchQuery").addEventListener("keydown",e=>{if(e.key==="Enter")searchExisting()});$("#reloadLinks").addEventListener("click",loadLinks);$("#reloadHistory").addEventListener("click",loadHistory);$("#saveCutoverButton").addEventListener("click",saveCutover);$("#loginButton").addEventListener("click",login);$("#loginCode").addEventListener("keydown",e=>{if(e.key==="Enter")login()});$("#clearCode").addEventListener("click",()=>{localStorage.removeItem(config.STORAGE_KEYS.admin_code);$("#loginCode").value=""});
+  const code=isDemo?config.DEMO.admin_code:localStorage.getItem(config.STORAGE_KEYS.admin_code)||"";$("#loginCode").value=code;if(isDemo||code)login();
+})();
+</script>
+</body>
+</html>

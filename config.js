@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-10-FINAL-RELEASE-CHECK-20260718",
+    VERSION: "EYE-11-SAFE-MIGRATION-20260718",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -29,6 +29,7 @@
       settings: `${pageBase}settings.html`,
       system_check: `${pageBase}system-check.html`,
       release_check: `${pageBase}release-check.html`,
+      migration: `${pageBase}migration.html`,
     }),
 
     API: Object.freeze({
@@ -65,6 +66,31 @@
         `${API_BASE}/api/admin/release-check`,
       admin_demo_restore:
         `${API_BASE}/api/admin/demo-restore`,
+      migration_link_request:
+        `${API_BASE}/api/public/migration/link.request`,
+      migration_link_confirm:
+        `${API_BASE}/api/public/migration/link.confirm`,
+      admin_migrations: `${API_BASE}/api/admin/migrations`,
+      admin_migration_batch:
+        `${API_BASE}/api/admin/migration/batch`,
+      admin_migration_customer_preview:
+        `${API_BASE}/api/admin/migration/customer.preview`,
+      admin_migration_customer_commit:
+        `${API_BASE}/api/admin/migration/customer.commit`,
+      admin_migration_reservation_preview:
+        `${API_BASE}/api/admin/migration/reservation.preview`,
+      admin_migration_reservation_commit:
+        `${API_BASE}/api/admin/migration/reservation.commit`,
+      admin_migration_discard:
+        `${API_BASE}/api/admin/migration/discard`,
+      admin_migration_rollback:
+        `${API_BASE}/api/admin/migration/rollback`,
+      admin_migration_line_links:
+        `${API_BASE}/api/admin/migration/line-links`,
+      admin_migration_line_link_review:
+        `${API_BASE}/api/admin/migration/line-link.review`,
+      admin_migration_cutover:
+        `${API_BASE}/api/admin/migration/cutover`,
 
       admin_settings: `${API_BASE}/api/admin/settings`,
       admin_settings_shop_save:

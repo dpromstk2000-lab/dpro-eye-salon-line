@@ -254,6 +254,7 @@
         ["オーナーPC管理",config.PAGES.owner,"オーナーPC管理"],
         ["店舗iPad",config.PAGES.owner_ipad,"店舗iPad"],
         ["店舗設定",config.PAGES.settings,"店舗設定"],
+        ["既存システム移行",config.PAGES.migration,"既存システム移行"],
         ["営業前システムチェック",config.PAGES.system_check,"営業前システムチェック"],
         ["営業前最終検査",config.PAGES.release_check,"営業前最終検査"],
       ];
@@ -264,12 +265,12 @@
         categories:"有効カテゴリ",online_services:"LINE予約メニュー",
         resources:"施術席",demo_customer:"デモ顧客",
         demo_member:"会員ページ用データ",
-        private_photo_storage:"非公開写真Storage",
+        private_photo_storage:"非公開写真Storage",migration_foundation:"既存システム移行基盤",migration_staging_clear:"移行プレビュー残件",
       };
       const guardLabels = {
         shop_code:"本番用店舗コード",shop_mode:"店舗の本番モード",
         production_guard:"production_guard解除",admin_code:"管理コード変更",
-        production_switch_permission:"本番切替許可変数",
+        production_switch_permission:"本番切替許可変数",migration_cutover_plan:"既存システム切り替え計画",
       };
 
       function toast(message,error=false) {
