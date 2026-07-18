@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6F4C55">
+  <title>営業前最終検査｜DPRO EYE SALON</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#F7F3EF; --surface:#fff; --soft:#F2EAE5;
+      --accent:#A86F7D; --accent-dark:#6F4C55;
+      --text:#2F2B2C; --muted:#6E6567; --border:#DED1CA;
+      --success:#64745F; --warning:#A96F32; --danger:#A14E55;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+        "Noto Sans JP",sans-serif;
+    }
+    * { box-sizing:border-box; }
+    [hidden] { display:none!important; }
+    body {
+      margin:0; min-height:100vh; color:var(--text); font-size:17px; line-height:1.65;
+      background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 27rem),var(--bg);
+    }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    a { color:inherit; }
+    .login {
+      min-height:100vh; display:grid; place-items:center; padding:20px;
+    }
+    .login-card,.hero,.panel {
+      border:1px solid var(--border); border-radius:21px;
+      background:rgba(255,255,255,.97);
+      box-shadow:0 12px 34px rgba(78,53,61,.08);
+    }
+    .login-card { width:min(560px,100%); padding:30px; }
+    .brand {
+      margin:0 0 5px; color:var(--accent-dark); font-size:14px;
+      font-weight:900; letter-spacing:.12em;
+    }
+    h1 { margin:0; font-size:34px; line-height:1.3; }
+    h2 { margin:0; font-size:24px; }
+    .muted { color:var(--muted); }
+    label { display:block; font-weight:850; }
+    input {
+      width:100%; min-height:52px; margin-top:6px; padding:10px 13px;
+      border:2px solid var(--border); border-radius:12px; background:#fff;
+    }
+    input:focus {
+      outline:3px solid rgba(168,111,125,.16); border-color:var(--accent);
+    }
+    .app { width:min(1320px,calc(100% - 24px)); margin:auto; padding:18px 0 60px; }
+    .hero,.panel { padding:22px; }
+    .panel { margin-top:14px; }
+    .head {
+      display:flex; justify-content:space-between; gap:15px; align-items:center;
+    }
+    .links,.buttons { display:flex; flex-wrap:wrap; gap:9px; }
+    .links a {
+      min-height:46px; display:inline-flex; align-items:center; padding:8px 14px;
+      border-radius:12px; background:var(--soft); color:var(--accent-dark);
+      text-decoration:none; font-weight:900;
+    }
+    .btn {
+      min-height:49px; padding:9px 16px; border:0; border-radius:12px; font-weight:900;
+    }
+    .primary { color:#fff; background:var(--accent); }
+    .success { color:#fff; background:var(--success); }
+    .danger { color:#fff; background:var(--danger); }
+    .secondary { color:var(--accent-dark); background:var(--soft); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .status {
+      margin-top:14px; padding:14px 16px; border-radius:13px;
+      color:var(--muted); background:var(--soft); font-weight:850;
+    }
+    .status.ok { color:#40513B; background:#E7EFE4; }
+    .status.warn { color:#70481F; background:#FFF3E4; }
+    .status.ng { color:#7E343A; background:#F7E6E7; }
+    .summary {
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px; margin-top:14px;
+    }
+    .summary-card {
+      min-height:116px; padding:16px; border:1px solid var(--border);
+      border-radius:15px; background:#fff;
+    }
+    .summary-card small { display:block; color:var(--muted); font-weight:800; }
+    .summary-card strong { display:block; margin-top:4px; font-size:27px; }
+    .summary-card.ok { border-color:#AAB5A5; background:#F3F7F1; }
+    .summary-card.warn { border-color:#D7B991; background:#FFF8EF; }
+    .summary-card.ng { border-color:#D4A6AA; background:#FDF2F3; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .check {
+      display:grid; grid-template-columns:38px minmax(0,1fr) auto;
+      gap:11px; align-items:center; padding:14px;
+      border:1px solid var(--border); border-radius:14px; background:#fff;
+    }
+    .icon {
+      width:34px; height:34px; display:grid; place-items:center;
+      border-radius:50%; color:#fff; background:#999; font-weight:900;
+    }
+    .check.ok .icon { background:var(--success); }
+    .check.ng .icon { background:var(--danger); }
+    .check strong { display:block; font-size:18px; }
+    .check span { display:block; color:var(--muted); font-size:14px; }
+    .check a {
+      min-height:40px; display:inline-flex; align-items:center; padding:7px 12px;
+      border-radius:10px; color:#fff; background:var(--accent-dark);
+      text-decoration:none; font-weight:850;
+    }
+    .guards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; }
+    .guard {
+      padding:13px; border:1px solid var(--border); border-radius:13px; background:#fff;
+    }
+    .guard.ok { border-color:#AAB5A5; background:#F3F7F1; }
+    .guard.blocked { border-color:#D7B991; background:#FFF8EF; }
+    .guard strong,.guard span { display:block; }
+    .guard span {
+      margin-top:3px; color:var(--muted); font-size:14px; overflow-wrap:anywhere;
+    }
+    pre {
+      max-height:340px; overflow:auto; padding:15px; border-radius:13px;
+      color:#F5F0EF; background:#2F2B2C; white-space:pre-wrap;
+      overflow-wrap:anywhere; font-size:14px;
+    }
+    .toast {
+      position:fixed; left:50%; bottom:22px; z-index:100;
+      width:min(620px,calc(100% - 24px)); padding:15px 18px;
+      border-radius:14px; color:#fff; background:#3B3436;
+      transform:translate(-50%,130%); transition:.2s ease; font-weight:850;
+    }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.error { background:var(--danger); }
+    @media(max-width:950px) {
+      .summary { grid-template-columns:1fr; }
+      .guards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media(max-width:700px) {
+      body { font-size:16px; }
+      .app { width:min(100% - 16px,1320px); padding-top:8px; }
+      .head { flex-direction:column; align-items:stretch; }
+      .grid,.guards { grid-template-columns:1fr; }
+      .check { grid-template-columns:38px minmax(0,1fr); }
+      .check a { grid-column:1/-1; justify-content:center; }
+      .buttons .btn { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login">
+    <div class="login-card">
+      <p class="brand">DPRO EYE SALON LINE</p>
+      <h1>営業前最終検査</h1>
+      <p class="muted">公開画面、API、データ、本番切替ガードをまとめて確認します。</p>
+      <label>
+        管理コード
+        <input id="loginCode" type="password" inputmode="numeric"
+          autocomplete="off" maxlength="20" placeholder="管理コード">
+      </label>
+      <div class="buttons" style="margin-top:14px">
+        <button id="loginButton" class="btn primary" type="button">最終検査を開始</button>
+        <button id="clearCode" class="btn danger" type="button">削除</button>
+      </div>
+      <div id="loginStatus" class="status">管理コードを入力してください。</div>
+    </div>
+  </section>
+
+  <main id="app" class="app" hidden>
+    <section class="hero">
+      <div class="head">
+        <div>
+          <p class="brand">DPRO EYE SALON LINE</p>
+          <h1>営業前最終検査</h1>
+          <p class="muted">営業デモの開始可否と、本番への誤切替防止を確認します。</p>
+        </div>
+        <div class="links">
+          <a id="ownerLink" href="./owner.html">オーナー管理</a>
+          <a id="systemLink" href="./system-check.html">システムチェック</a>
+        </div>
+      </div>
+
+      <div class="summary">
+        <article id="demoCard" class="summary-card">
+          <small>営業デモ</small><strong id="demoResult">検査中</strong>
+          <span id="demoDetail" class="muted"></span>
+        </article>
+        <article id="pagesCard" class="summary-card">
+          <small>公開画面</small><strong id="pagesResult">検査中</strong>
+          <span id="pagesDetail" class="muted"></span>
+        </article>
+        <article id="guardCard" class="summary-card">
+          <small>本番切替ガード</small><strong id="guardResult">検査中</strong>
+          <span id="guardDetail" class="muted"></span>
+        </article>
+      </div>
+
+      <div id="overallStatus" class="status">最終検査を実行しています…</div>
+      <div class="buttons" style="margin-top:14px">
+        <button id="runButton" class="btn primary" type="button">最終検査を再実行</button>
+        <button id="restoreButton" class="btn success" type="button">
+          デモ環境を標準状態へ復元
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head" style="margin-bottom:14px">
+        <div><h2>公開画面の統合確認</h2>
+          <span class="muted">各ページを取得し、必要な画面要素を検査します。</span></div>
+      </div>
+      <div id="pageChecks" class="grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="head" style="margin-bottom:14px">
+        <div><h2>API・データ・機能確認</h2>
+          <span class="muted">Workerが判定した営業開始条件です。</span></div>
+      </div>
+      <div id="apiChecks" class="grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="head" style="margin-bottom:14px">
+        <div><h2>本番切替ガード</h2>
+          <span class="muted">デモ設定が残る間は本番準備完了になりません。</span></div>
+      </div>
+      <div id="productionChecks" class="guards"></div>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary style="cursor:pointer;font-weight:900;color:#6F4C55">
+          開発用の検査レスポンスを見る
+        </summary>
+        <pre id="rawResult">検査中…</pre>
+      </details>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <script>
+    (() => {
+      "use strict";
+      const config = window.DPRO_EYE_CONFIG;
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
+      const $ = selector => document.querySelector(selector);
+      const state = {adminCode:"",running:false};
+
+      const pages = [
+        ["お客様LINE予約",config.PAGES.reservation,"メニューを選択"],
+        ["予約確認・変更",config.PAGES.member,"予約確認・変更"],
+        ["オーナーPC管理",config.PAGES.owner,"オーナーPC管理"],
+        ["店舗iPad",config.PAGES.owner_ipad,"店舗iPad"],
+        ["店舗設定",config.PAGES.settings,"店舗設定"],
+        ["営業前システムチェック",config.PAGES.system_check,"営業前システムチェック"],
+        ["営業前最終検査",config.PAGES.release_check,"営業前最終検査"],
+      ];
+      const labels = {
+        system_check:"システムチェック",database:"データベース",
+        shop_active:"店舗の有効状態",staff:"有効スタッフ",
+        staff_services:"担当可能メニュー",shifts:"勤務時間",
+        categories:"有効カテゴリ",online_services:"LINE予約メニュー",
+        resources:"施術席",demo_customer:"デモ顧客",
+        demo_member:"会員ページ用データ",
+        private_photo_storage:"非公開写真Storage",
+      };
+      const guardLabels = {
+        shop_code:"本番用店舗コード",shop_mode:"店舗の本番モード",
+        production_guard:"production_guard解除",admin_code:"管理コード変更",
+        production_switch_permission:"本番切替許可変数",
+      };
+
+      function toast(message,error=false) {
+        const node=$("#toast");
+        node.textContent=message;
+        node.className=`toast show${error?" error":""}`;
+        clearTimeout(toast.timer);
+        toast.timer=setTimeout(()=>node.className="toast",3500);
+      }
+      function headers() {
+        return {"X-DPRO-ADMIN-CODE":state.adminCode};
+      }
+      async function fetchJson(url,options={}) {
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),20000);
+        try {
+          const response=await fetch(url,{cache:"no-store",...options,signal:controller.signal});
+          const data=await response.json().catch(()=>null);
+          if(!response.ok) throw new Error(data?.message||`HTTP ${response.status}`);
+          return data;
+        } finally { clearTimeout(timer); }
+      }
+      async function checkPage([name,url,marker]) {
+        try {
+          const response=await fetch(url,{cache:"no-store"});
+          const text=await response.text();
+          return {name,url,ok:response.ok&&text.includes(marker),status:response.status};
+        } catch(error) {
+          return {name,url,ok:false,status:0,error:error.message};
+        }
+      }
+      function checkCard(item,name,url) {
+        const card=document.createElement("article");
+        card.className=`check ${item.ok?"ok":"ng"}`;
+        const icon=document.createElement("span");
+        icon.className="icon"; icon.textContent=item.ok?"✓":"×";
+        const body=document.createElement("div");
+        const strong=document.createElement("strong"); strong.textContent=name;
+        const detail=document.createElement("span");
+        detail.textContent=item.ok?"正常":item.error||`確認が必要です（HTTP ${item.status||"―"}）`;
+        body.append(strong,detail); card.append(icon,body);
+        if(url) {
+          const link=document.createElement("a");
+          link.href=isDemo?`${url}${url.includes("?")?"&":"?"}demo=1`:url;
+          link.target="_blank"; link.rel="noopener"; link.textContent="開く";
+          card.append(link);
+        }
+        return card;
+      }
+      function setSummary(card,mode,title,detail) {
+        card.className=`summary-card ${mode}`;
+        card.querySelector("strong").textContent=title;
+        card.querySelector("span").textContent=detail;
+      }
+      function renderPages(rows) {
+        const box=$("#pageChecks"); box.replaceChildren();
+        rows.forEach(row=>box.append(checkCard(row,row.name,row.url)));
+      }
+      function renderApi(rows) {
+        const box=$("#apiChecks"); box.replaceChildren();
+        rows.forEach(row=>box.append(checkCard(row,labels[row.name]||row.name)));
+      }
+      function renderGuards(rows) {
+        const box=$("#productionChecks"); box.replaceChildren();
+        rows.forEach(row=>{
+          const card=document.createElement("article");
+          card.className=`guard ${row.ok?"ok":"blocked"}`;
+          const strong=document.createElement("strong");
+          strong.textContent=`${row.ok?"✓":"🔒"} ${guardLabels[row.name]||row.name}`;
+          const span=document.createElement("span");
+          span.textContent=typeof row.detail==="string"?row.detail:JSON.stringify(row.detail);
+          card.append(strong,span); box.append(card);
+        });
+      }
+
+      async function run() {
+        if(state.running) return;
+        state.running=true;
+        $("#runButton").disabled=true; $("#restoreButton").disabled=true;
+        $("#overallStatus").className="status";
+        $("#overallStatus").textContent="公開画面とAPIを検査しています…";
+        try {
+          const [pageRows,release,health]=await Promise.all([
+            Promise.all(pages.map(checkPage)),
+            fetchJson(config.API.admin_release_check,{headers:headers()}),
+            fetchJson(config.API.health),
+          ]);
+          renderPages(pageRows);
+          renderApi(release.demo_checks||[]);
+          renderGuards(release.production_checks||[]);
+          const pageOk=pageRows.every(row=>row.ok);
+          const demoOk=release.demo_ready===true&&health.ok===true;
+          const guardOk=release.switch_guard_active===true&&release.production_ready===false;
+
+          setSummary($("#demoCard"),demoOk?"ok":"ng",
+            demoOk?"営業可能":"確認が必要",release.message||"");
+          setSummary($("#pagesCard"),pageOk?"ok":"ng",
+            pageOk?"全画面正常":"画面確認あり",
+            `${pageRows.filter(row=>row.ok).length}/${pageRows.length}画面`);
+          setSummary($("#guardCard"),guardOk?"warn":release.production_ready?"ok":"ng",
+            guardOk?"本番切替を停止中":release.production_ready?"本番条件達成":"要確認",
+            guardOk?"デモのまま本番へ進めない安全状態です。":"");
+
+          const allOk=pageOk&&demoOk&&guardOk;
+          $("#overallStatus").className=`status ${allOk?"ok":"ng"}`;
+          $("#overallStatus").textContent=allOk
+            ?"営業デモの全検査が正常です。本番への誤切替も防止されています。"
+            :"確認が必要な項目があります。赤い項目を確認してください。";
+          $("#rawResult").textContent=JSON.stringify({pages:pageRows,release,health},null,2);
+        } catch(error) {
+          $("#overallStatus").className="status ng";
+          $("#overallStatus").textContent=error.message;
+          toast(error.message,true);
+        } finally {
+          state.running=false; $("#runButton").disabled=false; $("#restoreButton").disabled=false;
+        }
+      }
+
+      async function restore() {
+        if(!confirm("デモ顧客・予約・カルテを標準状態へ復元しますか？")) return;
+        $("#restoreButton").disabled=true;
+        $("#overallStatus").className="status warn";
+        $("#overallStatus").textContent="デモ環境を復元しています…";
+        try {
+          await fetchJson(config.API.admin_demo_restore,{method:"POST",headers:headers()});
+          toast("デモ環境を標準状態へ復元しました。");
+          await run();
+        } catch(error) {
+          $("#overallStatus").className="status ng";
+          $("#overallStatus").textContent=error.message;
+          toast(error.message,true);
+        } finally { $("#restoreButton").disabled=false; }
+      }
+
+      async function login() {
+        const code=$("#loginCode").value.trim();
+        if(!code) {
+          $("#loginStatus").className="status ng";
+          $("#loginStatus").textContent="管理コードを入力してください。"; return;
+        }
+        $("#loginButton").disabled=true;
+        try {
+          await fetchJson(config.API.admin_login,{
+            method:"POST",headers:{"X-DPRO-ADMIN-CODE":code},
+          });
+          state.adminCode=code;
+          localStorage.setItem(config.STORAGE_KEYS.admin_code,code);
+          $("#loginScreen").hidden=true; $("#app").hidden=false;
+          $("#ownerLink").href=isDemo?"./owner.html?demo=1":"./owner.html";
+          $("#systemLink").href=isDemo?"./system-check.html?demo=1":"./system-check.html";
+          await run();
+        } catch(error) {
+          $("#loginStatus").className="status ng";
+          $("#loginStatus").textContent=error.message;
+        } finally { $("#loginButton").disabled=false; }
+      }
+
+      $("#loginButton").addEventListener("click",login);
+      $("#loginCode").addEventListener("keydown",event=>{if(event.key==="Enter")login();});
+      $("#clearCode").addEventListener("click",()=>{
+        localStorage.removeItem(config.STORAGE_KEYS.admin_code); $("#loginCode").value="";
+      });
+      $("#runButton").addEventListener("click",run);
+      $("#restoreButton").addEventListener("click",restore);
+
+      const code=isDemo?config.DEMO.admin_code:
+        localStorage.getItem(config.STORAGE_KEYS.admin_code)||"";
+      $("#loginCode").value=code;
+      if(isDemo||code) login();
+    })();
+  </script>
+</body>
+</html>

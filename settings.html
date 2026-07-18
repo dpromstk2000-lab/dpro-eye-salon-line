@@ -428,6 +428,7 @@
       </div>
       <div class="top-actions">
         <button id="reloadButton" class="btn btn-secondary" type="button">再読込</button>
+        <a id="releaseCheckSettingsLink" href="./release-check.html">営業前最終検査</a>
         <a id="ownerLink" href="./owner.html">オーナー管理へ戻る</a>
       </div>
     </header>
@@ -925,7 +926,12 @@
           localStorage.setItem(config.STORAGE_KEYS.admin_code,code);
           $("#loginScreen").hidden = true;
           $("#app").hidden = false;
-          $("#ownerLink").href = isDemo ? "./owner.html?demo=1" : "./owner.html";
+          $("#ownerLink").href = isDemo
+            ? "./owner.html?demo=1"
+            : "./owner.html";
+          $("#releaseCheckSettingsLink").href = isDemo
+            ? "./release-check.html?demo=1"
+            : "./release-check.html";
           await loadSettings();
         } catch (error) {
           $("#loginStatus").textContent = error.message;

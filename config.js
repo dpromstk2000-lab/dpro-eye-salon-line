@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-9-SETTINGS-MANAGEMENT-20260718",
+    VERSION: "EYE-10-FINAL-RELEASE-CHECK-20260718",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -28,6 +28,7 @@
       owner_ipad: `${pageBase}owner-ipad.html`,
       settings: `${pageBase}settings.html`,
       system_check: `${pageBase}system-check.html`,
+      release_check: `${pageBase}release-check.html`,
     }),
 
     API: Object.freeze({
@@ -60,26 +61,30 @@
         `${API_BASE}/api/admin/followup.status`,
       admin_demo_prepare: `${API_BASE}/api/admin/demo-prepare`,
       admin_system_check: `${API_BASE}/api/admin/system-check`,
+      admin_release_check:
+        `${API_BASE}/api/admin/release-check`,
+      admin_demo_restore:
+        `${API_BASE}/api/admin/demo-restore`,
 
-admin_settings: `${API_BASE}/api/admin/settings`,
-admin_settings_shop_save:
-  `${API_BASE}/api/admin/settings/shop.save`,
-admin_settings_staff_save:
-  `${API_BASE}/api/admin/settings/staff.save`,
-admin_settings_staff_services_save:
-  `${API_BASE}/api/admin/settings/staff.services.save`,
-admin_settings_staff_shift_save:
-  `${API_BASE}/api/admin/settings/staff.shift.save`,
-admin_settings_staff_closed_save:
-  `${API_BASE}/api/admin/settings/staff.closed.save`,
-admin_settings_staff_closed_delete:
-  `${API_BASE}/api/admin/settings/staff.closed.delete`,
-admin_settings_category_save:
-  `${API_BASE}/api/admin/settings/category.save`,
-admin_settings_service_save:
-  `${API_BASE}/api/admin/settings/service.save`,
-admin_settings_resource_save:
-  `${API_BASE}/api/admin/settings/resource.save`,
+      admin_settings: `${API_BASE}/api/admin/settings`,
+      admin_settings_shop_save:
+        `${API_BASE}/api/admin/settings/shop.save`,
+      admin_settings_staff_save:
+        `${API_BASE}/api/admin/settings/staff.save`,
+      admin_settings_staff_services_save:
+        `${API_BASE}/api/admin/settings/staff.services.save`,
+      admin_settings_staff_shift_save:
+        `${API_BASE}/api/admin/settings/staff.shift.save`,
+      admin_settings_staff_closed_save:
+        `${API_BASE}/api/admin/settings/staff.closed.save`,
+      admin_settings_staff_closed_delete:
+        `${API_BASE}/api/admin/settings/staff.closed.delete`,
+      admin_settings_category_save:
+        `${API_BASE}/api/admin/settings/category.save`,
+      admin_settings_service_save:
+        `${API_BASE}/api/admin/settings/service.save`,
+      admin_settings_resource_save:
+        `${API_BASE}/api/admin/settings/resource.save`,
     }),
 
     STORAGE_KEYS: Object.freeze({

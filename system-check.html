@@ -342,6 +342,7 @@
         resources: "施術席",
         private_photo_bucket: "写真Storage（非公開）",
         settings: "店舗設定管理",
+        release: "最終リリース検査",
       };
 
       function getAdminCode() {
@@ -425,6 +426,7 @@
           ["オーナーPC", `${config.PAGES.owner}?demo=1`],
           ["店舗iPad", `${config.PAGES.owner_ipad}?demo=1`],
           ["店舗設定", `${config.PAGES.settings}?demo=1`],
+          ["営業前最終検査", `${config.PAGES.release_check}?demo=1`],
           ["システムチェック", config.PAGES.system_check],
           ["Worker API", config.API.root],
           ["Health", config.API.health],
@@ -575,6 +577,25 @@
           });
         } catch (error) {
           results.push({ name: "settings", ok: false, detail: error.message });
+        }
+
+        try {
+          final.release = await fetchJson(config.API.admin_release_check, {
+            headers: adminHeaders(),
+          });
+          results.push({
+            name: "release",
+            ok: final.release.demo_ready === true &&
+              final.release.switch_guard_active === true,
+            detail: {
+              demo_ready: final.release.demo_ready,
+              production_ready: final.release.production_ready,
+              switch_guard_active: final.release.switch_guard_active,
+              message: final.release.message,
+            },
+          });
+        } catch (error) {
+          results.push({ name: "release", ok: false, detail: error.message });
         }
 
         try {

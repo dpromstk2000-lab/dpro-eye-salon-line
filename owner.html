@@ -729,6 +729,10 @@
         <a href="./system-check.html?demo=1" target="_blank" rel="noopener">
           システムチェック
         </a>
+        <a id="releaseCheckOwnerLink" href="./release-check.html?demo=1"
+          target="_blank" rel="noopener">
+          営業前最終検査
+        </a>
         <button id="logoutButton" type="button">管理コードを削除</button>
       </div>
     </aside>
@@ -2253,6 +2257,9 @@
       $("#settingsNavLink").href = isDemo
         ? "./settings.html?demo=1"
         : "./settings.html";
+      $("#releaseCheckOwnerLink").href = isDemo
+        ? "./release-check.html?demo=1"
+        : "./release-check.html";
 
       const storedCode = isDemo
         ? config.DEMO.admin_code

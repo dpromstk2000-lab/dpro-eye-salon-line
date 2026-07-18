@@ -689,6 +689,20 @@
             "ok"
           );
           renderReservations();
+
+          if (!state.reservations.length) {
+            state.selected = null;
+            state.customerDetail = null;
+            state.currentCarteId = "";
+            $("#noSelection").hidden = false;
+            $("#detailArea").hidden = true;
+            return;
+          }
+
+          const selected =
+            state.reservations.find(row => row.id === state.selected?.id) ||
+            state.reservations[0];
+          await selectReservation(selected);
         } catch (error) {
           setStatus($("#listStatus"),error.message,"ng");
         }
@@ -719,12 +733,13 @@
           head.append(time,badge);
 
           const name = document.createElement("strong");
-          name.textContent = row.customer_name || "お客様";
+          name.textContent = `お客様：${row.customer_name || "お客様"}`;
           const menu = document.createElement("span");
-          menu.textContent =
-            `${row.service_names || "メニュー"} ／ ${row.staff_name || "担当未設定"}`;
+          menu.textContent = `メニュー：${row.service_names || "未設定"}`;
+          const staff = document.createElement("span");
+          staff.textContent = `担当：${row.staff_name || "未設定"}`;
 
-          card.append(head,name,menu);
+          card.append(head,name,menu,staff);
           card.addEventListener("click",() => selectReservation(row));
           container.append(card);
         }
