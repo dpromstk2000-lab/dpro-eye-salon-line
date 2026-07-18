@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#A86F7D">
+  <title>システムチェック｜DPRO まつげ・眉サロン LINE</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#FAF7F2;
+      --surface:#FFFFFF;
+      --soft:#F2EAE5;
+      --accent:#A86F7D;
+      --accent-dark:#6F4C55;
+      --text:#2F2B2C;
+      --muted:#6E6567;
+      --border:#DED1CA;
+      --success:#64745F;
+      --warning:#A96F32;
+      --danger:#A14E55;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+        "Noto Sans JP",sans-serif;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 4%,#F7E7E8 0,transparent 26rem),
+        var(--bg);
+      font-size:17px;
+      line-height:1.65;
+    }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .wrap { width:min(1120px,calc(100% - 30px)); margin:0 auto; padding:28px 0 64px; }
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      margin-bottom:18px;
+    }
+    .back {
+      display:inline-flex;
+      align-items:center;
+      min-height:48px;
+      padding:8px 16px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      color:var(--accent-dark);
+      background:white;
+      text-decoration:none;
+      font-weight:800;
+    }
+    h1 { margin:3px 0 4px; font-size:clamp(29px,4vw,42px); line-height:1.25; }
+    .subtitle { margin:0; color:var(--muted); }
+    .panel {
+      margin-top:18px;
+      padding:24px;
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:rgba(255,255,255,.96);
+      box-shadow:0 12px 34px rgba(78,53,61,.08);
+    }
+    .panel h2 { margin:0 0 14px; font-size:23px; }
+    .code-row {
+      display:grid;
+      grid-template-columns:minmax(220px,1fr) auto auto;
+      gap:10px;
+      align-items:end;
+    }
+    label { display:block; font-weight:800; }
+    input {
+      width:100%;
+      min-height:52px;
+      margin-top:6px;
+      padding:10px 14px;
+      border:2px solid var(--border);
+      border-radius:13px;
+      color:var(--text);
+      background:#fff;
+    }
+    input:focus { outline:3px solid rgba(168,111,125,.18); border-color:var(--accent); }
+    .btn {
+      min-height:52px;
+      padding:10px 18px;
+      border:0;
+      border-radius:13px;
+      font-weight:850;
+    }
+    .btn-primary { color:white; background:var(--accent); }
+    .btn-secondary { color:var(--accent-dark); background:var(--soft); }
+    .btn-danger { color:white; background:var(--danger); }
+    .button-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+    .summary {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:16px;
+    }
+    .summary-card {
+      min-height:98px;
+      padding:16px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+    }
+    .summary-card small { display:block; color:var(--muted); font-weight:750; }
+    .summary-card strong { display:block; margin-top:4px; font-size:25px; }
+    .overall {
+      display:flex;
+      gap:13px;
+      align-items:center;
+      padding:18px;
+      border-radius:16px;
+      background:var(--soft);
+      font-weight:850;
+    }
+    .overall.ok { background:#E8EFE5; color:#3F503A; }
+    .overall.ng { background:#F7E6E7; color:#7E343A; }
+    .spinner {
+      width:22px;
+      height:22px;
+      border:3px solid rgba(168,111,125,.25);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+      flex:none;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .checks {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .check {
+      display:grid;
+      grid-template-columns:38px 1fr;
+      gap:12px;
+      padding:17px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+    }
+    .check-icon {
+      width:34px;
+      height:34px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:#EEE9E7;
+      font-weight:900;
+    }
+    .check.ok .check-icon { color:white; background:var(--success); }
+    .check.ng .check-icon { color:white; background:var(--danger); }
+    .check.wait .check-icon { color:var(--accent-dark); background:var(--soft); }
+    .check strong { display:block; font-size:18px; }
+    .detail {
+      margin-top:4px;
+      color:var(--muted);
+      font-size:15px;
+      overflow-wrap:anywhere;
+      white-space:pre-wrap;
+    }
+    .url-list { display:grid; gap:10px; }
+    .url-item {
+      display:grid;
+      grid-template-columns:170px minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:13px 15px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+    }
+    .url-item strong { color:var(--accent-dark); }
+    .url {
+      overflow-wrap:anywhere;
+      color:var(--muted);
+      font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+      font-size:14px;
+    }
+    .open {
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 14px;
+      border-radius:11px;
+      color:white;
+      background:var(--accent-dark);
+      text-decoration:none;
+      font-weight:800;
+    }
+    .notice {
+      margin-top:12px;
+      padding:13px 15px;
+      border-left:5px solid var(--warning);
+      border-radius:10px;
+      background:#FFF5E8;
+      color:#70481F;
+    }
+    pre {
+      max-height:360px;
+      overflow:auto;
+      margin:12px 0 0;
+      padding:16px;
+      border-radius:14px;
+      color:#F5F0EF;
+      background:#2F2B2C;
+      font-size:14px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+    }
+    @media (max-width:800px) {
+      body { font-size:16px; }
+      .wrap { width:min(100% - 20px,1120px); padding-top:16px; }
+      .topbar { flex-direction:column-reverse; }
+      .panel { padding:20px 16px; border-radius:18px; }
+      .code-row { grid-template-columns:1fr 1fr; }
+      .code-row label { grid-column:1/-1; }
+      .summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .checks { grid-template-columns:1fr; }
+      .url-item { grid-template-columns:1fr; }
+      .open { width:100%; }
+    }
+    @media (max-width:430px) {
+      .code-row { grid-template-columns:1fr; }
+      .code-row label { grid-column:auto; }
+      .summary { grid-template-columns:1fr 1fr; }
+      .btn { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <div>
+        <p style="margin:0;color:#6F4C55;font-weight:850;letter-spacing:.08em">
+          DPRO EYE SALON LINE
+        </p>
+        <h1>営業前システムチェック</h1>
+        <p class="subtitle">予約を受け付ける前に、主要機能をまとめて確認します。</p>
+      </div>
+      <a class="back" href="./">← システムTOP</a>
+    </div>
+
+    <section class="panel">
+      <h2>管理コード</h2>
+      <div class="code-row">
+        <label>
+          管理コードを入力
+          <input id="adminCode" type="password" inputmode="numeric"
+            autocomplete="off" maxlength="20" placeholder="管理コード">
+        </label>
+        <button id="saveCode" class="btn btn-secondary" type="button">保存</button>
+        <button id="clearCode" class="btn btn-danger" type="button">削除</button>
+      </div>
+      <div class="notice">
+        デモURLの <strong>?demo=1</strong> では管理コード1234を自動設定します。
+        通常URLでは保存済みの管理コードを使用します。
+      </div>
+      <div class="button-row">
+        <button id="runAll" class="btn btn-primary" type="button">
+          一括チェックを実行
+        </button>
+        <button id="prepareDemo" class="btn btn-secondary" type="button">
+          デモデータを準備
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>確認結果</h2>
+      <div id="overall" class="overall">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>まだ検査していません。</span>
+      </div>
+
+      <div class="summary">
+        <div class="summary-card"><small>スタッフ</small><strong id="staffCount">―</strong></div>
+        <div class="summary-card"><small>メニュー</small><strong id="serviceCount">―</strong></div>
+        <div class="summary-card"><small>施術席</small><strong id="resourceCount">―</strong></div>
+        <div class="summary-card"><small>顧客</small><strong id="customerCount">―</strong></div>
+      </div>
+
+      <div id="checks" class="checks"></div>
+    </section>
+
+    <section class="panel">
+      <h2>公開URL</h2>
+      <div id="urls" class="url-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>最終レスポンス</h2>
+      <pre id="rawResult">一括チェックを実行すると結果が表示されます。</pre>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const config = window.DPRO_EYE_CONFIG;
+      const $ = selector => document.querySelector(selector);
+      const adminInput = $("#adminCode");
+      const checksNode = $("#checks");
+      const overall = $("#overall");
+      const rawResult = $("#rawResult");
+
+      const CHECK_LABELS = {
+        config: "config.js読み込み",
+        health: "Worker・Supabase疎通",
+        shop: "店舗設定",
+        services: "メニュー設定",
+        staff: "スタッフ設定",
+        admin_login: "管理コード認証",
+        database: "データベース",
+        phone_normalization: "電話番号正規化",
+        services_30_minute: "30分単位",
+        resources: "施術席",
+        private_photo_bucket: "写真Storage（非公開）",
+      };
+
+      function getAdminCode() {
+        return adminInput.value.trim();
+      }
+
+      function adminHeaders() {
+        const code = getAdminCode();
+        if (!code) throw new Error("管理コードを入力してください。");
+        return { "X-DPRO-ADMIN-CODE": code };
+      }
+
+      async function fetchJson(url, options = {}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+          const response = await fetch(url, {
+            cache: "no-store",
+            ...options,
+            signal: controller.signal,
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok) {
+            throw new Error(data?.message || `HTTP ${response.status}`);
+          }
+          return data;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function formatDetail(value) {
+        if (value === null || value === undefined || value === "") return "";
+        if (typeof value === "string") return value;
+        return JSON.stringify(value, null, 2);
+      }
+
+      function renderChecks(items) {
+        checksNode.replaceChildren();
+        for (const item of items) {
+          const card = document.createElement("article");
+          card.className = `check ${item.ok ? "ok" : "ng"}`;
+
+          const icon = document.createElement("span");
+          icon.className = "check-icon";
+          icon.textContent = item.ok ? "✓" : "×";
+
+          const body = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = CHECK_LABELS[item.name] || item.name;
+
+          const detail = document.createElement("div");
+          detail.className = "detail";
+          detail.textContent = formatDetail(item.detail);
+
+          body.append(title, detail);
+          card.append(icon, body);
+          checksNode.append(card);
+        }
+      }
+
+      function renderUrls() {
+        const values = [
+          ["システムTOP", config.PAGES.home],
+          ["システムチェック", config.PAGES.system_check],
+          ["Worker API", config.API.root],
+          ["Health", config.API.health],
+          ["GitHub", config.GITHUB_REPOSITORY],
+        ];
+
+        const container = $("#urls");
+        container.replaceChildren();
+
+        for (const [label, url] of values) {
+          const row = document.createElement("div");
+          row.className = "url-item";
+
+          const strong = document.createElement("strong");
+          strong.textContent = label;
+
+          const urlText = document.createElement("div");
+          urlText.className = "url";
+          urlText.textContent = url;
+
+          const open = document.createElement("a");
+          open.className = "open";
+          open.href = url;
+          open.target = "_blank";
+          open.rel = "noopener noreferrer";
+          open.textContent = "開く";
+
+          row.append(strong, urlText, open);
+          container.append(row);
+        }
+      }
+
+      function setOverall(mode, message) {
+        overall.className = `overall ${mode || ""}`.trim();
+        overall.replaceChildren();
+
+        const marker = document.createElement("span");
+        marker.textContent = mode === "ok" ? "✓" : mode === "ng" ? "×" : "";
+        if (!mode) marker.className = "spinner";
+
+        const text = document.createElement("span");
+        text.textContent = message;
+
+        overall.append(marker, text);
+      }
+
+      function updateCounts(healthData) {
+        const counts = healthData?.database?.counts || {};
+        $("#staffCount").textContent = counts.staff ?? "―";
+        $("#serviceCount").textContent = counts.services ?? "―";
+        $("#resourceCount").textContent = counts.resources ?? "―";
+        $("#customerCount").textContent = counts.customers ?? "―";
+      }
+
+      async function runAll() {
+        setOverall("", "一括チェックを実行しています…");
+        checksNode.replaceChildren();
+        rawResult.textContent = "検査中…";
+
+        const results = [];
+        const final = {};
+
+        results.push({
+          name: "config",
+          ok: Boolean(config?.API?.health && config.SHOP_CODE === "dpro_eye_demo"),
+          detail: {
+            version: config.VERSION,
+            shop_code: config.SHOP_CODE,
+            api_base: config.API_BASE,
+          },
+        });
+
+        try {
+          final.health = await fetchJson(config.API.health);
+          results.push({
+            name: "health",
+            ok: final.health.ok === true && final.health.database?.ok === true,
+            detail: final.health.database,
+          });
+          updateCounts(final.health);
+        } catch (error) {
+          results.push({ name: "health", ok: false, detail: error.message });
+        }
+
+        try {
+          final.shop = await fetchJson(config.API.shop);
+          results.push({
+            name: "shop",
+            ok: final.shop.ok === true &&
+              final.shop.shop?.shop_code === config.SHOP_CODE,
+            detail: final.shop.shop,
+          });
+        } catch (error) {
+          results.push({ name: "shop", ok: false, detail: error.message });
+        }
+
+        try {
+          final.services = await fetchJson(config.API.services);
+          results.push({
+            name: "services",
+            ok: final.services.ok === true &&
+              Array.isArray(final.services.services) &&
+              final.services.services.length > 0,
+            detail: { count: final.services.services?.length ?? 0 },
+          });
+        } catch (error) {
+          results.push({ name: "services", ok: false, detail: error.message });
+        }
+
+        try {
+          final.staff = await fetchJson(config.API.staff);
+          results.push({
+            name: "staff",
+            ok: final.staff.ok === true &&
+              Array.isArray(final.staff.staff) &&
+              final.staff.staff.length > 0,
+            detail: { count: final.staff.staff?.length ?? 0 },
+          });
+        } catch (error) {
+          results.push({ name: "staff", ok: false, detail: error.message });
+        }
+
+        try {
+          final.adminLogin = await fetchJson(config.API.admin_login, {
+            method: "POST",
+            headers: adminHeaders(),
+          });
+          results.push({
+            name: "admin_login",
+            ok: final.adminLogin.authenticated === true,
+            detail: final.adminLogin.shop,
+          });
+        } catch (error) {
+          results.push({ name: "admin_login", ok: false, detail: error.message });
+        }
+
+        try {
+          final.adminSystemCheck = await fetchJson(config.API.admin_system_check, {
+            headers: adminHeaders(),
+          });
+          for (const item of final.adminSystemCheck.checks || []) {
+            results.push(item);
+          }
+        } catch (error) {
+          results.push({
+            name: "database",
+            ok: false,
+            detail: `管理側システムチェック：${error.message}`,
+          });
+        }
+
+        renderChecks(results);
+        const allOk = results.length > 0 && results.every(item => item.ok);
+        setOverall(
+          allOk ? "ok" : "ng",
+          allOk
+            ? `全${results.length}項目が正常です。営業デモを開始できます。`
+            : "確認が必要な項目があります。赤い項目を確認してください。"
+        );
+        rawResult.textContent = JSON.stringify(final, null, 2);
+      }
+
+      async function prepareDemo() {
+        if (!confirm(
+          "デモ店舗に顧客・予約・カルテのサンプルデータを準備します。実行しますか？"
+        )) return;
+
+        setOverall("", "デモデータを準備しています…");
+        try {
+          const result = await fetchJson(config.API.admin_demo_prepare, {
+            method: "POST",
+            headers: adminHeaders(),
+          });
+          rawResult.textContent = JSON.stringify(result, null, 2);
+          setOverall("ok", "デモデータの準備が完了しました。続けて一括チェックします。");
+          await runAll();
+        } catch (error) {
+          setOverall("ng", `デモデータの準備に失敗しました：${error.message}`);
+          rawResult.textContent = error.stack || error.message;
+        }
+      }
+
+      $("#saveCode").addEventListener("click", () => {
+        const code = getAdminCode();
+        if (!code) {
+          alert("管理コードを入力してください。");
+          return;
+        }
+        localStorage.setItem(config.STORAGE_KEYS.admin_code, code);
+        alert("この端末に管理コードを保存しました。");
+      });
+
+      $("#clearCode").addEventListener("click", () => {
+        localStorage.removeItem(config.STORAGE_KEYS.admin_code);
+        adminInput.value = "";
+        alert("この端末の管理コードを削除しました。");
+      });
+
+      $("#runAll").addEventListener("click", runAll);
+      $("#prepareDemo").addEventListener("click", prepareDemo);
+
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
+      adminInput.value = isDemo
+        ? config.DEMO.admin_code
+        : localStorage.getItem(config.STORAGE_KEYS.admin_code) || "";
+
+      renderUrls();
+      if (isDemo) runAll();
+      else setOverall("", "管理コードを入力し、「一括チェックを実行」を押してください。");
+    })();
+  </script>
+</body>
+</html>

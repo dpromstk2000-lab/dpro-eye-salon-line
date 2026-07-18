@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#A86F7D">
+  <title>DPRO まつげ・眉サロン LINE</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#FAF7F2;
+      --surface:#FFFFFF;
+      --soft:#F2EAE5;
+      --accent:#A86F7D;
+      --accent-dark:#6F4C55;
+      --text:#2F2B2C;
+      --muted:#6E6567;
+      --border:#DED1CA;
+      --success:#64745F;
+      --danger:#A14E55;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+        "Noto Sans JP",sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, #F7E8E9 0, transparent 28rem),
+        linear-gradient(180deg,#FCFAF7 0%,var(--bg) 100%);
+      font-size:17px;
+      line-height:1.7;
+    }
+    .wrap { width:min(960px,calc(100% - 28px)); margin:0 auto; padding:38px 0 56px; }
+    .hero {
+      padding:34px;
+      border:1px solid var(--border);
+      border-radius:26px;
+      background:rgba(255,255,255,.94);
+      box-shadow:0 18px 45px rgba(83,58,65,.10);
+    }
+    .eyebrow {
+      margin:0 0 6px;
+      color:var(--accent-dark);
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:.12em;
+    }
+    h1 {
+      margin:0;
+      font-size:clamp(30px,5vw,48px);
+      line-height:1.25;
+      letter-spacing:.01em;
+    }
+    .lead { margin:16px 0 0; color:var(--muted); font-size:18px; }
+    .status {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:24px;
+      padding:16px 18px;
+      border-radius:16px;
+      background:var(--soft);
+      font-weight:750;
+    }
+    .dot { width:12px; height:12px; border-radius:50%; background:#9A9091; flex:none; }
+    .status.ok .dot { background:var(--success); box-shadow:0 0 0 6px rgba(100,116,95,.13); }
+    .status.ng .dot { background:var(--danger); }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+      margin-top:20px;
+    }
+    .card {
+      display:flex;
+      flex-direction:column;
+      min-height:164px;
+      padding:22px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:var(--surface);
+      text-decoration:none;
+      color:inherit;
+      box-shadow:0 8px 24px rgba(83,58,65,.06);
+    }
+    .card strong { font-size:21px; }
+    .card p { margin:8px 0 18px; color:var(--muted); }
+    .card .action {
+      margin-top:auto;
+      min-height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 16px;
+      border-radius:13px;
+      background:var(--accent);
+      color:white;
+      font-weight:800;
+    }
+    .card.disabled { opacity:.68; cursor:not-allowed; }
+    .card.disabled .action { background:#A69B9D; }
+    .meta {
+      margin-top:20px;
+      padding:18px 22px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid var(--border);
+      color:var(--muted);
+      overflow-wrap:anywhere;
+    }
+    @media (max-width:680px) {
+      body { font-size:16px; }
+      .wrap { width:min(100% - 20px,960px); padding-top:18px; }
+      .hero { padding:24px 20px; border-radius:20px; }
+      .lead { font-size:16px; }
+      .grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">DPRO EYE SALON LINE</p>
+      <h1>まつげ・眉サロンの<br>予約とカルテを一つに。</h1>
+      <p class="lead">
+        LINE予約、顧客管理、まつげ・眉専用カルテ、施術前後写真、
+        再来店フォローをまとめて管理します。
+      </p>
+      <div id="apiStatus" class="status" role="status" aria-live="polite">
+        <span class="dot"></span>
+        <span>APIの状態を確認しています…</span>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="システム画面">
+      <a class="card" href="./system-check.html?demo=1">
+        <strong>営業前システムチェック</strong>
+        <p>API、データベース、メニュー、スタッフ、写真Storageを一括確認します。</p>
+        <span class="action">システムチェックを開く</span>
+      </a>
+
+      <div class="card disabled" aria-disabled="true">
+        <strong>お客様予約</strong>
+        <p>LINE予約画面は次のSTEPで追加します。</p>
+        <span class="action">制作中</span>
+      </div>
+
+      <div class="card disabled" aria-disabled="true">
+        <strong>オーナーPC管理</strong>
+        <p>予約、顧客、カルテ、再来店を管理する画面です。</p>
+        <span class="action">制作中</span>
+      </div>
+
+      <div class="card disabled" aria-disabled="true">
+        <strong>店舗iPad</strong>
+        <p>来店受付、施術進行、カルテ入力、写真登録を行います。</p>
+        <span class="action">制作中</span>
+      </div>
+    </section>
+
+    <div class="meta">
+      <strong id="productName">DPRO まつげ・眉サロン LINE</strong><br>
+      <span id="version"></span>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+      const config = window.DPRO_EYE_CONFIG;
+      const status = document.getElementById("apiStatus");
+      document.getElementById("productName").textContent = config.PRODUCT_NAME;
+      document.getElementById("version").textContent =
+        `Version: ${config.VERSION} ／ 店舗コード: ${config.SHOP_CODE}`;
+
+      const timeout = AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined;
+      fetch(config.API.health, { cache:"no-store", signal:timeout })
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then(data => {
+          const ok = data.ok === true && data.database?.ok === true;
+          status.className = `status ${ok ? "ok" : "ng"}`;
+          status.querySelector("span:last-child").textContent = ok
+            ? `システム稼働中｜スタッフ ${data.database.counts.staff}名・メニュー ${data.database.counts.services}件`
+            : "APIまたはデータベースに確認が必要です。";
+        })
+        .catch(error => {
+          status.className = "status ng";
+          status.querySelector("span:last-child").textContent =
+            `APIへ接続できません：${error.message}`;
+        });
+    })();
+  </script>
+</body>
+</html>
