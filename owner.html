@@ -147,9 +147,25 @@
       text-align:left;
       font-weight:850;
     }
-    .nav button:hover,.nav button.active {
+    .nav button:hover,.nav button.active,
+    .nav a:hover {
       color:white;
       background:rgba(255,255,255,.15);
+    }
+    .nav a {
+      width:100%;
+      min-height:49px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:9px 12px;
+      border:0;
+      border-radius:12px;
+      color:rgba(255,255,255,.88);
+      background:transparent;
+      text-align:left;
+      text-decoration:none;
+      font-weight:850;
     }
     .nav-icon {
       width:25px;
@@ -704,6 +720,9 @@
         <button type="button" data-view="followups">
           <span class="nav-icon">↻</span>再来店フォロー
         </button>
+        <a id="settingsNavLink" class="nav-link" href="./settings.html">
+          <span class="nav-icon">⚙</span>店舗設定
+        </a>
       </nav>
       <div class="sidebar-footer">
         <a href="./?demo=1" target="_blank" rel="noopener">お客様予約を開く</a>
@@ -2231,6 +2250,10 @@
       });
 
       // Start
+      $("#settingsNavLink").href = isDemo
+        ? "./settings.html?demo=1"
+        : "./settings.html";
+
       const storedCode = isDemo
         ? config.DEMO.admin_code
         : localStorage.getItem(config.STORAGE_KEYS.admin_code) || "";

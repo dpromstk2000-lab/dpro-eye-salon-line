@@ -341,6 +341,7 @@
         services_30_minute: "30分単位",
         resources: "施術席",
         private_photo_bucket: "写真Storage（非公開）",
+        settings: "店舗設定管理",
       };
 
       function getAdminCode() {
@@ -423,6 +424,7 @@
           ["システムTOP", config.PAGES.home],
           ["オーナーPC", `${config.PAGES.owner}?demo=1`],
           ["店舗iPad", `${config.PAGES.owner_ipad}?demo=1`],
+          ["店舗設定", `${config.PAGES.settings}?demo=1`],
           ["システムチェック", config.PAGES.system_check],
           ["Worker API", config.API.root],
           ["Health", config.API.health],
@@ -557,6 +559,22 @@
           });
         } catch (error) {
           results.push({ name: "admin_login", ok: false, detail: error.message });
+        }
+
+        try {
+          final.settings = await fetchJson(config.API.admin_settings, {
+            headers: adminHeaders(),
+          });
+          results.push({
+            name: "settings",
+            ok: final.settings.ok === true &&
+              Boolean(final.settings.settings?.shop) &&
+              Array.isArray(final.settings.settings?.staff) &&
+              Array.isArray(final.settings.settings?.services),
+            detail: final.settings.counts,
+          });
+        } catch (error) {
+          results.push({ name: "settings", ok: false, detail: error.message });
         }
 
         try {

@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6F4C55">
+  <meta name="description" content="DPRO まつげ・眉サロン 店舗設定">
+  <title>店舗設定｜DPRO EYE SALON</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#F7F3EF;
+      --surface:#FFFFFF;
+      --soft:#F2EAE5;
+      --accent:#A86F7D;
+      --accent-dark:#6F4C55;
+      --text:#2F2B2C;
+      --muted:#6E6567;
+      --border:#DED1CA;
+      --success:#64745F;
+      --warning:#A96F32;
+      --danger:#A14E55;
+      --blue:#5D7084;
+      --shadow:0 12px 34px rgba(78,53,61,.08);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+        "Noto Sans JP",sans-serif;
+    }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body {
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 26rem),
+        var(--bg);
+      font-size:17px;
+      line-height:1.65;
+    }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    a { color:inherit; }
+    label { display:block; font-weight:850; }
+    input,select,textarea {
+      width:100%;
+      min-height:52px;
+      margin-top:6px;
+      padding:10px 13px;
+      border:2px solid var(--border);
+      border-radius:12px;
+      color:var(--text);
+      background:white;
+    }
+    textarea { min-height:100px; resize:vertical; }
+    input:focus,select:focus,textarea:focus {
+      outline:3px solid rgba(168,111,125,.16);
+      border-color:var(--accent);
+    }
+    input[type="checkbox"] {
+      width:22px;
+      min-height:22px;
+      margin:0;
+      accent-color:var(--accent);
+    }
+    .login-screen {
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px;
+    }
+    .login-card {
+      width:min(560px,100%);
+      padding:30px;
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:rgba(255,255,255,.97);
+      box-shadow:0 20px 54px rgba(78,53,61,.13);
+    }
+    .brand {
+      margin:0 0 5px;
+      color:var(--accent-dark);
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.12em;
+    }
+    h1 { margin:0; font-size:34px; line-height:1.3; }
+    h2 { margin:0; font-size:24px; }
+    h3 { margin:0; font-size:20px; }
+    .muted { color:var(--muted); }
+    .app {
+      width:min(1500px,100%);
+      margin:0 auto;
+      padding:18px;
+    }
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:center;
+      padding:20px 22px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:rgba(255,255,255,.97);
+      box-shadow:var(--shadow);
+    }
+    .topbar h1 { font-size:31px; }
+    .top-actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .top-actions a {
+      min-height:48px;
+      display:inline-flex;
+      align-items:center;
+      padding:9px 16px;
+      border-radius:12px;
+      color:var(--accent-dark);
+      background:var(--soft);
+      text-decoration:none;
+      font-weight:900;
+    }
+    .layout {
+      display:grid;
+      grid-template-columns:230px minmax(0,1fr);
+      gap:14px;
+      margin-top:14px;
+    }
+    .settings-nav,.panel {
+      border:1px solid var(--border);
+      border-radius:19px;
+      background:white;
+      box-shadow:var(--shadow);
+    }
+    .settings-nav {
+      position:sticky;
+      top:14px;
+      align-self:start;
+      padding:13px;
+    }
+    .settings-nav button {
+      width:100%;
+      min-height:50px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:9px 12px;
+      border:0;
+      border-radius:12px;
+      color:var(--accent-dark);
+      background:transparent;
+      text-align:left;
+      font-weight:900;
+    }
+    .settings-nav button:hover,.settings-nav button.active {
+      color:white;
+      background:var(--accent);
+    }
+    .content { min-width:0; }
+    .section { display:none; }
+    .section.active { display:block; }
+    .panel { padding:21px; }
+    .panel + .panel { margin-top:14px; }
+    .panel-head {
+      display:flex;
+      justify-content:space-between;
+      gap:13px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+    .btn {
+      min-height:48px;
+      padding:9px 16px;
+      border:0;
+      border-radius:12px;
+      font-weight:900;
+    }
+    .btn-primary { color:white; background:var(--accent); }
+    .btn-dark { color:white; background:var(--accent-dark); }
+    .btn-secondary { color:var(--accent-dark); background:var(--soft); }
+    .btn-success { color:white; background:var(--success); }
+    .btn-danger { color:white; background:var(--danger); }
+    .btn-blue { color:white; background:var(--blue); }
+    .btn:disabled { cursor:not-allowed; opacity:.48; }
+    .btn-small { min-height:40px; padding:7px 12px; font-size:15px; }
+    .button-row { display:flex; flex-wrap:wrap; gap:9px; }
+    .form-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:13px;
+    }
+    .full { grid-column:1/-1; }
+    .check-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:9px;
+    }
+    .check-card {
+      display:flex;
+      gap:9px;
+      align-items:center;
+      min-height:50px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:white;
+      font-weight:800;
+    }
+    .status {
+      padding:13px 15px;
+      border-radius:12px;
+      color:var(--muted);
+      background:var(--soft);
+      font-weight:800;
+    }
+    .status.ok { color:#40513B; background:#E7EFE4; }
+    .status.ng { color:#7E343A; background:#F7E6E7; }
+    .notice {
+      padding:13px 15px;
+      border-left:5px solid var(--warning);
+      border-radius:10px;
+      color:#70481F;
+      background:#FFF3E4;
+    }
+    .weekday-grid {
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      gap:8px;
+    }
+    .weekday {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+      justify-content:center;
+      min-height:78px;
+      padding:8px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:white;
+      font-weight:900;
+    }
+    .shift-table {
+      display:grid;
+      gap:9px;
+      margin-top:13px;
+    }
+    .shift-row {
+      display:grid;
+      grid-template-columns:90px 90px repeat(4,minmax(105px,1fr));
+      gap:8px;
+      align-items:end;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      background:white;
+    }
+    .shift-row .working {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      min-height:52px;
+      padding:10px;
+      border-radius:10px;
+      background:var(--soft);
+      font-weight:850;
+    }
+    .list-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .item-card {
+      padding:15px;
+      border:2px solid var(--border);
+      border-radius:14px;
+      background:white;
+      cursor:pointer;
+    }
+    .item-card:hover,.item-card.selected {
+      border-color:var(--accent);
+      background:#FCF4F5;
+    }
+    .item-card strong { display:block; font-size:18px; }
+    .item-card span { display:block; margin-top:4px; color:var(--muted); }
+    .item-card small {
+      display:inline-flex;
+      margin-top:8px;
+      padding:4px 9px;
+      border-radius:999px;
+      color:var(--accent-dark);
+      background:var(--soft);
+      font-weight:850;
+    }
+    .item-card small.inactive { color:#7E343A; background:#F7E6E7; }
+    .service-checks {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      max-height:330px;
+      overflow:auto;
+      padding:4px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      background:var(--bg);
+    }
+    .service-check {
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      padding:10px;
+      border-radius:11px;
+      background:white;
+      font-weight:750;
+    }
+    .service-check input { flex:none; margin-top:2px; }
+    .closed-list {
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+    .closed-row {
+      display:grid;
+      grid-template-columns:145px 120px minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:white;
+    }
+    .category-strip {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .category-chip {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:9px 12px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:white;
+      font-weight:850;
+    }
+    .summary-grid {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+    .summary {
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      background:white;
+    }
+    .summary small { display:block; color:var(--muted); font-weight:750; }
+    .summary strong { display:block; margin-top:3px; font-size:24px; }
+    .toast {
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      z-index:100;
+      width:min(620px,calc(100% - 24px));
+      padding:15px 18px;
+      border-radius:14px;
+      color:white;
+      background:#3B3436;
+      box-shadow:0 14px 36px rgba(0,0,0,.23);
+      transform:translate(-50%,130%);
+      transition:.2s ease;
+      font-weight:850;
+    }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.error { background:var(--danger); }
+    @media (max-width:1000px) {
+      .layout { grid-template-columns:1fr; }
+      .settings-nav {
+        position:static;
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+      .shift-row { grid-template-columns:90px 90px repeat(2,minmax(120px,1fr)); }
+      .shift-row label:nth-last-child(-n+2) { grid-column:auto; }
+      .weekday-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    }
+    @media (max-width:700px) {
+      body { font-size:16px; }
+      .app { padding:8px; }
+      .topbar { flex-direction:column; align-items:stretch; }
+      .settings-nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .form-grid,.list-grid,.check-grid,.service-checks {
+        grid-template-columns:1fr;
+      }
+      .full { grid-column:auto; }
+      .weekday-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .shift-row { grid-template-columns:1fr 1fr; }
+      .closed-row { grid-template-columns:1fr; }
+      .summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <p class="brand">DPRO EYE SALON LINE</p>
+      <h1>店舗設定</h1>
+      <p class="muted">営業時間・スタッフ・メニュー・施術席を管理します。</p>
+      <label>
+        管理コード
+        <input id="loginCode" type="password" inputmode="numeric"
+          autocomplete="off" maxlength="20" placeholder="管理コード">
+      </label>
+      <div class="button-row" style="margin-top:14px">
+        <button id="loginButton" class="btn btn-primary" type="button">設定を開く</button>
+        <button id="clearCode" class="btn btn-danger" type="button">削除</button>
+      </div>
+      <div id="loginStatus" class="status" style="margin-top:13px">
+        管理コードを入力してください。
+      </div>
+    </div>
+  </section>
+
+  <main id="app" class="app" hidden>
+    <header class="topbar">
+      <div>
+        <p class="brand">DPRO EYE SALON LINE</p>
+        <h1>店舗設定</h1>
+        <p class="muted">変更内容はSupabaseへ保存され、予約画面へ反映されます。</p>
+      </div>
+      <div class="top-actions">
+        <button id="reloadButton" class="btn btn-secondary" type="button">再読込</button>
+        <a id="ownerLink" href="./owner.html">オーナー管理へ戻る</a>
+      </div>
+    </header>
+
+    <div id="overallStatus" class="status" style="margin-top:14px">
+      設定を読み込んでいます…
+    </div>
+
+    <div class="layout">
+      <nav class="settings-nav">
+        <button class="active" type="button" data-section="shop">店舗・予約</button>
+        <button type="button" data-section="hours">営業時間</button>
+        <button type="button" data-section="staff">スタッフ</button>
+        <button type="button" data-section="menus">メニュー・料金</button>
+        <button type="button" data-section="resources">施術席</button>
+      </nav>
+
+      <div class="content">
+        <section id="sectionShop" class="section active">
+          <div class="summary-grid">
+            <div class="summary"><small>スタッフ</small><strong id="summaryStaff">―</strong></div>
+            <div class="summary"><small>有効メニュー</small><strong id="summaryServices">―</strong></div>
+            <div class="summary"><small>施術席</small><strong id="summaryResources">―</strong></div>
+            <div class="summary"><small>予約単位</small><strong>30分</strong></div>
+          </div>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>店舗基本情報</h2>
+                <span class="muted">LINE予約画面に表示する店舗名と説明です。</span>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>
+                店舗名
+                <input id="shopName" maxlength="120">
+              </label>
+              <label>
+                予約受付日数
+                <input id="bookingOpenDays" type="number" min="1" max="365">
+              </label>
+              <label class="full">
+                説明文
+                <textarea id="shopSubtitle" maxlength="300"></textarea>
+              </label>
+              <label>
+                当日予約締切（分前）
+                <input id="sameDayDeadline" type="number" min="0" max="1440" step="30">
+              </label>
+              <label>
+                キャンセル期限（時間前）
+                <input id="cancelDeadline" type="number" min="0" max="720">
+              </label>
+            </div>
+            <div class="check-grid" style="margin-top:14px">
+              <label class="check-card">
+                <input id="shopActive" type="checkbox">店舗を有効にする
+              </label>
+              <label class="check-card">
+                <input id="resourceControl" type="checkbox">施術席の重複を防止
+              </label>
+              <label class="check-card">
+                <input id="waitlistEnabled" type="checkbox">キャンセル待ちを使用
+              </label>
+              <label class="check-card">
+                <input id="photoEnabled" type="checkbox">写真カルテを使用
+              </label>
+              <label class="check-card">
+                <input id="lineApproval" type="checkbox">LINE連携を承認制にする
+              </label>
+            </div>
+            <div class="button-row" style="margin-top:15px">
+              <button id="saveShopButton" class="btn btn-success" type="button">
+                店舗設定を保存
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section id="sectionHours" class="section">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>店舗営業時間・定休日</h2>
+                <span class="muted">時間は30分単位です。</span>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>
+                開店
+                <input id="openTime" type="time" step="1800">
+              </label>
+              <label>
+                閉店
+                <input id="closeTime" type="time" step="1800">
+              </label>
+            </div>
+            <h3 style="margin-top:15px">定休日</h3>
+            <div id="closedWeekdays" class="weekday-grid" style="margin-top:9px"></div>
+            <div class="button-row" style="margin-top:14px">
+              <button id="saveHoursButton" class="btn btn-success" type="button">
+                営業時間を保存
+              </button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>スタッフ勤務時間</h2>
+                <span class="muted">スタッフごとの勤務・休憩を設定します。</span>
+              </div>
+              <select id="shiftStaffSelect" style="width:min(310px,100%);margin:0"></select>
+            </div>
+            <div id="shiftRows" class="shift-table"></div>
+            <div class="button-row" style="margin-top:14px">
+              <button id="saveShiftsButton" class="btn btn-success" type="button">
+                7日分の勤務時間を保存
+              </button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>臨時休み・時間休</h2>
+                <span class="muted">スタッフ単位で休みを登録します。</span>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>
+                スタッフ
+                <select id="closedStaffSelect"></select>
+              </label>
+              <label>
+                日付
+                <input id="closedDate" type="date">
+              </label>
+              <label>
+                開始（終日なら空欄）
+                <input id="closedStart" type="time" step="1800">
+              </label>
+              <label>
+                終了（終日なら空欄）
+                <input id="closedEnd" type="time" step="1800">
+              </label>
+              <label class="full">
+                理由
+                <input id="closedReason" maxlength="500" placeholder="例：研修、私用">
+              </label>
+            </div>
+            <div class="button-row" style="margin-top:13px">
+              <button id="addClosedButton" class="btn btn-primary" type="button">
+                休みを追加
+              </button>
+            </div>
+            <div id="closedList" class="closed-list"></div>
+          </section>
+        </section>
+
+        <section id="sectionStaff" class="section">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>スタッフ一覧</h2>
+                <span class="muted">無効化しても過去の予約・カルテは保持されます。</span>
+              </div>
+              <button id="newStaffButton" class="btn btn-primary" type="button">
+                スタッフ追加
+              </button>
+            </div>
+            <div id="staffList" class="list-grid"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 id="staffEditorTitle">スタッフ編集</h2>
+                <span class="muted">担当可能メニューも同時に設定します。</span>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>
+                スタッフコード
+                <input id="staffCode" maxlength="80" placeholder="例：staff04">
+              </label>
+              <label>
+                表示名
+                <input id="staffName" maxlength="100">
+              </label>
+              <label>
+                権限
+                <select id="staffRole">
+                  <option value="owner">オーナー</option>
+                  <option value="manager">管理者</option>
+                  <option value="staff">スタッフ</option>
+                </select>
+              </label>
+              <label>
+                表示順
+                <input id="staffSort" type="number" min="0" max="9999">
+              </label>
+              <label>
+                表示色
+                <input id="staffColor" type="color">
+              </label>
+            </div>
+            <div class="check-grid" style="margin-top:13px">
+              <label class="check-card"><input id="staffActive" type="checkbox">有効</label>
+              <label class="check-card"><input id="staffCanLash" type="checkbox">まつげ対応</label>
+              <label class="check-card"><input id="staffCanBrow" type="checkbox">眉対応</label>
+              <label class="check-card"><input id="staffCanWax" type="checkbox">ワックス対応</label>
+            </div>
+            <h3 style="margin-top:15px">担当可能メニュー</h3>
+            <div id="staffServiceChecks" class="service-checks" style="margin-top:9px"></div>
+            <div class="button-row" style="margin-top:14px">
+              <button id="saveStaffButton" class="btn btn-success" type="button">
+                スタッフを保存
+              </button>
+              <button id="clearStaffButton" class="btn btn-secondary" type="button">
+                新規入力へ戻す
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section id="sectionMenus" class="section">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>カテゴリ</h2>
+                <span class="muted">まつげ・眉・セット・オプションに分類します。</span>
+              </div>
+              <button id="newCategoryButton" class="btn btn-primary" type="button">
+                カテゴリ追加
+              </button>
+            </div>
+            <div id="categoryStrip" class="category-strip"></div>
+            <div id="categoryForm" class="form-grid" style="margin-top:14px" hidden>
+              <label>
+                カテゴリコード
+                <input id="categoryCode" maxlength="80">
+              </label>
+              <label>
+                カテゴリ名
+                <input id="categoryName" maxlength="100">
+              </label>
+              <label>
+                種別
+                <select id="categoryType">
+                  <option value="lash">まつげ</option>
+                  <option value="brow">眉</option>
+                  <option value="wax">ワックス</option>
+                  <option value="set">セット</option>
+                  <option value="option">オプション</option>
+                </select>
+              </label>
+              <label>
+                表示順
+                <input id="categorySort" type="number" min="0" max="9999">
+              </label>
+              <label class="check-card">
+                <input id="categoryActive" type="checkbox">有効
+              </label>
+              <div class="button-row" style="align-self:end">
+                <button id="saveCategoryButton" class="btn btn-success" type="button">
+                  カテゴリ保存
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>メニュー・料金</h2>
+                <span class="muted">時間は30分単位、無効化しても履歴は保持されます。</span>
+              </div>
+              <button id="newServiceButton" class="btn btn-primary" type="button">
+                メニュー追加
+              </button>
+            </div>
+            <div id="serviceList" class="list-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 id="serviceEditorTitle">メニュー編集</h2>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>
+                カテゴリ
+                <select id="serviceCategory"></select>
+              </label>
+              <label>
+                メニューコード
+                <input id="serviceCode" maxlength="80">
+              </label>
+              <label>
+                メニュー名
+                <input id="serviceName" maxlength="120">
+              </label>
+              <label>
+                料金（税込）
+                <input id="servicePrice" type="number" min="0" max="10000000">
+              </label>
+              <label>
+                施術時間（分）
+                <select id="serviceDuration">
+                  <option value="30">30分</option>
+                  <option value="60">60分</option>
+                  <option value="90">90分</option>
+                  <option value="120">120分</option>
+                  <option value="150">150分</option>
+                  <option value="180">180分</option>
+                  <option value="210">210分</option>
+                  <option value="240">240分</option>
+                </select>
+              </label>
+              <label>
+                片付け時間（分）
+                <select id="serviceCleanup">
+                  <option value="0">なし</option>
+                  <option value="30">30分</option>
+                  <option value="60">60分</option>
+                </select>
+              </label>
+              <label>
+                再来店目安（日）
+                <input id="serviceRevisit" type="number" min="1" max="365">
+              </label>
+              <label>
+                最大数量
+                <input id="serviceMaxQuantity" type="number" min="1" max="10">
+              </label>
+              <label>
+                表示順
+                <input id="serviceSort" type="number" min="0" max="9999">
+              </label>
+              <label class="full">
+                説明
+                <textarea id="serviceDescription" maxlength="500"></textarea>
+              </label>
+            </div>
+            <div class="check-grid" style="margin-top:13px">
+              <label class="check-card"><input id="serviceActive" type="checkbox">有効</label>
+              <label class="check-card"><input id="serviceOnline" type="checkbox">LINE予約可能</label>
+              <label class="check-card"><input id="serviceConsent" type="checkbox">同意確認が必要</label>
+              <label class="check-card"><input id="servicePatchTest" type="checkbox">パッチテスト</label>
+              <label class="check-card"><input id="serviceOption" type="checkbox">オプション</label>
+            </div>
+            <div class="button-row" style="margin-top:14px">
+              <button id="saveServiceButton" class="btn btn-success" type="button">
+                メニューを保存
+              </button>
+              <button id="clearServiceButton" class="btn btn-secondary" type="button">
+                新規入力へ戻す
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section id="sectionResources" class="section">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>施術席・個室</h2>
+                <span class="muted">同時予約数を管理する設備です。</span>
+              </div>
+              <button id="newResourceButton" class="btn btn-primary" type="button">
+                施術席追加
+              </button>
+            </div>
+            <div id="resourceList" class="list-grid"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h2 id="resourceEditorTitle">施術席編集</h2>
+            </div>
+            <div class="form-grid">
+              <label>
+                設備コード
+                <input id="resourceCode" maxlength="80">
+              </label>
+              <label>
+                設備名
+                <input id="resourceName" maxlength="100">
+              </label>
+              <label>
+                種別
+                <select id="resourceType">
+                  <option value="bed">ベッド</option>
+                  <option value="chair">チェア</option>
+                  <option value="room">個室</option>
+                </select>
+              </label>
+              <label>
+                表示順
+                <input id="resourceSort" type="number" min="0" max="9999">
+              </label>
+              <label class="check-card">
+                <input id="resourceActive" type="checkbox">有効
+              </label>
+            </div>
+            <div class="button-row" style="margin-top:14px">
+              <button id="saveResourceButton" class="btn btn-success" type="button">
+                施術席を保存
+              </button>
+              <button id="clearResourceButton" class="btn btn-secondary" type="button">
+                新規入力へ戻す
+              </button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const config = window.DPRO_EYE_CONFIG;
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
+      const $ = selector => document.querySelector(selector);
+      const WEEKDAYS = ["日","月","火","水","木","金","土"];
+
+      const state = {
+        adminCode:"",
+        data:null,
+        selectedStaffId:"",
+        selectedServiceId:"",
+        selectedCategoryId:"",
+        selectedResourceId:"",
+      };
+
+      function toast(message,error=false) {
+        const node = $("#toast");
+        node.textContent = message;
+        node.className = `toast show${error ? " error" : ""}`;
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => node.className = "toast",3500);
+      }
+
+      function headers(json=false) {
+        const value = {"X-DPRO-ADMIN-CODE":state.adminCode};
+        if (json) value["Content-Type"] = "application/json";
+        return value;
+      }
+
+      async function fetchJson(url,options={}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(),20000);
+        try {
+          const response = await fetch(url,{
+            cache:"no-store",...options,signal:controller.signal,
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(data?.message || `HTTP ${response.status}`);
+          return data;
+        } catch (error) {
+          if (error.name === "AbortError") {
+            throw new Error("通信に時間がかかっています。もう一度お試しください。");
+          }
+          throw error;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function setStatus(message,mode="") {
+        const node = $("#overallStatus");
+        node.textContent = message;
+        node.className = `status ${mode}`.trim();
+      }
+
+      async function login() {
+        const code = $("#loginCode").value.trim();
+        if (!code) {
+          $("#loginStatus").textContent = "管理コードを入力してください。";
+          $("#loginStatus").className = "status ng";
+          return;
+        }
+        $("#loginButton").disabled = true;
+        try {
+          await fetchJson(config.API.admin_login,{
+            method:"POST",
+            headers:{"X-DPRO-ADMIN-CODE":code},
+          });
+          state.adminCode = code;
+          localStorage.setItem(config.STORAGE_KEYS.admin_code,code);
+          $("#loginScreen").hidden = true;
+          $("#app").hidden = false;
+          $("#ownerLink").href = isDemo ? "./owner.html?demo=1" : "./owner.html";
+          await loadSettings();
+        } catch (error) {
+          $("#loginStatus").textContent = error.message;
+          $("#loginStatus").className = "status ng";
+        } finally {
+          $("#loginButton").disabled = false;
+        }
+      }
+
+      async function loadSettings() {
+        setStatus("設定を読み込んでいます…");
+        try {
+          const result = await fetchJson(config.API.admin_settings,{
+            headers:headers(),
+          });
+          state.data = result.settings;
+          renderAll();
+          setStatus(
+            `設定を読み込みました。スタッフ ${result.counts.active_staff}名、` +
+            `有効メニュー ${result.counts.active_services}件、` +
+            `施術席 ${result.counts.active_resources}件`,
+            "ok"
+          );
+        } catch (error) {
+          setStatus(error.message,"ng");
+        }
+      }
+
+      function renderAll() {
+        renderSummary();
+        renderShop();
+        renderClosedWeekdays();
+        renderStaffSelects();
+        renderShifts();
+        renderClosedDates();
+        renderStaffList();
+        renderStaffServiceChecks();
+        renderCategories();
+        renderServices();
+        renderResources();
+      }
+
+      function renderSummary() {
+        const data = state.data;
+        $("#summaryStaff").textContent =
+          data.staff.filter(row => row.is_active).length;
+        $("#summaryServices").textContent =
+          data.services.filter(row => row.is_active).length;
+        $("#summaryResources").textContent =
+          data.resources.filter(row => row.is_active).length;
+      }
+
+      function renderShop() {
+        const shop = state.data.shop;
+        $("#shopName").value = shop.shop_name || "";
+        $("#shopSubtitle").value = shop.subtitle || "";
+        $("#bookingOpenDays").value = shop.booking_open_days;
+        $("#sameDayDeadline").value = shop.same_day_booking_deadline_minutes;
+        $("#cancelDeadline").value = shop.cancel_deadline_hours;
+        $("#openTime").value = String(shop.open_time).slice(0,5);
+        $("#closeTime").value = String(shop.close_time).slice(0,5);
+        $("#shopActive").checked = shop.is_active !== false;
+        $("#resourceControl").checked = shop.resource_control_enabled !== false;
+        $("#waitlistEnabled").checked = shop.waitlist_enabled !== false;
+        $("#photoEnabled").checked = shop.photo_carte_enabled !== false;
+        $("#lineApproval").checked = shop.line_link_approval_required === true;
+      }
+
+      function shopPayload() {
+        return {
+          shop_name:$("#shopName").value.trim(),
+          subtitle:$("#shopSubtitle").value.trim(),
+          booking_open_days:Number($("#bookingOpenDays").value),
+          same_day_booking_deadline_minutes:Number($("#sameDayDeadline").value),
+          cancel_deadline_hours:Number($("#cancelDeadline").value),
+          open_time:$("#openTime").value,
+          close_time:$("#closeTime").value,
+          closed_weekdays:[
+            ...document.querySelectorAll('[data-closed-weekday]:checked')
+          ].map(input => Number(input.dataset.closedWeekday)),
+          is_active:$("#shopActive").checked,
+          resource_control_enabled:$("#resourceControl").checked,
+          waitlist_enabled:$("#waitlistEnabled").checked,
+          photo_carte_enabled:$("#photoEnabled").checked,
+          line_link_approval_required:$("#lineApproval").checked,
+        };
+      }
+
+      async function saveShop(message) {
+        const result = await fetchJson(config.API.admin_settings_shop_save,{
+          method:"PATCH",
+          headers:headers(true),
+          body:JSON.stringify(shopPayload()),
+        });
+        state.data.shop = result.shop;
+        renderShop();
+        renderClosedWeekdays();
+        toast(message);
+      }
+
+      function renderClosedWeekdays() {
+        const container = $("#closedWeekdays");
+        container.replaceChildren();
+        const closed = new Set(state.data.shop.closed_weekdays || []);
+        WEEKDAYS.forEach((label,index) => {
+          const card = document.createElement("label");
+          card.className = "weekday";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.dataset.closedWeekday = String(index);
+          input.checked = closed.has(index);
+          const span = document.createElement("span");
+          span.textContent = `${label}曜日`;
+          card.append(input,span);
+          container.append(card);
+        });
+      }
+
+      function activeStaff() {
+        return state.data.staff.filter(row => row.is_active);
+      }
+
+      function renderStaffSelects() {
+        const selects = [$("#shiftStaffSelect"),$("#closedStaffSelect")];
+        for (const select of selects) {
+          const current = select.value;
+          select.replaceChildren();
+          for (const member of state.data.staff) {
+            const option = document.createElement("option");
+            option.value = member.id;
+            option.textContent =
+              `${member.display_name}${member.is_active ? "" : "（無効）"}`;
+            select.append(option);
+          }
+          if ([...select.options].some(option => option.value === current)) {
+            select.value = current;
+          }
+        }
+        if (!$("#shiftStaffSelect").value && state.data.staff[0]) {
+          $("#shiftStaffSelect").value = state.data.staff[0].id;
+        }
+        if (!$("#closedStaffSelect").value && state.data.staff[0]) {
+          $("#closedStaffSelect").value = state.data.staff[0].id;
+        }
+      }
+
+      function renderShifts() {
+        const staffId = $("#shiftStaffSelect").value;
+        const container = $("#shiftRows");
+        container.replaceChildren();
+        if (!staffId) return;
+
+        WEEKDAYS.forEach((label,weekday) => {
+          const shift = state.data.shifts.find(row =>
+            row.staff_id === staffId && Number(row.weekday) === weekday
+          ) || {
+            weekday,
+            is_working:true,
+            start_time:state.data.shop.open_time,
+            end_time:state.data.shop.close_time,
+            break_start:null,
+            break_end:null,
+          };
+
+          const row = document.createElement("div");
+          row.className = "shift-row";
+          row.dataset.weekday = String(weekday);
+
+          const day = document.createElement("strong");
+          day.textContent = `${label}曜日`;
+
+          const workingLabel = document.createElement("label");
+          workingLabel.className = "working";
+          const working = document.createElement("input");
+          working.type = "checkbox";
+          working.dataset.field = "is_working";
+          working.checked = shift.is_working !== false;
+          workingLabel.append(working,document.createTextNode("勤務"));
+
+          const fields = [
+            ["開始","start_time",String(shift.start_time || "10:00").slice(0,5)],
+            ["終了","end_time",String(shift.end_time || "18:00").slice(0,5)],
+            ["休憩開始","break_start",shift.break_start ? String(shift.break_start).slice(0,5) : ""],
+            ["休憩終了","break_end",shift.break_end ? String(shift.break_end).slice(0,5) : ""],
+          ];
+          row.append(day,workingLabel);
+          fields.forEach(([title,key,value]) => {
+            const labelNode = document.createElement("label");
+            labelNode.textContent = title;
+            const input = document.createElement("input");
+            input.type = "time";
+            input.step = "1800";
+            input.value = value;
+            input.dataset.field = key;
+            labelNode.append(input);
+            row.append(labelNode);
+          });
+          container.append(row);
+        });
+      }
+
+      async function saveShifts() {
+        const staffId = $("#shiftStaffSelect").value;
+        if (!staffId) throw new Error("スタッフを選択してください。");
+        const rows = [...document.querySelectorAll(".shift-row")];
+        $("#saveShiftsButton").disabled = true;
+        try {
+          for (const row of rows) {
+            const get = field => row.querySelector(`[data-field="${field}"]`);
+            await fetchJson(config.API.admin_settings_staff_shift_save,{
+              method:"POST",
+              headers:headers(true),
+              body:JSON.stringify({
+                staff_id:staffId,
+                weekday:Number(row.dataset.weekday),
+                is_working:get("is_working").checked,
+                start_time:get("start_time").value,
+                end_time:get("end_time").value,
+                break_start:get("break_start").value,
+                break_end:get("break_end").value,
+              }),
+            });
+          }
+          await loadSettings();
+          toast("7日分の勤務時間を保存しました。");
+        } finally {
+          $("#saveShiftsButton").disabled = false;
+        }
+      }
+
+      function renderClosedDates() {
+        const container = $("#closedList");
+        container.replaceChildren();
+        const staffMap = new Map(state.data.staff.map(row => [row.id,row.display_name]));
+        if (!state.data.closed_dates.length) {
+          const empty = document.createElement("div");
+          empty.className = "notice";
+          empty.textContent = "現在、今後の臨時休みはありません。";
+          container.append(empty);
+          return;
+        }
+        for (const row of state.data.closed_dates) {
+          const item = document.createElement("div");
+          item.className = "closed-row";
+          const date = document.createElement("strong");
+          date.textContent = row.closed_date;
+          const staff = document.createElement("span");
+          staff.textContent = staffMap.get(row.staff_id) || "スタッフ";
+          const detail = document.createElement("span");
+          detail.textContent = row.start_time
+            ? `${String(row.start_time).slice(0,5)}〜${String(row.end_time).slice(0,5)} ` +
+              `${row.reason || ""}`
+            : `終日 ${row.reason || ""}`;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "btn btn-danger btn-small";
+          button.textContent = "削除";
+          button.addEventListener("click",async () => {
+            if (!confirm("この休み設定を削除しますか？")) return;
+            try {
+              await fetchJson(config.API.admin_settings_staff_closed_delete,{
+                method:"DELETE",
+                headers:headers(true),
+                body:JSON.stringify({id:row.id}),
+              });
+              await loadSettings();
+              toast("休み設定を削除しました。");
+            } catch (error) {
+              toast(error.message,true);
+            }
+          });
+          item.append(date,staff,detail,button);
+          container.append(item);
+        }
+      }
+
+      async function addClosedDate() {
+        const payload = {
+          staff_id:$("#closedStaffSelect").value,
+          closed_date:$("#closedDate").value,
+          start_time:$("#closedStart").value,
+          end_time:$("#closedEnd").value,
+          reason:$("#closedReason").value.trim(),
+        };
+        if (!payload.closed_date) throw new Error("休みの日付を選択してください。");
+        await fetchJson(config.API.admin_settings_staff_closed_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify(payload),
+        });
+        $("#closedDate").value = "";
+        $("#closedStart").value = "";
+        $("#closedEnd").value = "";
+        $("#closedReason").value = "";
+        await loadSettings();
+        toast("臨時休みを追加しました。");
+      }
+
+      function renderStaffList() {
+        const container = $("#staffList");
+        container.replaceChildren();
+        for (const member of state.data.staff) {
+          const card = document.createElement("article");
+          card.className =
+            `item-card${state.selectedStaffId === member.id ? " selected" : ""}`;
+          const name = document.createElement("strong");
+          name.textContent = member.display_name;
+          const detail = document.createElement("span");
+          detail.textContent =
+            `${member.staff_code} ／ ${
+              member.role === "owner" ? "オーナー" :
+              member.role === "manager" ? "管理者" : "スタッフ"
+            }`;
+          const active = document.createElement("small");
+          active.className = member.is_active ? "" : "inactive";
+          active.textContent = member.is_active ? "有効" : "無効";
+          card.append(name,detail,active);
+          card.addEventListener("click",() => selectStaff(member.id));
+          container.append(card);
+        }
+      }
+
+      function renderStaffServiceChecks() {
+        const container = $("#staffServiceChecks");
+        container.replaceChildren();
+        const selected = new Set(
+          state.data.staff_services
+            .filter(row =>
+              row.staff_id === state.selectedStaffId && row.is_active
+            )
+            .map(row => row.service_id)
+        );
+        for (const service of state.data.services.filter(row => row.is_active)) {
+          const label = document.createElement("label");
+          label.className = "service-check";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.value = service.id;
+          input.checked = selected.has(service.id);
+          const span = document.createElement("span");
+          span.textContent = service.service_name;
+          label.append(input,span);
+          container.append(label);
+        }
+      }
+
+      function clearStaffForm() {
+        state.selectedStaffId = "";
+        $("#staffEditorTitle").textContent = "スタッフ追加";
+        $("#staffCode").value = "";
+        $("#staffName").value = "";
+        $("#staffRole").value = "staff";
+        $("#staffSort").value = state.data.staff.length + 1;
+        $("#staffColor").value = "#A86F7D";
+        $("#staffActive").checked = true;
+        $("#staffCanLash").checked = true;
+        $("#staffCanBrow").checked = true;
+        $("#staffCanWax").checked = false;
+        renderStaffList();
+        renderStaffServiceChecks();
+      }
+
+      function selectStaff(id) {
+        const member = state.data.staff.find(row => row.id === id);
+        if (!member) return;
+        state.selectedStaffId = id;
+        $("#staffEditorTitle").textContent = "スタッフ編集";
+        $("#staffCode").value = member.staff_code || "";
+        $("#staffName").value = member.display_name || "";
+        $("#staffRole").value = member.role || "staff";
+        $("#staffSort").value = member.sort_order ?? 0;
+        $("#staffColor").value = member.color || "#A86F7D";
+        $("#staffActive").checked = member.is_active !== false;
+        $("#staffCanLash").checked = member.can_lash !== false;
+        $("#staffCanBrow").checked = member.can_brow !== false;
+        $("#staffCanWax").checked = member.can_wax === true;
+        renderStaffList();
+        renderStaffServiceChecks();
+      }
+
+      async function saveStaff() {
+        const payload = {
+          id:state.selectedStaffId || undefined,
+          staff_code:$("#staffCode").value.trim(),
+          display_name:$("#staffName").value.trim(),
+          role:$("#staffRole").value,
+          sort_order:Number($("#staffSort").value || 0),
+          color:$("#staffColor").value,
+          is_active:$("#staffActive").checked,
+          can_lash:$("#staffCanLash").checked,
+          can_brow:$("#staffCanBrow").checked,
+          can_wax:$("#staffCanWax").checked,
+        };
+        const result = await fetchJson(config.API.admin_settings_staff_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify(payload),
+        });
+        const staffId = result.staff.id;
+        const serviceIds = [
+          ...$("#staffServiceChecks").querySelectorAll('input:checked')
+        ].map(input => input.value);
+        await fetchJson(config.API.admin_settings_staff_services_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify({staff_id:staffId,service_ids:serviceIds}),
+        });
+        state.selectedStaffId = staffId;
+        await loadSettings();
+        selectStaff(staffId);
+        toast("スタッフと担当可能メニューを保存しました。");
+      }
+
+      function renderCategories() {
+        const strip = $("#categoryStrip");
+        strip.replaceChildren();
+        const select = $("#serviceCategory");
+        const current = select.value;
+        select.replaceChildren();
+        for (const category of state.data.categories) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "category-chip";
+          chip.textContent =
+            `${category.category_name}${category.is_active ? "" : "（無効）"}`;
+          chip.addEventListener("click",() => editCategory(category.id));
+          strip.append(chip);
+
+          if (category.is_active) {
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.category_name;
+            select.append(option);
+          }
+        }
+        if ([...select.options].some(option => option.value === current)) {
+          select.value = current;
+        }
+      }
+
+      function editCategory(id) {
+        const category = state.data.categories.find(row => row.id === id);
+        if (!category) return;
+        state.selectedCategoryId = id;
+        $("#categoryForm").hidden = false;
+        $("#categoryCode").value = category.category_code || "";
+        $("#categoryName").value = category.category_name || "";
+        $("#categoryType").value = category.category_type || "lash";
+        $("#categorySort").value = category.sort_order ?? 0;
+        $("#categoryActive").checked = category.is_active !== false;
+      }
+
+      function newCategory() {
+        state.selectedCategoryId = "";
+        $("#categoryForm").hidden = false;
+        $("#categoryCode").value = "";
+        $("#categoryName").value = "";
+        $("#categoryType").value = "lash";
+        $("#categorySort").value = state.data.categories.length + 1;
+        $("#categoryActive").checked = true;
+      }
+
+      async function saveCategory() {
+        const result = await fetchJson(config.API.admin_settings_category_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify({
+            id:state.selectedCategoryId || undefined,
+            category_code:$("#categoryCode").value.trim(),
+            category_name:$("#categoryName").value.trim(),
+            category_type:$("#categoryType").value,
+            sort_order:Number($("#categorySort").value || 0),
+            is_active:$("#categoryActive").checked,
+          }),
+        });
+        state.selectedCategoryId = result.category.id;
+        await loadSettings();
+        $("#categoryForm").hidden = true;
+        toast("カテゴリを保存しました。");
+      }
+
+      function renderServices() {
+        const container = $("#serviceList");
+        container.replaceChildren();
+        const categoryMap = new Map(
+          state.data.categories.map(row => [row.id,row.category_name])
+        );
+        for (const service of state.data.services) {
+          const card = document.createElement("article");
+          card.className =
+            `item-card${state.selectedServiceId === service.id ? " selected" : ""}`;
+          const name = document.createElement("strong");
+          name.textContent = service.service_name;
+          const detail = document.createElement("span");
+          detail.textContent =
+            `${categoryMap.get(service.category_id) || "カテゴリ"} ／ ` +
+            `${service.duration_minutes}分 ／ ￥${Number(service.price_yen).toLocaleString("ja-JP")}`;
+          const active = document.createElement("small");
+          active.className = service.is_active ? "" : "inactive";
+          active.textContent = service.is_active
+            ? (service.allows_online_booking ? "LINE予約可" : "店頭のみ")
+            : "無効";
+          card.append(name,detail,active);
+          card.addEventListener("click",() => selectService(service.id));
+          container.append(card);
+        }
+      }
+
+      function clearServiceForm() {
+        state.selectedServiceId = "";
+        $("#serviceEditorTitle").textContent = "メニュー追加";
+        $("#serviceCategory").value = $("#serviceCategory").options[0]?.value || "";
+        $("#serviceCode").value = "";
+        $("#serviceName").value = "";
+        $("#servicePrice").value = 0;
+        $("#serviceDuration").value = "60";
+        $("#serviceCleanup").value = "0";
+        $("#serviceRevisit").value = "";
+        $("#serviceMaxQuantity").value = 1;
+        $("#serviceSort").value = state.data.services.length + 1;
+        $("#serviceDescription").value = "";
+        $("#serviceActive").checked = true;
+        $("#serviceOnline").checked = true;
+        $("#serviceConsent").checked = true;
+        $("#servicePatchTest").checked = false;
+        $("#serviceOption").checked = false;
+        renderServices();
+      }
+
+      function selectService(id) {
+        const service = state.data.services.find(row => row.id === id);
+        if (!service) return;
+        state.selectedServiceId = id;
+        $("#serviceEditorTitle").textContent = "メニュー編集";
+        $("#serviceCategory").value = service.category_id;
+        $("#serviceCode").value = service.service_code || "";
+        $("#serviceName").value = service.service_name || "";
+        $("#servicePrice").value = service.price_yen ?? 0;
+        $("#serviceDuration").value = String(service.duration_minutes || 60);
+        $("#serviceCleanup").value = String(service.cleanup_minutes || 0);
+        $("#serviceRevisit").value = service.revisit_days ?? "";
+        $("#serviceMaxQuantity").value = service.max_quantity ?? 1;
+        $("#serviceSort").value = service.sort_order ?? 0;
+        $("#serviceDescription").value = service.description || "";
+        $("#serviceActive").checked = service.is_active !== false;
+        $("#serviceOnline").checked = service.allows_online_booking !== false;
+        $("#serviceConsent").checked = service.requires_consent !== false;
+        $("#servicePatchTest").checked = service.requires_patch_test === true;
+        $("#serviceOption").checked = service.is_option === true;
+        renderServices();
+      }
+
+      async function saveService() {
+        const result = await fetchJson(config.API.admin_settings_service_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify({
+            id:state.selectedServiceId || undefined,
+            category_id:$("#serviceCategory").value,
+            service_code:$("#serviceCode").value.trim(),
+            service_name:$("#serviceName").value.trim(),
+            description:$("#serviceDescription").value.trim(),
+            duration_minutes:Number($("#serviceDuration").value),
+            cleanup_minutes:Number($("#serviceCleanup").value),
+            price_yen:Number($("#servicePrice").value || 0),
+            revisit_days:$("#serviceRevisit").value,
+            max_quantity:Number($("#serviceMaxQuantity").value || 1),
+            sort_order:Number($("#serviceSort").value || 0),
+            is_active:$("#serviceActive").checked,
+            allows_online_booking:$("#serviceOnline").checked,
+            requires_consent:$("#serviceConsent").checked,
+            requires_patch_test:$("#servicePatchTest").checked,
+            is_option:$("#serviceOption").checked,
+          }),
+        });
+        state.selectedServiceId = result.service.id;
+        await loadSettings();
+        selectService(result.service.id);
+        toast("メニューと料金を保存しました。");
+      }
+
+      function renderResources() {
+        const container = $("#resourceList");
+        container.replaceChildren();
+        for (const resource of state.data.resources) {
+          const card = document.createElement("article");
+          card.className =
+            `item-card${state.selectedResourceId === resource.id ? " selected" : ""}`;
+          const name = document.createElement("strong");
+          name.textContent = resource.resource_name;
+          const detail = document.createElement("span");
+          detail.textContent =
+            `${resource.resource_code} ／ ${
+              resource.resource_type === "bed" ? "ベッド" :
+              resource.resource_type === "chair" ? "チェア" : "個室"
+            }`;
+          const active = document.createElement("small");
+          active.className = resource.is_active ? "" : "inactive";
+          active.textContent = resource.is_active ? "有効" : "無効";
+          card.append(name,detail,active);
+          card.addEventListener("click",() => selectResource(resource.id));
+          container.append(card);
+        }
+      }
+
+      function clearResourceForm() {
+        state.selectedResourceId = "";
+        $("#resourceEditorTitle").textContent = "施術席追加";
+        $("#resourceCode").value = "";
+        $("#resourceName").value = "";
+        $("#resourceType").value = "bed";
+        $("#resourceSort").value = state.data.resources.length + 1;
+        $("#resourceActive").checked = true;
+        renderResources();
+      }
+
+      function selectResource(id) {
+        const resource = state.data.resources.find(row => row.id === id);
+        if (!resource) return;
+        state.selectedResourceId = id;
+        $("#resourceEditorTitle").textContent = "施術席編集";
+        $("#resourceCode").value = resource.resource_code || "";
+        $("#resourceName").value = resource.resource_name || "";
+        $("#resourceType").value = resource.resource_type || "bed";
+        $("#resourceSort").value = resource.sort_order ?? 0;
+        $("#resourceActive").checked = resource.is_active !== false;
+        renderResources();
+      }
+
+      async function saveResource() {
+        const result = await fetchJson(config.API.admin_settings_resource_save,{
+          method:"POST",
+          headers:headers(true),
+          body:JSON.stringify({
+            id:state.selectedResourceId || undefined,
+            resource_code:$("#resourceCode").value.trim(),
+            resource_name:$("#resourceName").value.trim(),
+            resource_type:$("#resourceType").value,
+            sort_order:Number($("#resourceSort").value || 0),
+            is_active:$("#resourceActive").checked,
+          }),
+        });
+        state.selectedResourceId = result.resource.id;
+        await loadSettings();
+        selectResource(result.resource.id);
+        toast("施術席を保存しました。");
+      }
+
+      function openSection(name) {
+        document.querySelectorAll("[data-section]").forEach(button =>
+          button.classList.toggle("active",button.dataset.section === name)
+        );
+        document.querySelectorAll(".section").forEach(section =>
+          section.classList.toggle(
+            "active",
+            section.id === `section${name[0].toUpperCase()}${name.slice(1)}`
+          )
+        );
+      }
+
+      document.querySelectorAll("[data-section]").forEach(button =>
+        button.addEventListener("click",() => openSection(button.dataset.section))
+      );
+
+      $("#loginButton").addEventListener("click",login);
+      $("#loginCode").addEventListener("keydown",event => {
+        if (event.key === "Enter") login();
+      });
+      $("#clearCode").addEventListener("click",() => {
+        localStorage.removeItem(config.STORAGE_KEYS.admin_code);
+        $("#loginCode").value = "";
+      });
+      $("#reloadButton").addEventListener("click",loadSettings);
+
+      $("#saveShopButton").addEventListener("click",async () => {
+        try {
+          await saveShop("店舗設定を保存しました。");
+          await loadSettings();
+        } catch (error) { toast(error.message,true); }
+      });
+      $("#saveHoursButton").addEventListener("click",async () => {
+        try {
+          await saveShop("営業時間と定休日を保存しました。");
+          await loadSettings();
+        } catch (error) { toast(error.message,true); }
+      });
+      $("#shiftStaffSelect").addEventListener("change",renderShifts);
+      $("#saveShiftsButton").addEventListener("click",async () => {
+        try { await saveShifts(); }
+        catch (error) { toast(error.message,true); }
+      });
+      $("#addClosedButton").addEventListener("click",async () => {
+        try { await addClosedDate(); }
+        catch (error) { toast(error.message,true); }
+      });
+
+      $("#newStaffButton").addEventListener("click",clearStaffForm);
+      $("#clearStaffButton").addEventListener("click",clearStaffForm);
+      $("#saveStaffButton").addEventListener("click",async () => {
+        try { await saveStaff(); }
+        catch (error) { toast(error.message,true); }
+      });
+
+      $("#newCategoryButton").addEventListener("click",newCategory);
+      $("#saveCategoryButton").addEventListener("click",async () => {
+        try { await saveCategory(); }
+        catch (error) { toast(error.message,true); }
+      });
+      $("#newServiceButton").addEventListener("click",clearServiceForm);
+      $("#clearServiceButton").addEventListener("click",clearServiceForm);
+      $("#saveServiceButton").addEventListener("click",async () => {
+        try { await saveService(); }
+        catch (error) { toast(error.message,true); }
+      });
+
+      $("#newResourceButton").addEventListener("click",clearResourceForm);
+      $("#clearResourceButton").addEventListener("click",clearResourceForm);
+      $("#saveResourceButton").addEventListener("click",async () => {
+        try { await saveResource(); }
+        catch (error) { toast(error.message,true); }
+      });
+
+      const stored = isDemo
+        ? config.DEMO.admin_code
+        : localStorage.getItem(config.STORAGE_KEYS.admin_code) || "";
+      $("#loginCode").value = stored;
+      if (isDemo || stored) login();
+    })();
+  </script>
+</body>
+</html>
