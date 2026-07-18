@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-4-CONFIG-SYSTEM-CHECK-20260718",
+    VERSION: "EYE-5-CUSTOMER-BOOKING-20260718",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -62,6 +62,12 @@
     DEMO: Object.freeze({
       admin_code: "1234",
       auto_fill_query: "demo=1",
+      line_user_id: "U_EYE_DEMO_001",
+    }),
+
+    LINE: Object.freeze({
+      LIFF_ID: "",
+      use_liff_when_configured: true,
     }),
 
     UI: Object.freeze({

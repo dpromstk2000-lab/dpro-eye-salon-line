@@ -161,11 +161,21 @@
     .check.wait .check-icon { color:var(--accent-dark); background:var(--soft); }
     .check strong { display:block; font-size:18px; }
     .detail {
-      margin-top:4px;
+      margin-top:8px;
       color:var(--muted);
       font-size:15px;
       overflow-wrap:anywhere;
-      white-space:pre-wrap;
+    }
+    .detail summary {
+      cursor:pointer;
+      color:var(--accent-dark);
+      font-weight:800;
+    }
+    .detail pre {
+      max-height:260px;
+      margin-top:8px;
+      color:#F5F0EF;
+      background:#2F2B2C;
     }
     .url-list { display:grid; gap:10px; }
     .url-item {
@@ -299,8 +309,12 @@
     </section>
 
     <section class="panel">
-      <h2>最終レスポンス</h2>
-      <pre id="rawResult">一括チェックを実行すると結果が表示されます。</pre>
+      <details>
+        <summary style="cursor:pointer;font-size:20px;font-weight:850;color:#6F4C55">
+          開発用の最終レスポンスを見る
+        </summary>
+        <pre id="rawResult">一括チェックを実行すると結果が表示されます。</pre>
+      </details>
     </section>
   </main>
 
@@ -378,11 +392,27 @@
           const title = document.createElement("strong");
           title.textContent = CHECK_LABELS[item.name] || item.name;
 
-          const detail = document.createElement("div");
-          detail.className = "detail";
-          detail.textContent = formatDetail(item.detail);
+          const summaryText = document.createElement("div");
+          summaryText.className = "detail";
+          summaryText.textContent = item.ok ? "正常" : "確認が必要です";
 
-          body.append(title, detail);
+          const formatted = formatDetail(item.detail);
+          if (formatted) {
+            const details = document.createElement("details");
+            details.className = "detail";
+
+            const summary = document.createElement("summary");
+            summary.textContent = "詳細を見る";
+
+            const pre = document.createElement("pre");
+            pre.textContent = formatted;
+
+            details.append(summary, pre);
+            body.append(title, summaryText, details);
+          } else {
+            body.append(title, summaryText);
+          }
+
           card.append(icon, body);
           checksNode.append(card);
         }
