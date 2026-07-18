@@ -500,6 +500,32 @@
     }
     .carte-item small { display:block; color:var(--muted); }
     .carte-item strong { display:block; margin-top:2px; }
+    .photo-grid {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+      margin-top:11px;
+    }
+    .photo-card {
+      overflow:hidden;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:var(--soft);
+    }
+    .photo-card img {
+      width:100%;
+      aspect-ratio:4/3;
+      display:block;
+      object-fit:cover;
+      background:#E9E1DC;
+    }
+    .photo-card span {
+      display:block;
+      padding:7px 9px;
+      color:var(--accent-dark);
+      font-size:13px;
+      font-weight:850;
+    }
 
     .followup-list { display:grid; gap:10px; }
     .followup-card {
@@ -1919,6 +1945,37 @@
             grid.append(item);
           }
           card.append(head,grid);
+
+          if (Array.isArray(carte.photos) && carte.photos.length) {
+            const photoGrid = document.createElement("div");
+            photoGrid.className = "photo-grid";
+            for (const photo of carte.photos) {
+              const photoCard = document.createElement("div");
+              photoCard.className = "photo-card";
+
+              if (photo.signed_url) {
+                const image = document.createElement("img");
+                image.src = photo.signed_url;
+                image.alt = photo.caption || "施術写真";
+                image.loading = "lazy";
+                photoCard.append(image);
+              }
+
+              const label = document.createElement("span");
+              label.textContent =
+                {
+                  before:"施術前",
+                  after:"施術後",
+                  lash_closeup:"まつげアップ",
+                  brow_closeup:"眉アップ",
+                  other:"その他",
+                }[photo.photo_type] || "施術写真";
+              photoCard.append(label);
+              photoGrid.append(photoCard);
+            }
+            card.append(photoGrid);
+          }
+
           container.append(card);
         }
       }
