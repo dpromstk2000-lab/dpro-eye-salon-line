@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-6-MEMBER-RESCHEDULE-20260718",
+    VERSION: "EYE-7-OWNER-PC-20260718",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -53,6 +53,8 @@
         `${API_BASE}/api/admin/reservation.status`,
       admin_carte_save: `${API_BASE}/api/admin/carte.save`,
       admin_followups: `${API_BASE}/api/admin/followups`,
+      admin_followup_status:
+        `${API_BASE}/api/admin/followup.status`,
       admin_demo_prepare: `${API_BASE}/api/admin/demo-prepare`,
       admin_system_check: `${API_BASE}/api/admin/system-check`,
     }),
