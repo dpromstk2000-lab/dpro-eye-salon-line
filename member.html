@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#A86F7D">
+  <meta name="description" content="DPRO まつげ・眉サロン 予約確認・変更">
+  <title>予約確認・変更｜DPRO EYE SALON</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#FAF7F2;
+      --surface:#FFFFFF;
+      --soft:#F2EAE5;
+      --accent:#A86F7D;
+      --accent-dark:#6F4C55;
+      --text:#2F2B2C;
+      --muted:#6E6567;
+      --border:#DED1CA;
+      --success:#64745F;
+      --warning:#A96F32;
+      --danger:#A14E55;
+      --shadow:0 14px 38px rgba(78,53,61,.09);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
+        "Noto Sans JP",sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 2%,#F7E5E8 0,transparent 25rem),
+        linear-gradient(180deg,#FCFAF7 0,var(--bg) 100%);
+      font-size:17px;
+      line-height:1.7;
+    }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .wrap {
+      width:min(900px,calc(100% - 28px));
+      margin:0 auto;
+      padding:22px 0 72px;
+    }
+    .hero,.panel {
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:rgba(255,255,255,.97);
+      box-shadow:var(--shadow);
+    }
+    .hero { padding:27px; }
+    .panel { margin-top:16px; padding:24px; }
+    .brand {
+      margin:0 0 4px;
+      color:var(--accent-dark);
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.12em;
+    }
+    h1 { margin:0; font-size:clamp(29px,5vw,42px); line-height:1.25; }
+    h2 { margin:0 0 14px; font-size:25px; }
+    h3 { margin:0; font-size:21px; }
+    .lead { margin:10px 0 0; color:var(--muted); font-size:18px; }
+    .demo {
+      display:none;
+      margin-top:14px;
+      padding:12px 15px;
+      border-left:5px solid var(--warning);
+      border-radius:10px;
+      color:#70481F;
+      background:#FFF3E4;
+      font-weight:800;
+    }
+    .demo.show { display:block; }
+    .status {
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:13px;
+      color:var(--muted);
+      background:var(--soft);
+      font-weight:800;
+    }
+    .status.ok { color:#40513B; background:#E7EFE4; }
+    .status.ng { color:#7E343A; background:#F7E6E7; }
+    .profile-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+    .profile-item {
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+    }
+    .profile-item small { display:block; color:var(--muted); font-weight:750; }
+    .profile-item strong { display:block; margin-top:3px; font-size:18px; }
+    .reservation-list { display:grid; gap:13px; }
+    .reservation {
+      padding:19px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+    }
+    .reservation-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .date {
+      color:var(--accent-dark);
+      font-size:24px;
+      font-weight:900;
+      line-height:1.35;
+    }
+    .badge {
+      display:inline-flex;
+      min-height:34px;
+      align-items:center;
+      padding:5px 11px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--accent-dark);
+      font-size:14px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .badge.cancelled { color:#7E343A; background:#F7E6E7; }
+    .badge.completed { color:#40513B; background:#E7EFE4; }
+    .menu {
+      margin-top:10px;
+      font-size:19px;
+      font-weight:900;
+    }
+    .details {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:9px;
+      margin-top:12px;
+    }
+    .detail {
+      padding:11px 12px;
+      border-radius:12px;
+      background:var(--soft);
+    }
+    .detail small { display:block; color:var(--muted); font-weight:750; }
+    .detail strong { display:block; margin-top:2px; }
+    .actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      margin-top:15px;
+    }
+    .btn {
+      min-height:50px;
+      padding:10px 17px;
+      border:0;
+      border-radius:13px;
+      font-weight:900;
+    }
+    .btn-primary { color:white; background:var(--accent); }
+    .btn-secondary { color:var(--accent-dark); background:var(--soft); }
+    .btn-danger { color:white; background:var(--danger); }
+    .btn:disabled { cursor:not-allowed; opacity:.48; }
+    .change-box {
+      display:none;
+      margin-top:15px;
+      padding:17px;
+      border:1px solid #CDAEB4;
+      border-radius:15px;
+      background:#FCF6F6;
+    }
+    .change-box.show { display:block; }
+    .change-grid {
+      display:grid;
+      grid-template-columns:minmax(200px,1fr) auto;
+      gap:10px;
+      align-items:end;
+    }
+    label { display:block; font-weight:850; }
+    input {
+      width:100%;
+      min-height:52px;
+      margin-top:5px;
+      padding:10px 13px;
+      border:2px solid var(--border);
+      border-radius:12px;
+      color:var(--text);
+      background:white;
+    }
+    input:focus {
+      outline:3px solid rgba(168,111,125,.15);
+      border-color:var(--accent);
+    }
+    .slot-grid {
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:8px;
+      margin-top:12px;
+    }
+    .slot {
+      min-height:48px;
+      border:2px solid var(--border);
+      border-radius:11px;
+      color:var(--accent-dark);
+      background:white;
+      font-weight:900;
+    }
+    .slot.selected {
+      color:white;
+      border-color:var(--accent);
+      background:var(--accent);
+    }
+    .empty {
+      padding:18px;
+      border:1px dashed var(--border);
+      border-radius:14px;
+      color:var(--muted);
+      background:#fff;
+      text-align:center;
+      font-weight:750;
+    }
+    .loading {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .spinner {
+      width:21px;
+      height:21px;
+      border:3px solid rgba(168,111,125,.22);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .footer-links {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px;
+      margin-top:17px;
+    }
+    .footer-links a {
+      display:inline-flex;
+      min-height:46px;
+      align-items:center;
+      padding:8px 15px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      color:var(--accent-dark);
+      background:#fff;
+      text-decoration:none;
+      font-weight:900;
+    }
+    .toast {
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      z-index:99;
+      width:min(560px,calc(100% - 24px));
+      padding:15px 18px;
+      border-radius:14px;
+      color:white;
+      background:#3B3436;
+      box-shadow:0 12px 34px rgba(0,0,0,.22);
+      transform:translate(-50%,130%);
+      transition:.2s ease;
+      font-weight:850;
+    }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.error { background:var(--danger); }
+    @media (max-width:700px) {
+      body { font-size:16px; }
+      .wrap { width:min(100% - 18px,900px); padding-top:10px; }
+      .hero,.panel { padding:21px 16px; border-radius:19px; }
+      .lead { font-size:16px; }
+      .profile-grid,.details { grid-template-columns:1fr; }
+      .reservation-head { flex-direction:column; }
+      .change-grid { grid-template-columns:1fr; }
+      .slot-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      .btn { width:100%; }
+    }
+    @media (max-width:390px) {
+      .slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <p class="brand">DPRO EYE SALON LINE</p>
+      <h1>予約確認・変更</h1>
+      <p class="lead">次回予約、日時変更、キャンセル、来店履歴を確認できます。</p>
+      <div id="demoBanner" class="demo">
+        デモ表示です。既存顧客「山田 花子」の会員ページを表示します。
+      </div>
+      <div id="pageStatus" class="status">
+        LINEの顧客情報を確認しています…
+      </div>
+    </header>
+
+    <section id="profilePanel" class="panel" hidden>
+      <h2>お客様情報</h2>
+      <div class="profile-grid">
+        <div class="profile-item"><small>お名前</small><strong id="profileName">―</strong></div>
+        <div class="profile-item"><small>顧客番号</small><strong id="profileNo">―</strong></div>
+        <div class="profile-item"><small>次回来店目安</small><strong id="profileNext">―</strong></div>
+      </div>
+    </section>
+
+    <section id="upcomingPanel" class="panel" hidden>
+      <h2>次回の予約</h2>
+      <div id="upcomingList" class="reservation-list"></div>
+    </section>
+
+    <section id="historyPanel" class="panel" hidden>
+      <h2>これまでの予約</h2>
+      <div id="historyList" class="reservation-list"></div>
+    </section>
+
+    <section id="notLinkedPanel" class="panel" hidden>
+      <h2>LINE連携が必要です</h2>
+      <div class="empty">
+        この画面はLINE公式アカウントから開くと、登録済みの予約を自動表示します。
+        初回予約は「新しい予約」から行ってください。
+      </div>
+    </section>
+
+    <div class="footer-links">
+      <a id="newBookingLink" href="./">新しい予約</a>
+      <a id="systemCheckLink" href="./system-check.html?demo=1">システムチェック</a>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const config = window.DPRO_EYE_CONFIG;
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
+      const $ = selector => document.querySelector(selector);
+
+      const STATUS = {
+        reserved: "予約受付",
+        confirmed: "予約確定",
+        arrived: "来店済み",
+        counseling: "カウンセリング中",
+        in_service: "施術中",
+        finishing: "仕上げ中",
+        payment_waiting: "会計待ち",
+        completed: "施術完了",
+        cancel_requested: "キャンセル確認中",
+        cancelled: "キャンセル済み",
+        no_show: "無断キャンセル",
+      };
+
+      let lineUserId = "";
+      let shop = null;
+      let memberData = null;
+      const changeState = new Map();
+
+      $("#newBookingLink").href = isDemo ? "./?demo=1" : "./";
+      if (!isDemo) $("#systemCheckLink").style.display = "none";
+
+      function toast(message, error = false) {
+        const node = $("#toast");
+        node.textContent = message;
+        node.className = `toast show${error ? " error" : ""}`;
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => node.className = "toast", 3500);
+      }
+
+      function yen(value) {
+        return new Intl.NumberFormat("ja-JP", {
+          style:"currency", currency:"JPY", maximumFractionDigits:0,
+        }).format(Number(value || 0));
+      }
+
+      function todayJst() {
+        return new Intl.DateTimeFormat("sv-SE", {
+          timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit",
+        }).format(new Date());
+      }
+
+      function addDays(dateText, days) {
+        const date = new Date(`${dateText}T00:00:00+09:00`);
+        date.setUTCDate(date.getUTCDate() + days);
+        return new Intl.DateTimeFormat("sv-SE", {
+          timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit",
+        }).format(date);
+      }
+
+      async function fetchJson(url, options = {}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 18000);
+        try {
+          const response = await fetch(url, {
+            cache:"no-store", ...options, signal:controller.signal,
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok) {
+            throw new Error(data?.message || `HTTP ${response.status}`);
+          }
+          return data;
+        } catch (error) {
+          if (error.name === "AbortError") {
+            throw new Error("通信に時間がかかっています。もう一度お試しください。");
+          }
+          throw error;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function setStatus(message, mode = "") {
+        const node = $("#pageStatus");
+        node.textContent = message;
+        node.className = `status ${mode}`.trim();
+      }
+
+      function reservationMenu(reservation) {
+        return (reservation.items || [])
+          .map(item => item.service_name_snapshot)
+          .join(" ＋ ") || "メニュー";
+      }
+
+      function badgeClass(status) {
+        if (["cancelled","no_show","cancel_requested"].includes(status)) {
+          return "badge cancelled";
+        }
+        if (status === "completed") return "badge completed";
+        return "badge";
+      }
+
+      function makeDetail(label, value) {
+        const node = document.createElement("div");
+        node.className = "detail";
+        const small = document.createElement("small");
+        small.textContent = label;
+        const strong = document.createElement("strong");
+        strong.textContent = value || "―";
+        node.append(small, strong);
+        return node;
+      }
+
+      function renderReservation(reservation, upcoming) {
+        const card = document.createElement("article");
+        card.className = "reservation";
+
+        const head = document.createElement("div");
+        head.className = "reservation-head";
+
+        const date = document.createElement("div");
+        date.className = "date";
+        date.textContent =
+          `${reservation.jst?.start?.date || ""} ` +
+          `${reservation.jst?.start?.time || ""}`;
+
+        const badge = document.createElement("span");
+        badge.className = badgeClass(reservation.status);
+        badge.textContent = STATUS[reservation.status] || reservation.status;
+
+        head.append(date, badge);
+
+        const menu = document.createElement("div");
+        menu.className = "menu";
+        menu.textContent = reservationMenu(reservation);
+
+        const details = document.createElement("div");
+        details.className = "details";
+        details.append(
+          makeDetail("担当者", reservation.staff?.display_name || "店舗でご案内"),
+          makeDetail("所要時間", `${reservation.total_duration_minutes}分`),
+          makeDetail("料金目安", yen(reservation.total_price_yen))
+        );
+
+        card.append(head, menu, details);
+
+        if (upcoming && ["reserved","confirmed"].includes(reservation.status)) {
+          const actions = document.createElement("div");
+          actions.className = "actions";
+
+          const change = document.createElement("button");
+          change.type = "button";
+          change.className = "btn btn-primary";
+          change.textContent = "日時を変更";
+          change.addEventListener("click", () => toggleChange(reservation, card));
+
+          const cancel = document.createElement("button");
+          cancel.type = "button";
+          cancel.className = "btn btn-danger";
+          cancel.textContent = "キャンセル";
+          cancel.addEventListener("click", () => cancelReservation(reservation));
+
+          actions.append(change, cancel);
+          card.append(actions);
+
+          const changeBox = document.createElement("div");
+          changeBox.className = "change-box";
+          changeBox.dataset.changeBox = reservation.id;
+          card.append(changeBox);
+        }
+
+        return card;
+      }
+
+      function render() {
+        const customer = memberData.customer;
+        $("#profileName").textContent = customer.full_name || "―";
+        $("#profileNo").textContent = customer.customer_no || "―";
+        $("#profileNext").textContent = customer.next_revisit_date || "未設定";
+        $("#profilePanel").hidden = false;
+
+        const upcoming = memberData.upcoming || [];
+        const history = memberData.history || [];
+
+        $("#upcomingPanel").hidden = false;
+        const upcomingList = $("#upcomingList");
+        upcomingList.replaceChildren();
+        if (!upcoming.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "現在、次回予約はありません。";
+          upcomingList.append(empty);
+        } else {
+          upcoming.forEach(r => upcomingList.append(renderReservation(r, true)));
+        }
+
+        $("#historyPanel").hidden = false;
+        const historyList = $("#historyList");
+        historyList.replaceChildren();
+        if (!history.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "過去の予約はありません。";
+          historyList.append(empty);
+        } else {
+          history.slice(0, 20).forEach(r =>
+            historyList.append(renderReservation(r, false))
+          );
+        }
+      }
+
+      function toggleChange(reservation, card) {
+        const box = card.querySelector(`[data-change-box="${reservation.id}"]`);
+        if (box.classList.contains("show")) {
+          box.classList.remove("show");
+          return;
+        }
+
+        document.querySelectorAll(".change-box.show").forEach(node =>
+          node.classList.remove("show")
+        );
+
+        box.replaceChildren();
+        const title = document.createElement("h3");
+        title.textContent = "新しい日時を選択";
+
+        const grid = document.createElement("div");
+        grid.className = "change-grid";
+
+        const label = document.createElement("label");
+        label.textContent = "希望日";
+        const input = document.createElement("input");
+        input.type = "date";
+        input.min = todayJst();
+        input.max = addDays(todayJst(), Number(shop?.booking_open_days || 60));
+        label.append(input);
+
+        const load = document.createElement("button");
+        load.type = "button";
+        load.className = "btn btn-secondary";
+        load.textContent = "空き時間を表示";
+        load.addEventListener("click", () =>
+          loadChangeSlots(reservation, box, input.value)
+        );
+
+        grid.append(label, load);
+
+        const message = document.createElement("div");
+        message.className = "empty";
+        message.dataset.slotMessage = reservation.id;
+        message.textContent = "希望日を選び、空き時間を表示してください。";
+
+        const slots = document.createElement("div");
+        slots.className = "slot-grid";
+        slots.dataset.slots = reservation.id;
+
+        const submit = document.createElement("button");
+        submit.type = "button";
+        submit.className = "btn btn-primary";
+        submit.style.marginTop = "12px";
+        submit.textContent = "この日時へ変更";
+        submit.disabled = true;
+        submit.addEventListener("click", () =>
+          submitChange(reservation, submit)
+        );
+
+        changeState.set(reservation.id, { slot:null, submit });
+        box.append(title, grid, message, slots, submit);
+        box.classList.add("show");
+      }
+
+      async function loadChangeSlots(reservation, box, date) {
+        if (!date) {
+          toast("希望日を選択してください。", true);
+          return;
+        }
+
+        const message = box.querySelector(`[data-slot-message="${reservation.id}"]`);
+        const grid = box.querySelector(`[data-slots="${reservation.id}"]`);
+        message.style.display = "block";
+        message.innerHTML =
+          '<span class="loading"><span class="spinner"></span>空き時間を確認しています…</span>';
+        grid.replaceChildren();
+
+        const url = new URL(config.API.availability);
+        url.searchParams.set("date", date);
+        (reservation.items || []).forEach(item =>
+          url.searchParams.append("service_id", item.service_id)
+        );
+
+        try {
+          const data = await fetchJson(url);
+          const rawSlots = data.availability?.slots || [];
+          if (!rawSlots.length) {
+            message.textContent =
+              "空いている時間がありません。別の日をお試しください。";
+            return;
+          }
+
+          const byTime = new Map();
+          for (const slot of rawSlots) {
+            if (!byTime.has(slot.time)) byTime.set(slot.time, slot);
+          }
+
+          message.style.display = "none";
+          for (const slot of byTime.values()) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "slot";
+            button.textContent = slot.time;
+            button.addEventListener("click", () => {
+              grid.querySelectorAll(".slot").forEach(node =>
+                node.classList.remove("selected")
+              );
+              button.classList.add("selected");
+              const change = changeState.get(reservation.id);
+              change.slot = { ...slot, date };
+              change.submit.disabled = false;
+            });
+            grid.append(button);
+          }
+        } catch (error) {
+          message.textContent = `空き時間を取得できません：${error.message}`;
+        }
+      }
+
+      async function submitChange(reservation, button) {
+        const change = changeState.get(reservation.id);
+        if (!change?.slot) {
+          toast("新しい時間を選択してください。", true);
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "変更しています…";
+        try {
+          await fetchJson(config.API.reservation_reschedule, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+              token:reservation.public_token,
+              date:change.slot.date,
+              time:change.slot.time,
+              staff_id:change.slot.staff_id,
+            }),
+          });
+          toast("予約日時を変更しました。");
+          await loadMember();
+        } catch (error) {
+          toast(error.message, true);
+        } finally {
+          button.disabled = false;
+          button.textContent = "この日時へ変更";
+        }
+      }
+
+      async function cancelReservation(reservation) {
+        const message =
+          `${reservation.jst?.start?.date || ""} ` +
+          `${reservation.jst?.start?.time || ""} の予約をキャンセルしますか？`;
+        if (!confirm(message)) return;
+
+        try {
+          const result = await fetchJson(config.API.reservation_lookup +
+            `?token=${encodeURIComponent(reservation.public_token)}`);
+          void result;
+
+          await fetchJson(config.API_BASE + "/api/public/reservation.cancel-request", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+              token:reservation.public_token,
+              reason:"会員ページからのキャンセル",
+            }),
+          });
+          toast("キャンセルを受け付けました。");
+          await loadMember();
+        } catch (error) {
+          toast(error.message, true);
+        }
+      }
+
+      async function resolveLineUser() {
+        if (isDemo) {
+          $("#demoBanner").classList.add("show");
+          return config.DEMO.line_user_id;
+        }
+
+        const supplied = params.get("line_user_id");
+        if (supplied) return supplied;
+
+        const liffId = config.LINE?.LIFF_ID || "";
+        if (!liffId || !window.liff) return "";
+
+        await liff.init({ liffId });
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri:location.href });
+          return "";
+        }
+        const profile = await liff.getProfile();
+        return profile.userId || "";
+      }
+
+      async function loadMember() {
+        if (!lineUserId) {
+          $("#notLinkedPanel").hidden = false;
+          setStatus("LINE連携情報を取得できませんでした。", "ng");
+          return;
+        }
+
+        setStatus("予約情報を読み込んでいます…");
+        const url = new URL(config.API.member_reservations);
+        url.searchParams.set("line_user_id", lineUserId);
+
+        try {
+          memberData = await fetchJson(url);
+          if (!memberData.found) {
+            $("#notLinkedPanel").hidden = false;
+            setStatus("登録済みの顧客情報がありません。", "ng");
+            return;
+          }
+          render();
+          setStatus(
+            `予約情報を表示しました。次回予約 ${memberData.upcoming.length}件`,
+            "ok"
+          );
+        } catch (error) {
+          setStatus(`予約情報を取得できません：${error.message}`, "ng");
+        }
+      }
+
+      async function initialize() {
+        try {
+          const shopData = await fetchJson(config.API.shop);
+          shop = shopData.shop;
+          lineUserId = await resolveLineUser();
+          await loadMember();
+        } catch (error) {
+          setStatus(`画面を初期化できません：${error.message}`, "ng");
+        }
+      }
+
+      initialize();
+    })();
+  </script>
+</body>
+</html>

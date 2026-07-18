@@ -795,8 +795,8 @@
     </section>
 
     <div class="footer-links">
-      <a href="./member.html">予約確認・変更</a>
-      <a href="./system-check.html?demo=1">システムチェック</a>
+      <a id="memberLink" href="./member.html">予約確認・変更</a>
+      <a id="systemCheckLink" href="./system-check.html?demo=1">システムチェック</a>
     </div>
   </main>
 
@@ -810,6 +810,13 @@
       const params = new URLSearchParams(location.search);
       const isDemo = params.get("demo") === "1";
       const $ = selector => document.querySelector(selector);
+
+      $("#memberLink").href = isDemo
+        ? "./member.html?demo=1"
+        : "./member.html";
+      if (!isDemo) {
+        $("#systemCheckLink").style.display = "none";
+      }
 
       const state = {
         step: 1,

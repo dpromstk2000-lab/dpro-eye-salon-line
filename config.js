@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-5-CUSTOMER-BOOKING-20260718",
+    VERSION: "EYE-6-MEMBER-RESCHEDULE-20260718",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -40,6 +40,8 @@
       customer_upsert: `${API_BASE}/api/public/customer.upsert`,
       reservation_create: `${API_BASE}/api/public/reservation.create`,
       reservation_lookup: `${API_BASE}/api/public/reservation.lookup`,
+      reservation_reschedule:
+        `${API_BASE}/api/public/reservation.reschedule`,
       member_reservations: `${API_BASE}/api/member/reservations`,
       admin_login: `${API_BASE}/api/admin/login`,
       admin_dashboard: `${API_BASE}/api/admin/dashboard`,
