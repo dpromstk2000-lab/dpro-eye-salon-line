@@ -1,0 +1,797 @@
+name: STEP EYE-BRUSHUP-3 iPad Carte Safety
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-3-ipad-carte-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-3-ipad-carte-safety
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save pre-change commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Apply iPad carte safety patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          owner_path = Path("owner-ipad.html")
+          config_path = Path("config.js")
+
+          if not owner_path.exists():
+              raise SystemExit("owner-ipad.html が見つかりません。")
+          if not config_path.exists():
+              raise SystemExit("config.js が見つかりません。")
+
+          text = owner_path.read_text(encoding="utf-8")
+
+          if 'id="carteModePanel"' in text:
+              print("STEP EYE-BRUSHUP-3 はすでに適用済みです。")
+          else:
+              def replace_once(old, new, label):
+                  global text
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。現行コードが想定と異なるため停止しました。"
+                      )
+                  text = text.replace(old, new, 1)
+
+              css_anchor = '''    .toast {
+          '''
+              css_insert = '''    .carte-mode-panel {
+                margin-bottom:13px;
+                padding:15px;
+                border:2px solid var(--border);
+                border-radius:15px;
+                background:#FCF8F5;
+              }
+              .carte-mode-panel strong {
+                display:block;
+                color:var(--accent-dark);
+                font-size:20px;
+              }
+              .carte-mode-panel span {
+                display:block;
+                margin-top:3px;
+                color:var(--muted);
+                font-weight:750;
+              }
+              .carte-mode-actions {
+                display:grid;
+                grid-template-columns:repeat(3,minmax(0,1fr));
+                gap:9px;
+                margin-top:11px;
+              }
+              .carte-mode-actions .btn {
+                min-height:58px;
+              }
+              .photo-more {
+                width:100%;
+                margin-top:11px;
+              }
+              .photo-card img {
+                cursor:zoom-in;
+              }
+              @media (max-width:760px) {
+                .carte-mode-actions {
+                  grid-template-columns:1fr;
+                }
+              }
+
+              .toast {
+          '''
+              replace_once(css_anchor, css_insert, "カルテモードCSS")
+
+              html_anchor = '''          <div id="tabCarte" class="tab-panel active">
+                      <div class="form-grid">
+          '''
+              html_insert = '''          <div id="tabCarte" class="tab-panel active">
+                      <div id="carteModePanel" class="carte-mode-panel">
+                        <strong id="carteModeTitle">新しいカルテを入力</strong>
+                        <span id="carteModeDescription">
+                          前回カルテは上書きせず、今回の来店分として新しく保存します。
+                        </span>
+                        <div class="carte-mode-actions">
+                          <button id="newCarteMode" class="btn btn-primary" type="button">
+                            新規入力
+                          </button>
+                          <button id="copyPreviousCarte" class="btn btn-secondary" type="button">
+                            前回内容をコピー
+                          </button>
+                          <button id="editCurrentCarte" class="btn btn-dark" type="button">
+                            今回カルテを編集
+                          </button>
+                        </div>
+                      </div>
+                      <div class="form-grid">
+          '''
+              replace_once(html_anchor, html_insert, "カルテモードUI")
+
+              photo_anchor = '''            <div id="photoGallery" class="photo-gallery"></div>
+          '''
+              photo_insert = '''            <div id="photoGallery" class="photo-gallery"></div>
+                      <button id="photoMore" class="btn btn-secondary photo-more"
+                        type="button" hidden>
+                        続きを表示
+                      </button>
+          '''
+              replace_once(photo_anchor, photo_insert, "写真続きを表示ボタン")
+
+              state_anchor = '''        customerDetail:null,
+                  currentCarteId:"",
+                  staff:[],
+          '''
+              state_insert = '''        customerDetail:null,
+                  currentCarteId:"",
+                  currentReservationCarte:null,
+                  previousCarte:null,
+                  carteMode:"new",
+                  photosExpanded:false,
+                  staff:[],
+          '''
+              replace_once(state_anchor, state_insert, "状態管理")
+
+              select_anchor = '''        state.selected = row;
+                  state.currentCarteId = "";
+                  renderReservations();
+          '''
+              select_insert = '''        state.selected = row;
+                  state.currentCarteId = "";
+                  state.currentReservationCarte = null;
+                  state.previousCarte = null;
+                  state.carteMode = "new";
+                  state.photosExpanded = false;
+                  renderReservations();
+          '''
+              replace_once(select_anchor, select_insert, "予約選択時リセット")
+
+              old_customer_block = '''      function renderCustomerDetail(detail,row) {
+                  const customer = detail.customer;
+                  $("#profileNo").textContent = customer.customer_no || "―";
+                  $("#profilePhone").textContent = customer.phone || "―";
+                  $("#profileNext").textContent = customer.next_revisit_date || "未設定";
+                  $("#nextVisit").value = customer.next_revisit_date || "";
+
+                  const matchedStaff = state.staff.find(member => member.display_name === row.staff_name);
+                  if (matchedStaff) $("#staffSelect").value = matchedStaff.id;
+
+                  const latest = detail.cartes?.[0];
+                  if (latest) {
+                    state.currentCarteId = latest.id;
+                    $("#treatmentType").value = latest.treatment_type || "lash_lift";
+                    $("#rodName").value = latest.rod_name || "";
+                    $("#curlType").value = latest.curl_type || "";
+                    $("#lashDesign").value =
+                      latest.lash_design || latest.brow_shape || "";
+                    $("#chemicalProcessing").value =
+                      [latest.chemical_name,latest.processing_time_note]
+                        .filter(Boolean).join(" ／ ");
+                    $("#differenceNote").value =
+                      latest.left_right_difference ||
+                      latest.bone_structure_note ||
+                      latest.hair_flow_note ||
+                      "";
+                    $("#finishNote").value = latest.finish_note || "";
+                    $("#homecareNote").value = latest.homecare_note || "";
+                    $("#privateNote").value = latest.private_note === "DEMO_CARTE"
+                      ? ""
+                      : latest.private_note || "";
+                  } else {
+                    clearCarteForm();
+                  }
+
+                  renderHistory(detail.cartes || []);
+                  renderPhotos(detail.cartes || []);
+                }
+
+                function clearCarteForm() {
+                  state.currentCarteId = "";
+                  $("#treatmentType").value = "lash_lift";
+                  ["rodName","curlType","lashDesign","chemicalProcessing",
+                   "differenceNote","finishNote","homecareNote","privateNote"]
+                    .forEach(id => $(`#${id}`).value = "");
+                  $("#nextVisit").value =
+                    state.customerDetail?.customer?.next_revisit_date || "";
+                  setStatus($("#carteStatus"),"新しいカルテとして保存します。");
+                }
+          '''
+              new_customer_block = '''      function carteReservationId(carte) {
+                  return String(
+                    carte?.reservation_id ||
+                    carte?.reservation?.id ||
+                    ""
+                  );
+                }
+
+                function findCurrentReservationCarte(cartes,row) {
+                  const reservationId = String(row?.id || "");
+                  return cartes.find(carte =>
+                    (
+                      reservationId &&
+                      carteReservationId(carte) === reservationId
+                    ) ||
+                    (
+                      state.currentCarteId &&
+                      String(carte.id) === String(state.currentCarteId)
+                    )
+                  ) || null;
+                }
+
+                function inferTreatmentType(serviceNames) {
+                  const value = String(serviceNames || "").toLowerCase();
+                  if (value.includes("眉") || value.includes("brow")) {
+                    if (
+                      value.includes("まつげ") ||
+                      value.includes("ラッシュ") ||
+                      value.includes("lash")
+                    ) return "set";
+                    if (value.includes("wax") || value.includes("ワックス")) return "wax";
+                    return "brow";
+                  }
+                  if (value.includes("エクステ") || value.includes("extension")) {
+                    return "extension";
+                  }
+                  if (value.includes("リペア") || value.includes("repair")) {
+                    return "repair";
+                  }
+                  if (value.includes("オフ") || value.includes("off")) {
+                    return "off";
+                  }
+                  if (value.includes("パーマ") || value.includes("perm")) {
+                    return "lash_perm";
+                  }
+                  return "lash_lift";
+                }
+
+                function setFieldLabel(id,title) {
+                  const label = $(`#${id}`)?.closest("label");
+                  if (!label) return;
+                  for (const node of label.childNodes) {
+                    if (node.nodeType === 3 && node.textContent.trim()) {
+                      node.textContent = `\n                ${title}\n                `;
+                      break;
+                    }
+                  }
+                }
+
+                function applyTreatmentFieldVisibility() {
+                  const type = $("#treatmentType").value;
+                  const fieldIds = [
+                    "rodName","curlType","lashDesign","chemicalProcessing",
+                    "differenceNote","finishNote","homecareNote","nextVisit","privateNote",
+                  ];
+                  const visibleMap = {
+                    lash_lift:[
+                      "rodName","curlType","chemicalProcessing","differenceNote",
+                      "finishNote","homecareNote","nextVisit","privateNote",
+                    ],
+                    lash_perm:[
+                      "rodName","curlType","chemicalProcessing","differenceNote",
+                      "finishNote","homecareNote","nextVisit","privateNote",
+                    ],
+                    extension:[
+                      "curlType","lashDesign","differenceNote","finishNote",
+                      "homecareNote","nextVisit","privateNote",
+                    ],
+                    repair:[
+                      "curlType","lashDesign","differenceNote","finishNote",
+                      "homecareNote","nextVisit","privateNote",
+                    ],
+                    brow:[
+                      "lashDesign","differenceNote","finishNote",
+                      "homecareNote","nextVisit","privateNote",
+                    ],
+                    wax:[
+                      "lashDesign","chemicalProcessing","differenceNote","finishNote",
+                      "homecareNote","nextVisit","privateNote",
+                    ],
+                    set:fieldIds,
+                    off:[
+                      "chemicalProcessing","finishNote","homecareNote",
+                      "nextVisit","privateNote",
+                    ],
+                    other:fieldIds,
+                  };
+                  const visible = new Set(visibleMap[type] || fieldIds);
+                  for (const id of fieldIds) {
+                    const label = $(`#${id}`)?.closest("label");
+                    if (label) label.hidden = !visible.has(id);
+                  }
+                  setFieldLabel(
+                    "lashDesign",
+                    ["brow","wax"].includes(type)
+                      ? "眉デザイン・形"
+                      : type === "set"
+                        ? "まつげ・眉デザイン"
+                        : "デザイン・本数"
+                  );
+                }
+
+                function fillCarteForm(carte,{includeVolatile=false}={}) {
+                  if (!carte) return;
+                  $("#treatmentType").value = carte.treatment_type || "lash_lift";
+                  $("#rodName").value = carte.rod_name || "";
+                  $("#curlType").value = carte.curl_type || "";
+                  $("#lashDesign").value =
+                    carte.lash_design || carte.brow_shape || "";
+                  $("#chemicalProcessing").value =
+                    [carte.chemical_name,carte.processing_time_note]
+                      .filter(Boolean).join(" ／ ");
+                  $("#differenceNote").value =
+                    carte.left_right_difference ||
+                    carte.bone_structure_note ||
+                    carte.hair_flow_note ||
+                    "";
+                  $("#homecareNote").value = carte.homecare_note || "";
+                  $("#finishNote").value = includeVolatile
+                    ? carte.finish_note || ""
+                    : "";
+                  $("#privateNote").value = includeVolatile &&
+                    carte.private_note !== "DEMO_CARTE"
+                      ? carte.private_note || ""
+                      : "";
+                  applyTreatmentFieldVisibility();
+                }
+
+                function updateCarteModePanel() {
+                  const title = $("#carteModeTitle");
+                  const description = $("#carteModeDescription");
+                  const editButton = $("#editCurrentCarte");
+                  const copyButton = $("#copyPreviousCarte");
+                  if (!title || !description) return;
+
+                  editButton.disabled = !state.currentReservationCarte;
+                  copyButton.disabled = !state.previousCarte;
+
+                  if (state.carteMode === "edit" && state.currentReservationCarte) {
+                    title.textContent = "今回のカルテを編集中";
+                    description.textContent =
+                      "この予約に紐づく今回分のカルテだけを更新します。";
+                    return;
+                  }
+                  if (state.carteMode === "copy" && state.previousCarte) {
+                    title.textContent = "前回内容をコピーして新規作成";
+                    description.textContent =
+                      "前回カルテのIDは引き継がず、今回分として新しく保存します。";
+                    return;
+                  }
+                  title.textContent = "新しいカルテを入力";
+                  description.textContent =
+                    state.previousCarte
+                      ? "前回カルテは参照用です。上書きせず、今回分として新しく保存します。"
+                      : "今回の来店分として新しいカルテを保存します。";
+                }
+
+                function clearCarteForm(options={}) {
+                  state.currentCarteId = "";
+                  state.carteMode = "new";
+                  $("#treatmentType").value =
+                    inferTreatmentType(state.selected?.service_names);
+                  ["rodName","curlType","lashDesign","chemicalProcessing",
+                   "differenceNote","finishNote","homecareNote","privateNote"]
+                    .forEach(id => $(`#${id}`).value = "");
+                  if (!options.keepNextVisit) {
+                    $("#nextVisit").value =
+                      state.customerDetail?.customer?.next_revisit_date || "";
+                  }
+                  applyTreatmentFieldVisibility();
+                  updateCarteModePanel();
+                  if (!options.skipStatus) {
+                    setStatus(
+                      $("#carteStatus"),
+                      "新しいカルテとして保存します。前回カルテは変更しません。"
+                    );
+                  }
+                }
+
+                function copyPreviousCarte() {
+                  if (!state.previousCarte) {
+                    return toast("コピーできる前回カルテがありません。",true);
+                  }
+                  const nextVisit = $("#nextVisit").value;
+                  state.currentCarteId = "";
+                  state.carteMode = "copy";
+                  fillCarteForm(state.previousCarte,{includeVolatile:false});
+                  $("#nextVisit").value = nextVisit;
+                  updateCarteModePanel();
+                  setStatus(
+                    $("#carteStatus"),
+                    "前回内容をコピーしました。前回カルテIDは引き継いでいません。",
+                    "ok"
+                  );
+                }
+
+                function editCurrentCarte() {
+                  if (!state.currentReservationCarte) {
+                    return toast("今回の予約に紐づくカルテはまだありません。",true);
+                  }
+                  state.currentCarteId = state.currentReservationCarte.id;
+                  state.carteMode = "edit";
+                  fillCarteForm(
+                    state.currentReservationCarte,
+                    {includeVolatile:true}
+                  );
+                  updateCarteModePanel();
+                  setStatus(
+                    $("#carteStatus"),
+                    "今回の予約に紐づくカルテを編集しています。",
+                    "ok"
+                  );
+                }
+
+                function renderCustomerDetail(detail,row) {
+                  const customer = detail.customer;
+                  $("#profileNo").textContent = customer.customer_no || "―";
+                  $("#profilePhone").textContent = customer.phone || "―";
+                  $("#profileNext").textContent = customer.next_revisit_date || "未設定";
+                  $("#nextVisit").value = customer.next_revisit_date || "";
+
+                  const matchedStaff = state.staff.find(
+                    member => member.display_name === row.staff_name
+                  );
+                  if (matchedStaff) $("#staffSelect").value = matchedStaff.id;
+
+                  const cartes = detail.cartes || [];
+                  const current = findCurrentReservationCarte(cartes,row);
+                  state.currentReservationCarte = current;
+                  state.previousCarte = cartes.find(
+                    carte => !current || String(carte.id) !== String(current.id)
+                  ) || null;
+                  state.photosExpanded = false;
+
+                  if (current) {
+                    state.currentCarteId = current.id;
+                    state.carteMode = "edit";
+                    fillCarteForm(current,{includeVolatile:true});
+                    setStatus(
+                      $("#carteStatus"),
+                      "今回の予約に紐づくカルテを編集できます。",
+                      "ok"
+                    );
+                  } else {
+                    clearCarteForm({keepNextVisit:true,skipStatus:true});
+                    setStatus(
+                      $("#carteStatus"),
+                      state.previousCarte
+                        ? "前回カルテは参照用です。「前回内容をコピー」または新規入力で今回分を保存してください。"
+                        : "今回分の新しいカルテとして保存します。"
+                    );
+                  }
+
+                  updateCarteModePanel();
+                  renderHistory(cartes);
+                  $("#photoGallery").replaceChildren();
+                  $("#photoMore").hidden = true;
+                  setStatus(
+                    $("#photoStatus"),
+                    "施術写真タブを開くと、最新写真から読み込みます。"
+                  );
+                }
+          '''
+              replace_once(
+                  old_customer_block,
+                  new_customer_block,
+                  "カルテ新規・コピー・編集分離処理"
+              )
+
+              replace_once(
+                  '''          carte_id:state.currentCarteId || undefined,
+          ''',
+                  '''          carte_id:
+                      state.carteMode === "edit" && state.currentCarteId
+                        ? state.currentCarteId
+                        : undefined,
+          ''',
+                  "保存時カルテID安全ガード"
+              )
+
+              replace_once(
+                  '''          state.currentCarteId = data.carte.id;
+                    setStatus(
+          ''',
+                  '''          state.currentCarteId = data.carte.id;
+                    state.carteMode = "edit";
+                    state.currentReservationCarte = {
+                      ...(state.currentReservationCarte || {}),
+                      ...data.carte,
+                      reservation_id:state.selected.id,
+                    };
+                    updateCarteModePanel();
+                    setStatus(
+          ''',
+                  "保存後編集モード更新"
+              )
+
+              old_refresh = '''      async function refreshCustomerDetail() {
+                  const customerId = state.customerDetail?.customer?.id;
+                  if (!customerId) return;
+                  const url = new URL(config.API.admin_customer_detail);
+                  url.searchParams.set("customer_id",customerId);
+                  state.customerDetail = await fetchJson(url,{headers:headers()});
+                  renderHistory(state.customerDetail.cartes || []);
+                  renderPhotos(state.customerDetail.cartes || []);
+                }
+          '''
+              new_refresh = '''      async function refreshCustomerDetail() {
+                  const customerId = state.customerDetail?.customer?.id;
+                  if (!customerId) return;
+                  const url = new URL(config.API.admin_customer_detail);
+                  url.searchParams.set("customer_id",customerId);
+                  state.customerDetail = await fetchJson(url,{headers:headers()});
+                  const cartes = state.customerDetail.cartes || [];
+                  const current = findCurrentReservationCarte(
+                    cartes,
+                    state.selected
+                  );
+                  if (current) {
+                    state.currentReservationCarte = current;
+                    state.currentCarteId = current.id;
+                  }
+                  state.previousCarte = cartes.find(
+                    carte =>
+                      !state.currentReservationCarte ||
+                      String(carte.id) !==
+                        String(state.currentReservationCarte.id)
+                  ) || null;
+                  renderHistory(cartes);
+                  if ($("#tabPhotos").classList.contains("active")) {
+                    renderPhotos(cartes);
+                  }
+                  updateCarteModePanel();
+                }
+          '''
+              replace_once(old_refresh, new_refresh, "顧客詳細再読込")
+
+              old_photos = '''      function renderPhotos(cartes) {
+                  const container = $("#photoGallery");
+                  container.replaceChildren();
+                  const photos = cartes.flatMap(carte => carte.photos || []);
+                  if (!photos.length) return;
+                  for (const photo of photos) {
+                    const card = document.createElement("div");
+                    card.className = "photo-card";
+                    if (photo.signed_url) {
+                      const image = document.createElement("img");
+                      image.src = photo.signed_url;
+                      image.alt = photo.caption || "施術写真";
+                      card.append(image);
+                    }
+                    const label = document.createElement("span");
+                    label.textContent =
+                      photo.photo_type === "before" ? "施術前" :
+                      photo.photo_type === "after" ? "施術後" :
+                      photo.photo_type;
+                    card.append(label);
+                    container.append(card);
+                  }
+                }
+          '''
+              new_photos = '''      function renderPhotos(cartes) {
+                  const container = $("#photoGallery");
+                  const moreButton = $("#photoMore");
+                  container.replaceChildren();
+
+                  const photos = cartes.flatMap(carte =>
+                    (carte.photos || []).map(photo => ({
+                      ...photo,
+                      treatment_date:carte.treatment_date,
+                    }))
+                  );
+                  if (!photos.length) {
+                    moreButton.hidden = true;
+                    setStatus($("#photoStatus"),"施術写真はまだありません。");
+                    return;
+                  }
+
+                  const visible = state.photosExpanded
+                    ? photos
+                    : photos.slice(0,6);
+                  for (const photo of visible) {
+                    const card = document.createElement("div");
+                    card.className = "photo-card";
+                    if (photo.signed_url) {
+                      const image = document.createElement("img");
+                      image.src = photo.signed_url;
+                      image.alt = photo.caption || "施術写真";
+                      image.loading = "lazy";
+                      image.decoding = "async";
+                      image.addEventListener("click",() => {
+                        window.open(photo.signed_url,"_blank","noopener");
+                      });
+                      card.append(image);
+                    }
+                    const label = document.createElement("span");
+                    const typeLabel =
+                      photo.photo_type === "before" ? "施術前" :
+                      photo.photo_type === "after" ? "施術後" :
+                      photo.photo_type;
+                    label.textContent =
+                      `${photo.treatment_date || "日付未設定"} ／ ${typeLabel}`;
+                    card.append(label);
+                    container.append(card);
+                  }
+
+                  moreButton.hidden = photos.length <= 6;
+                  moreButton.textContent = state.photosExpanded
+                    ? "最新6枚に戻す"
+                    : `残り${photos.length - 6}枚を表示`;
+                  setStatus(
+                    $("#photoStatus"),
+                    `${visible.length}枚を表示しています。画像は必要な分だけ遅延読込します。`,
+                    "ok"
+                  );
+                }
+          '''
+              replace_once(old_photos, new_photos, "写真遅延読込")
+
+              old_switch = '''      function switchTab(name) {
+                  document.querySelectorAll(".tab").forEach(button =>
+                    button.classList.toggle("active",button.dataset.tab === name)
+                  );
+                  const map = {carte:"tabCarte",photos:"tabPhotos",history:"tabHistory"};
+                  document.querySelectorAll(".tab-panel").forEach(panel =>
+                    panel.classList.toggle("active",panel.id === map[name])
+                  );
+                }
+          '''
+              new_switch = '''      function switchTab(name) {
+                  document.querySelectorAll(".tab").forEach(button =>
+                    button.classList.toggle("active",button.dataset.tab === name)
+                  );
+                  const map = {carte:"tabCarte",photos:"tabPhotos",history:"tabHistory"};
+                  document.querySelectorAll(".tab-panel").forEach(panel =>
+                    panel.classList.toggle("active",panel.id === map[name])
+                  );
+                  if (name === "photos") {
+                    renderPhotos(state.customerDetail?.cartes || []);
+                  }
+                }
+          '''
+              replace_once(old_switch, new_switch, "写真タブ遅延表示")
+
+              old_events = '''      $("#saveCarte").addEventListener("click",saveCarte);
+                $("#clearCarte").addEventListener("click",clearCarteForm);
+                $("#beforePhoto").addEventListener("change",() =>
+          '''
+              new_events = '''      $("#saveCarte").addEventListener("click",saveCarte);
+                $("#clearCarte").addEventListener("click",() => clearCarteForm());
+                $("#newCarteMode").addEventListener("click",() => clearCarteForm({
+                  keepNextVisit:true,
+                }));
+                $("#copyPreviousCarte").addEventListener("click",copyPreviousCarte);
+                $("#editCurrentCarte").addEventListener("click",editCurrentCarte);
+                $("#treatmentType").addEventListener(
+                  "change",
+                  applyTreatmentFieldVisibility
+                );
+                $("#photoMore").addEventListener("click",() => {
+                  state.photosExpanded = !state.photosExpanded;
+                  renderPhotos(state.customerDetail?.cartes || []);
+                });
+                $("#beforePhoto").addEventListener("change",() =>
+          '''
+              replace_once(old_events, new_events, "追加ボタンイベント")
+
+              owner_path.write_text(text, encoding="utf-8")
+
+          config_text = config_path.read_text(encoding="utf-8")
+          config_text, version_count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-13-IPAD-CARTE-SAFETY-20260722"',
+              config_text,
+              count=1,
+          )
+          if version_count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+          config_path.write_text(config_text, encoding="utf-8")
+          PY
+
+      - name: Validate HTML and JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f owner-ipad.html
+          test -f config.js
+
+          grep -q 'id="carteModePanel"' owner-ipad.html
+          grep -q 'state.carteMode === "edit" && state.currentCarteId' owner-ipad.html
+          grep -q 'image.loading = "lazy"' owner-ipad.html
+          grep -q 'EYE-13-IPAD-CARTE-SAFETY-20260722' config.js
+
+          if grep -q 'state.currentCarteId = latest.id' owner-ipad.html; then
+            echo "危険な最新カルテID引継ぎ処理が残っています。"
+            exit 1
+          fi
+
+          if grep -q 'carte_id:state.currentCarteId || undefined' owner-ipad.html; then
+            echo "危険な無条件carte_id送信処理が残っています。"
+            exit 1
+          fi
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path("owner-ipad.html").read_text(encoding="utf-8")
+          scripts = re.findall(
+              r"<script(?:\s[^>]*)?>(.*?)</script>",
+              html,
+              flags=re.S,
+          )
+          inline = [script for script in scripts if script.strip()]
+          if not inline:
+              raise SystemExit("検査対象のインラインJavaScriptがありません。")
+          Path("/tmp/owner-ipad-inline.js").write_text(
+              "\n".join(inline),
+              encoding="utf-8",
+          )
+          PY
+
+          node --check /tmp/owner-ipad-inline.js
+          node --check config.js
+
+          python3 <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              pass
+
+          parser = Parser()
+          parser.feed(Path("owner-ipad.html").read_text(encoding="utf-8"))
+          parser.close()
+          print("HTML parser check passed.")
+          PY
+
+      - name: Create backup tag and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_TAG="eye-brushup-3-backup-${{ github.run_id }}"
+          git tag "$BACKUP_TAG" "$BEFORE_SHA"
+          git push origin "$BACKUP_TAG"
+
+          rm -f ".github/workflows/step-eye-brushup-3-ipad-carte-safety.yml"
+
+          git config user.name "DPRO STEP EYE-BRUSHUP-3"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "STEP EYE-BRUSHUP-3 protect iPad carte history"
+          git push origin HEAD:main
