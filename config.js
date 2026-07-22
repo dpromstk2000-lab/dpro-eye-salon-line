@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-12-R2-OWNER-BRUSHUP-20260722",
+    VERSION: "EYE-12-R3-EMERGENCY-ROLLBACK-20260722",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -147,12 +147,4 @@
       button_height_px: 52,
     }),
   });
-
-  if (/\/owner\.html$/i.test(window.location.pathname)) {
-    const brushup = document.createElement("script");
-    brushup.src =
-      `${pageBase}owner-brushup.js?v=EYE-12-R2-OWNER-BRUSHUP-20260722`;
-    brushup.async = false;
-    document.head.appendChild(brushup);
-  }
 })();
