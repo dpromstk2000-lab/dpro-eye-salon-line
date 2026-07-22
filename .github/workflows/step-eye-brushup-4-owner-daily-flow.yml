@@ -1,0 +1,1208 @@
+name: STEP EYE-BRUSHUP-4 Owner Daily Flow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-4-owner-daily-flow.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-4-owner-daily-flow
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save pre-change commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Apply owner daily-flow patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          owner_path = Path("owner.html")
+          config_path = Path("config.js")
+
+          if not owner_path.exists():
+              raise SystemExit("owner.html が見つかりません。")
+          if not config_path.exists():
+              raise SystemExit("config.js が見つかりません。")
+
+          text = owner_path.read_text(encoding="utf-8")
+
+          if 'id="ownerDailyAttention"' in text:
+              print("STEP EYE-BRUSHUP-4 はすでに適用済みです。")
+          else:
+              def replace_once(old, new, label):
+                  global text
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。"
+                          "現行コードが想定と異なるため、安全のため停止しました。"
+                      )
+                  text = text.replace(old, new, 1)
+
+              def replace_regex(pattern, replacement, label):
+                  global text
+                  text, count = re.subn(
+                      pattern,
+                      replacement,
+                      text,
+                      count=1,
+                      flags=re.S,
+                  )
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。"
+                          "現行コードが想定と異なるため、安全のため停止しました。"
+                      )
+
+              css_anchor = '''    .loading {
+          '''
+              css_insert = '''    .reservation-card.daily-progress {
+                border-left:6px solid var(--blue);
+              }
+              .reservation-card.daily-completed {
+                border-left:6px solid var(--success);
+              }
+              .reservation-card.daily-cancelled {
+                border-left:6px solid var(--danger);
+                opacity:.82;
+              }
+              .reservation-actions {
+                display:grid;
+                grid-template-columns:repeat(2,minmax(92px,1fr));
+                min-width:210px;
+              }
+              .reservation-actions .btn {
+                width:100%;
+              }
+              .daily-primary-action {
+                grid-column:1/-1;
+              }
+              .owner-attention {
+                margin-top:13px;
+                padding:15px;
+                border:2px solid #B9C7B4;
+                border-radius:14px;
+                color:#40513B;
+                background:#F1F7EF;
+              }
+              .owner-attention.alert {
+                border-color:#D8B88F;
+                color:#74491E;
+                background:#FFF5E8;
+              }
+              .owner-attention strong {
+                display:block;
+                font-size:19px;
+              }
+              .owner-attention ul {
+                margin:7px 0 0;
+                padding-left:22px;
+              }
+              .customer-quick-actions {
+                display:flex;
+                flex-wrap:wrap;
+                gap:9px;
+                margin-top:12px;
+                padding:12px;
+                border-radius:13px;
+                background:var(--soft);
+              }
+              .complete-no-next {
+                display:flex;
+                gap:9px;
+                align-items:center;
+                min-height:52px;
+                margin-top:0;
+                padding:10px 13px;
+                border:2px solid var(--border);
+                border-radius:12px;
+                background:white;
+                cursor:pointer;
+              }
+              .complete-no-next input {
+                width:22px;
+                min-height:22px;
+                margin:0;
+                accent-color:var(--accent);
+              }
+              .complete-guide {
+                grid-column:1/-1;
+                padding:11px 13px;
+                border-radius:11px;
+                color:#60474E;
+                background:#F4EAEC;
+                font-weight:800;
+              }
+              .carte-link-guide {
+                grid-column:1/-1;
+                padding:11px 13px;
+                border-left:5px solid var(--accent);
+                border-radius:11px;
+                color:#60474E;
+                background:#FCF4F5;
+                font-weight:800;
+              }
+
+              .loading {
+          '''
+              replace_once(css_anchor, css_insert, "日常操作CSS")
+
+              responsive_anchor = '''      .reservation-actions { justify-content:flex-start; }
+          '''
+              responsive_insert = '''      .reservation-actions {
+                  justify-content:flex-start;
+                  min-width:0;
+                  grid-template-columns:repeat(2,minmax(0,1fr));
+                }
+          '''
+              replace_once(
+                  responsive_anchor,
+                  responsive_insert,
+                  "予約操作レスポンシブCSS"
+              )
+
+              detail_anchor = '''          </div>
+
+                    <div class="tabs">
+                      <button class="tab active" type="button" data-tab="summary">概要</button>
+          '''
+              detail_insert = '''          </div>
+
+                    <div id="ownerDailyAttention" class="owner-attention">
+                      <strong>施術上の重要な注意事項は登録されていません</strong>
+                    </div>
+
+                    <div class="customer-quick-actions">
+                      <button id="customerNewCarteButton" class="btn btn-primary btn-small"
+                        type="button">
+                        新しいカルテ
+                      </button>
+                      <button id="customerPreviousCarteButton"
+                        class="btn btn-secondary btn-small" type="button">
+                        前回カルテ
+                      </button>
+                      <button id="customerNextBookingButton"
+                        class="btn btn-success btn-small" type="button">
+                        次回予約
+                      </button>
+                    </div>
+
+                    <div class="tabs">
+                      <button class="tab active" type="button" data-tab="summary">概要</button>
+          '''
+              replace_once(detail_anchor, detail_insert, "顧客注意事項と直接操作")
+
+              carte_form_anchor = '''          <div id="tabNewCarte" class="tab-panel">
+                      <div class="form-grid">
+          '''
+              carte_form_insert = '''          <div id="tabNewCarte" class="tab-panel">
+                      <div class="form-grid">
+                        <div id="carteReservationGuide" class="carte-link-guide" hidden>
+                          この予約に紐づく今回分のカルテとして保存します。
+                        </div>
+          '''
+              replace_once(
+                  carte_form_anchor,
+                  carte_form_insert,
+                  "カルテ予約紐付け表示"
+              )
+
+              complete_anchor = '''      <div id="completeFields" class="form-grid" style="margin-top:14px" hidden>
+                  <label class="field">
+                    次回来店目安
+                    <input id="completeNextVisit" type="date">
+                  </label>
+                </div>
+          '''
+              complete_insert = '''      <div id="completeFields" class="form-grid" style="margin-top:14px" hidden>
+                  <div id="completeGuide" class="complete-guide">
+                    メニュー設定の再来店目安から候補日を表示します。
+                  </div>
+                  <label class="field">
+                    次回来店目安
+                    <input id="completeNextVisit" type="date">
+                  </label>
+                  <label class="complete-no-next">
+                    <input id="completeNoNextVisit" type="checkbox">
+                    <span>次回来店日は未定のまま完了する</span>
+                  </label>
+                  <div class="field full">
+                    <button id="completeSaveButton" class="btn btn-success" type="button">
+                      施術完了を保存
+                    </button>
+                  </div>
+                </div>
+          '''
+              replace_once(complete_anchor, complete_insert, "完了処理UI")
+
+              state_anchor = '''        customerDetail:null,
+                };
+          '''
+              state_insert = '''        customerDetail:null,
+                  carteReservationId:"",
+                  carteReservationRow:null,
+                };
+          '''
+              replace_once(state_anchor, state_insert, "状態管理追加")
+
+              helper_anchor = '''      function renderReservations(rows) {
+          '''
+              helper_insert = '''      function normalizeDailyText(value) {
+                  return String(value || "")
+                    .normalize("NFKC")
+                    .replace(/\\s+/g,"")
+                    .toLowerCase();
+                }
+
+                function allServices() {
+                  const map = new Map();
+                  for (const service of state.services || []) {
+                    if (service?.id) map.set(service.id,service);
+                  }
+                  for (const category of state.categories || []) {
+                    for (const service of category.services || []) {
+                      if (service?.id) map.set(service.id,service);
+                    }
+                  }
+                  return [...map.values()];
+                }
+
+                function matchingServices(row) {
+                  const names = normalizeDailyText(row?.service_names);
+                  if (!names) return [];
+                  return allServices().filter(service =>
+                    normalizeDailyText(service.service_name) &&
+                    names.includes(normalizeDailyText(service.service_name))
+                  );
+                }
+
+                function revisitDaysForReservation(row) {
+                  const days = matchingServices(row)
+                    .map(service => Number(service.revisit_days))
+                    .filter(value => Number.isFinite(value) && value > 0);
+                  return days.length ? Math.min(...days) : null;
+                }
+
+                function suggestedNextVisit(row) {
+                  const days = revisitDaysForReservation(row);
+                  const date = row?.jst?.start?.date || state.dashboardDate;
+                  return days && date ? addDays(date,days) : "";
+                }
+
+                function inferCarteTreatment(row) {
+                  const value = normalizeDailyText(row?.service_names);
+                  if (value.includes("眉") || value.includes("brow")) {
+                    if (
+                      value.includes("まつげ") ||
+                      value.includes("ラッシュ") ||
+                      value.includes("lash")
+                    ) return "set";
+                    if (value.includes("ワックス") || value.includes("wax")) {
+                      return "wax";
+                    }
+                    return "brow";
+                  }
+                  if (value.includes("エクステ") || value.includes("extension")) {
+                    return "extension";
+                  }
+                  if (value.includes("リペア") || value.includes("repair")) {
+                    return "repair";
+                  }
+                  if (value.includes("オフ") || value.includes("off")) return "off";
+                  if (value.includes("パーマ") || value.includes("perm")) {
+                    return "lash_perm";
+                  }
+                  return "lash_lift";
+                }
+
+                function nextDailyAction(status) {
+                  if (["reserved","confirmed"].includes(status)) {
+                    return {status:"arrived",label:"来店"};
+                  }
+                  if (["arrived","counseling"].includes(status)) {
+                    return {status:"in_service",label:"施術開始"};
+                  }
+                  if (["in_service","finishing"].includes(status)) {
+                    return {status:"payment_waiting",label:"会計待ち"};
+                  }
+                  if (status === "payment_waiting") {
+                    return {status:"completed",label:"完了"};
+                  }
+                  return null;
+                }
+
+                function reservationCardClass(status) {
+                  if (status === "completed") return "reservation-card daily-completed";
+                  if (["cancelled","no_show","cancel_requested"].includes(status)) {
+                    return "reservation-card daily-cancelled";
+                  }
+                  if (
+                    ["arrived","counseling","in_service","finishing","payment_waiting"]
+                      .includes(status)
+                  ) {
+                    return "reservation-card daily-progress";
+                  }
+                  return "reservation-card";
+                }
+
+                async function findCustomerForReservation(row) {
+                  const query = row.customer_no || row.customer_name || "";
+                  const url = new URL(config.API.admin_customer_search);
+                  url.searchParams.set("q",query);
+                  const data = await fetchJson(url,{headers:adminHeaders()});
+                  const customers = data.customers || [];
+                  const exact = customers.find(customer =>
+                    row.customer_no &&
+                    String(customer.customer_no) === String(row.customer_no)
+                  );
+                  const customer = exact || customers[0];
+                  if (!customer) throw new Error("予約のお客様が見つかりません。");
+                  return customer;
+                }
+
+                function currentReservationCarte(row) {
+                  return (state.customerDetail?.cartes || []).find(carte =>
+                    String(
+                      carte.reservation_id ||
+                      carte.reservation?.id ||
+                      ""
+                    ) === String(row?.id || "")
+                  ) || null;
+                }
+
+                function applyCarteFieldVisibility() {
+                  const type = $("#carteTreatmentType").value;
+                  const fieldIds = [
+                    "carteRod","carteCurl","carteLength","carteThickness",
+                    "carteCount","carteDesign","carteDifference","carteChemical",
+                    "carteProcessing","carteBrowShape","carteWaxSkin",
+                    "carteFinish","carteHomecare","carteNextImprovement",
+                    "cartePrivateNote","carteNextVisit",
+                  ];
+                  const visibleMap = {
+                    lash_lift:[
+                      "carteRod","carteCurl","carteDifference","carteChemical",
+                      "carteProcessing","carteFinish","carteHomecare",
+                      "carteNextImprovement","cartePrivateNote","carteNextVisit",
+                    ],
+                    lash_perm:[
+                      "carteRod","carteCurl","carteDifference","carteChemical",
+                      "carteProcessing","carteFinish","carteHomecare",
+                      "carteNextImprovement","cartePrivateNote","carteNextVisit",
+                    ],
+                    extension:[
+                      "carteCurl","carteLength","carteThickness","carteCount",
+                      "carteDesign","carteDifference","carteChemical","carteFinish",
+                      "carteHomecare","carteNextImprovement","cartePrivateNote",
+                      "carteNextVisit",
+                    ],
+                    repair:[
+                      "carteCurl","carteLength","carteThickness","carteCount",
+                      "carteDesign","carteDifference","carteChemical","carteFinish",
+                      "carteHomecare","carteNextImprovement","cartePrivateNote",
+                      "carteNextVisit",
+                    ],
+                    brow:[
+                      "carteDesign","carteDifference","carteBrowShape",
+                      "carteWaxSkin","carteFinish","carteHomecare",
+                      "carteNextImprovement","cartePrivateNote","carteNextVisit",
+                    ],
+                    wax:[
+                      "carteDesign","carteDifference","carteChemical",
+                      "carteBrowShape","carteWaxSkin","carteFinish",
+                      "carteHomecare","carteNextImprovement","cartePrivateNote",
+                      "carteNextVisit",
+                    ],
+                    set:fieldIds,
+                    off:[
+                      "carteChemical","carteProcessing","carteFinish",
+                      "carteHomecare","carteNextImprovement","cartePrivateNote",
+                      "carteNextVisit",
+                    ],
+                    other:fieldIds,
+                  };
+                  const visible = new Set(visibleMap[type] || fieldIds);
+                  for (const id of fieldIds) {
+                    const label = $(`#${id}`)?.closest("label");
+                    if (label) label.hidden = !visible.has(id);
+                  }
+                }
+
+                async function openReservationCustomer(row,requestedTab) {
+                  try {
+                    const customer = await findCustomerForReservation(row);
+                    await openView("customers");
+                    $("#customerQuery").value =
+                      row.customer_no || row.customer_name || "";
+                    renderCustomerResults([customer]);
+                    setStatus(
+                      $("#customerSearchStatus"),
+                      `${customer.full_name}を開きました。`,
+                      "ok"
+                    );
+
+                    const preserveReservation = requestedTab === "smart-carte";
+                    state.carteReservationId = preserveReservation ? row.id : "";
+                    state.carteReservationRow = preserveReservation ? row : null;
+                    await loadCustomerDetail(
+                      customer.id,
+                      null,
+                      {preserveReservation}
+                    );
+
+                    if (requestedTab === "smart-carte") {
+                      const current = currentReservationCarte(row);
+                      if (current) {
+                        state.carteReservationId = "";
+                        state.carteReservationRow = null;
+                        $("#carteReservationGuide").hidden = true;
+                        switchCustomerTab("cartes");
+                        toast("今回のカルテは登録済みのため、カルテ履歴を開きました。");
+                      } else {
+                        clearCarteForm();
+                        switchCustomerTab("new-carte");
+                      }
+                    } else {
+                      switchCustomerTab(requestedTab);
+                    }
+                    $("#customerDetailPanel").scrollIntoView({
+                      behavior:"smooth",
+                      block:"start",
+                    });
+                  } catch (error) {
+                    toast(error.message,true);
+                  }
+                }
+
+                function selectBookingCustomer(customer,card=null) {
+                  state.booking.customerId = customer.id;
+                  state.booking.customer = customer;
+                  state.booking.newCustomerMode = false;
+                  $("#newCustomerFields").hidden = true;
+                  $("#bookingCustomerResults")
+                    .querySelectorAll(".customer-card")
+                    .forEach(node => node.classList.remove("selected"));
+                  if (card) card.classList.add("selected");
+                  setStatus(
+                    $("#selectedCustomerBox"),
+                    `${customer.full_name}（${customer.customer_no}）を選択しました。`,
+                    "ok"
+                  );
+                }
+
+                function applyPreviousServices(row) {
+                  const matched = matchingServices(row);
+                  const ids = new Set(matched.map(service => service.id));
+                  state.booking.selectedServiceIds = ids;
+                  document.querySelectorAll(".menu-choice").forEach(label => {
+                    const input = label.querySelector("input");
+                    const selected = input && ids.has(input.value);
+                    if (input) input.checked = selected;
+                    label.classList.toggle("selected",Boolean(selected));
+                  });
+                  renderBookingStaffOptions();
+
+                  const staff = state.staff.find(member =>
+                    member.display_name === row.staff_name
+                  );
+                  if (
+                    staff &&
+                    [...$("#bookingStaff").options].some(
+                      option => option.value === staff.id
+                    )
+                  ) {
+                    $("#bookingStaff").value = staff.id;
+                    state.booking.staffId = staff.id;
+                  }
+
+                  const candidate = suggestedNextVisit(row);
+                  if (candidate) {
+                    $("#bookingDate").value = candidate;
+                    state.booking.date = candidate;
+                  }
+                  clearBookingSlots();
+                }
+
+                async function prepareNextBookingFromReservation(row) {
+                  try {
+                    const customer = await findCustomerForReservation(row);
+                    await openView("booking");
+                    resetBookingForm();
+                    $("#bookingCustomerQuery").value =
+                      row.customer_no || row.customer_name || "";
+                    renderBookingCustomerResults([customer]);
+                    selectBookingCustomer(
+                      customer,
+                      $("#bookingCustomerResults .customer-card")
+                    );
+                    applyPreviousServices(row);
+                    $("#bookingMenus").scrollIntoView({
+                      behavior:"smooth",
+                      block:"start",
+                    });
+                    toast("お客様・前回メニュー・次回来店候補を入力しました。");
+                  } catch (error) {
+                    toast(error.message,true);
+                  }
+                }
+
+                async function prepareNextBookingForCurrentCustomer() {
+                  const customer = state.customerDetail?.customer;
+                  if (!customer) return toast("顧客を選択してください。",true);
+                  await openView("booking");
+                  resetBookingForm();
+                  $("#bookingCustomerQuery").value =
+                    customer.customer_no || customer.full_name || "";
+                  renderBookingCustomerResults([customer]);
+                  selectBookingCustomer(
+                    customer,
+                    $("#bookingCustomerResults .customer-card")
+                  );
+                  $("#bookingMenus").scrollIntoView({
+                    behavior:"smooth",
+                    block:"start",
+                  });
+                }
+
+                function renderReservations(rows) {
+          '''
+              replace_once(helper_anchor, helper_insert, "日常操作ヘルパー追加")
+
+              render_pattern = (
+                  r'      function renderReservations\(rows\) \{.*?'
+                  r'\n      \}\n\n      function openReservationModal\(row\) \{'
+              )
+              render_replacement = '''      function renderReservations(rows) {
+                  const container = $("#reservationList");
+                  container.replaceChildren();
+                  if (!rows.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "empty";
+                    empty.textContent = "この日の予約はありません。";
+                    container.append(empty);
+                    return;
+                  }
+
+                  for (const row of rows) {
+                    const card = document.createElement("article");
+                    card.className = reservationCardClass(row.status);
+
+                    const time = document.createElement("div");
+                    time.className = "time";
+                    time.textContent = row.jst?.start?.time || "―";
+
+                    const main = document.createElement("div");
+                    main.className = "reservation-main";
+                    const name = document.createElement("strong");
+                    name.textContent = row.customer_name || "お客様";
+                    const menu = document.createElement("span");
+                    menu.textContent = row.service_names || "メニュー未設定";
+                    const badge = document.createElement("span");
+                    badge.className = badgeClass(row.status);
+                    badge.textContent = STATUS_LABEL[row.status] || row.status;
+                    badge.style.marginTop = "7px";
+                    main.append(name,menu,badge);
+
+                    const meta = document.createElement("div");
+                    meta.className = "reservation-meta";
+                    meta.textContent =
+                      `${row.staff_name || "担当未設定"} ／ ` +
+                      `${row.resource_name || "施術席未設定"} ／ ` +
+                      `${row.booking_source || "受付"}`;
+
+                    const actions = document.createElement("div");
+                    actions.className = "reservation-actions";
+
+                    const next = nextDailyAction(row.status);
+                    if (next) {
+                      const quick = document.createElement("button");
+                      quick.type = "button";
+                      quick.className =
+                        `btn btn-small daily-primary-action ${
+                          next.status === "completed"
+                            ? "btn-success"
+                            : next.status === "payment_waiting"
+                              ? "btn-dark"
+                              : next.status === "in_service"
+                                ? "btn-warning"
+                                : "btn-primary"
+                        }`;
+                      quick.textContent = `次の操作：${next.label}`;
+                      quick.addEventListener("click",async () => {
+                        if (next.status === "completed") {
+                          openReservationModal(row,"completed");
+                          return;
+                        }
+                        state.selectedReservation = row;
+                        await updateReservationStatus(next.status);
+                      });
+                      actions.append(quick);
+                    }
+
+                    const carte = document.createElement("button");
+                    carte.type = "button";
+                    carte.className = "btn btn-primary btn-small";
+                    carte.textContent = "カルテ";
+                    carte.addEventListener("click",() =>
+                      openReservationCustomer(row,"smart-carte")
+                    );
+
+                    const previous = document.createElement("button");
+                    previous.type = "button";
+                    previous.className = "btn btn-secondary btn-small";
+                    previous.textContent = "前回カルテ";
+                    previous.addEventListener("click",() =>
+                      openReservationCustomer(row,"cartes")
+                    );
+
+                    const nextBooking = document.createElement("button");
+                    nextBooking.type = "button";
+                    nextBooking.className = "btn btn-success btn-small";
+                    nextBooking.textContent = "次回予約";
+                    nextBooking.addEventListener("click",() =>
+                      prepareNextBookingFromReservation(row)
+                    );
+
+                    const more = document.createElement("button");
+                    more.type = "button";
+                    more.className = "btn btn-secondary btn-small";
+                    more.textContent = "その他";
+                    more.addEventListener("click",() =>
+                      openReservationModal(row)
+                    );
+
+                    actions.append(carte,previous,nextBooking,more);
+                    card.append(time,main,meta,actions);
+                    container.append(card);
+                  }
+                }
+
+                function showCompletionFields(row) {
+                  $("#completeFields").hidden = false;
+                  $("#completeNoNextVisit").checked = false;
+                  $("#completeNextVisit").disabled = false;
+                  const candidate = suggestedNextVisit(row);
+                  $("#completeNextVisit").value = candidate;
+                  const days = revisitDaysForReservation(row);
+                  $("#completeGuide").textContent = candidate
+                    ? `メニュー設定から ${days}日後の ${candidate} を候補にしました。変更できます。`
+                    : "次回来店日を入力するか、「未定のまま完了」を選択してください。";
+                  $("#completeNextVisit").focus();
+                }
+
+                function openReservationModal(row,initialStatus="") {'''
+              replace_regex(
+                  render_pattern,
+                  render_replacement,
+                  "予約カード直接操作"
+              )
+
+              modal_pattern = (
+                  r'      function openReservationModal\(row,initialStatus=""\) \{.*?'
+                  r'\n      \}\n\n      async function updateReservationStatus\(status\) \{'
+              )
+              modal_replacement = '''      function openReservationModal(row,initialStatus="") {
+                  state.selectedReservation = row;
+                  $("#modalReservationInfo").textContent =
+                    `${row.jst?.start?.date || ""} ${row.jst?.start?.time || ""} ／ ` +
+                    `${row.customer_name || "お客様"} ／ ${row.service_names || ""}`;
+                  $("#completeFields").hidden = true;
+                  $("#completeNextVisit").value = "";
+                  $("#completeNextVisit").disabled = false;
+                  $("#completeNoNextVisit").checked = false;
+                  const container = $("#statusButtons");
+                  container.replaceChildren();
+
+                  for (const [status,label,className] of STATUS_FLOW) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `btn ${className}`;
+                    button.textContent = label;
+                    button.addEventListener("click",() => {
+                      if (status === "completed") {
+                        showCompletionFields(row);
+                        return;
+                      }
+                      updateReservationStatus(status);
+                    });
+                    container.append(button);
+                  }
+
+                  $("#reservationModal").classList.add("show");
+                  if (initialStatus === "completed") {
+                    showCompletionFields(row);
+                  }
+                }
+
+                async function updateReservationStatus(status) {'''
+              replace_regex(
+                  modal_pattern,
+                  modal_replacement,
+                  "完了モーダル簡略化"
+              )
+
+              status_pattern = (
+                  r'      async function updateReservationStatus\(status\) \{.*?'
+                  r'\n      \}\n\n      function renderBookingMenus\(\) \{'
+              )
+              status_replacement = '''      async function updateReservationStatus(status) {
+                  const row = state.selectedReservation;
+                  if (!row) return;
+                  try {
+                    const payload = {
+                      reservation_id:row.id,
+                      status,
+                    };
+                    if (status === "completed") {
+                      const noNext = $("#completeNoNextVisit").checked;
+                      const nextDate = $("#completeNextVisit").value;
+                      if (!noNext && !nextDate) {
+                        toast(
+                          "次回来店日を入力するか、「未定のまま完了」を選択してください。",
+                          true
+                        );
+                        return;
+                      }
+                      if (!noNext && nextDate) {
+                        payload.next_revisit_date = nextDate;
+                      }
+                    }
+                    await fetchJson(config.API.admin_reservation_status,{
+                      method:"PATCH",
+                      headers:adminHeaders(true),
+                      body:JSON.stringify(payload),
+                    });
+                    toast(`予約状態を「${STATUS_LABEL[status] || status}」へ変更しました。`);
+                    $("#reservationModal").classList.remove("show");
+                    await loadDashboard();
+                  } catch (error) {
+                    toast(error.message,true);
+                  }
+                }
+
+                function renderBookingMenus() {'''
+              replace_regex(
+                  status_pattern,
+                  status_replacement,
+                  "完了未定保存処理"
+              )
+
+              booking_customer_pattern = (
+                  r'      function renderBookingCustomerResults\(customers\) \{.*?'
+                  r'\n      \}\n\n      function setNewCustomerMode\(\) \{'
+              )
+              booking_customer_replacement = '''      function renderBookingCustomerResults(customers) {
+                  const container = $("#bookingCustomerResults");
+                  container.replaceChildren();
+                  if (!customers.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "empty";
+                    empty.textContent = "該当する顧客が見つかりません。";
+                    container.append(empty);
+                    return;
+                  }
+                  for (const customer of customers) {
+                    const card = document.createElement("article");
+                    card.className = "customer-card";
+                    const name = document.createElement("strong");
+                    name.textContent = customer.full_name;
+                    const phone = document.createElement("span");
+                    phone.textContent = customer.phone || "電話番号なし";
+                    const no = document.createElement("small");
+                    no.textContent =
+                      `${customer.customer_no} ／ 最終来店 ${customer.last_visit_at || "未登録"}`;
+                    card.append(name,phone,no);
+                    card.addEventListener("click",() =>
+                      selectBookingCustomer(customer,card)
+                    );
+                    container.append(card);
+                  }
+                }
+
+                function setNewCustomerMode() {'''
+              replace_regex(
+                  booking_customer_pattern,
+                  booking_customer_replacement,
+                  "予約顧客直接選択"
+              )
+
+              load_detail_pattern = (
+                  r'      async function loadCustomerDetail\(id,card\) \{.*?'
+                  r'\n      \}\n\n      function renderCustomerDetail\(data\) \{'
+              )
+              load_detail_replacement = '''      async function loadCustomerDetail(id,card,options={}) {
+                  if (!options.preserveReservation) {
+                    state.carteReservationId = "";
+                    state.carteReservationRow = null;
+                    $("#carteReservationGuide").hidden = true;
+                  }
+                  $("#customerResults").querySelectorAll(".customer-card").forEach(node =>
+                    node.classList.remove("selected")
+                  );
+                  if (card) card.classList.add("selected");
+                  $("#customerDetailPanel").hidden = false;
+                  $("#customerDetailSubtitle").textContent = "顧客情報を読み込んでいます…";
+                  const url = new URL(config.API.admin_customer_detail);
+                  url.searchParams.set("customer_id",id);
+                  try {
+                    const data = await fetchJson(url,{headers:adminHeaders()});
+                    state.customerDetail = data;
+                    renderCustomerDetail(data);
+                  } catch (error) {
+                    $("#customerDetailSubtitle").textContent = error.message;
+                    toast(error.message,true);
+                  }
+                }
+
+                function meaningfulAttention(value) {
+                  const text = normalizeDailyText(value);
+                  if (!text || text === "―") return false;
+                  return ![
+                    "なし","ありません","未設定","該当なし","いいえ","未使用"
+                  ].some(word => text === normalizeDailyText(word));
+                }
+
+                function renderOwnerAttention(data) {
+                  const box = $("#ownerDailyAttention");
+                  const customer = data.customer || {};
+                  const intake = data.intake?.[0] || {};
+                  const items = [];
+
+                  if (meaningfulAttention(customer.contact_lens)) {
+                    items.push(`コンタクト：${customer.contact_lens}`);
+                  }
+                  if (customer.sensitive_skin || intake.sensitive_skin) {
+                    items.push("敏感肌：あり");
+                  }
+                  const allergy =
+                    customer.allergy_summary ||
+                    customer.medical_caution ||
+                    intake.allergy_note ||
+                    "";
+                  if (meaningfulAttention(allergy)) {
+                    items.push(`アレルギー・注意事項：${allergy}`);
+                  }
+                  if (meaningfulAttention(intake.eye_condition_note)) {
+                    items.push(`目元状態：${intake.eye_condition_note}`);
+                  }
+
+                  box.replaceChildren();
+                  const title = document.createElement("strong");
+                  if (!items.length) {
+                    box.className = "owner-attention";
+                    title.textContent =
+                      "施術上の重要な注意事項は登録されていません";
+                    box.append(title);
+                    return;
+                  }
+                  box.className = "owner-attention alert";
+                  title.textContent = "施術前に必ず確認してください";
+                  const list = document.createElement("ul");
+                  for (const item of items) {
+                    const row = document.createElement("li");
+                    row.textContent = item;
+                    list.append(row);
+                  }
+                  box.append(title,list);
+                }
+
+                function renderCustomerDetail(data) {'''
+              replace_regex(
+                  load_detail_pattern,
+                  load_detail_replacement,
+                  "顧客直接表示と注意事項"
+              )
+
+              render_detail_pattern = (
+                  r'      function renderCustomerDetail\(data\) \{.*?'
+                  r'\n      \}\n\n      function renderCustomerHistory\(rows\) \{'
+              )
+              render_detail_replacement = '''      function renderCustomerDetail(data) {
+                  const c = data.customer;
+                  $("#detailName").textContent = c.full_name || "―";
+                  $("#detailPhone").textContent = c.phone || "";
+                  $("#detailCustomerNo").textContent = c.customer_no || "―";
+                  $("#detailVisits").textContent = `${c.total_visits || 0}回`;
+                  $("#detailNextVisit").textContent = c.next_revisit_date || "未設定";
+                  $("#detailLine").textContent = c.line_user_id ? "連携済み" : "未連携";
+                  $("#detailLastVisit").textContent = c.last_visit_at || "未登録";
+                  $("#detailContactLens").textContent = c.contact_lens || "未設定";
+                  $("#detailSensitive").textContent = c.sensitive_skin ? "あり" : "なし";
+                  $("#detailAllergy").textContent =
+                    c.allergy_summary || c.medical_caution || "なし";
+                  $("#customerDetailSubtitle").textContent =
+                    `${c.customer_no} ／ ${c.normalized_phone || ""}`;
+
+                  const intake = data.intake?.[0];
+                  $("#latestIntake").textContent = intake
+                    ? `最新事前確認：コンタクト ${intake.contact_lens || "不明"} ／ ` +
+                      `敏感肌 ${intake.sensitive_skin ? "あり" : "なし"} ／ ` +
+                      `${intake.allergy_note || intake.eye_condition_note || "特記事項なし"}`
+                    : "事前確認情報はありません。";
+
+                  renderOwnerAttention(data);
+                  renderCustomerHistory(data.reservations || []);
+                  renderCartes(data.cartes || []);
+                  $("#carteDate").value =
+                    state.carteReservationRow?.jst?.start?.date || jstToday();
+                  $("#carteNextVisit").value =
+                    state.carteReservationRow
+                      ? suggestedNextVisit(state.carteReservationRow) ||
+                        c.next_revisit_date ||
+                        ""
+                      : c.next_revisit_date || "";
+                  $("#carteReservationGuide").hidden =
+                    !state.carteReservationId;
+                  applyCarteFieldVisibility();
+                }
+
+                function renderCustomerHistory(rows) {'''
+              replace_regex(
+                  render_detail_pattern,
+                  render_detail_replacement,
+                  "顧客詳細表示"
+              )
+
+              clear_pattern = (
+                  r'      function clearCarteForm\(\) \{.*?'
+                  r'\n      \}\n\n      async function saveCarte\(\) \{'
+              )
+              clear_replacement = '''      function clearCarteForm() {
+                  [
+                    "carteRod","carteCurl","carteLength","carteThickness",
+                    "carteCount","carteDesign","carteDifference","carteChemical",
+                    "carteProcessing","carteBrowShape","carteWaxSkin","carteFinish",
+                    "carteHomecare","carteNextImprovement","cartePrivateNote",
+                  ].forEach(id => $(`#${id}`).value = "");
+                  $("#carteTreatmentType").value =
+                    state.carteReservationRow
+                      ? inferCarteTreatment(state.carteReservationRow)
+                      : "lash_lift";
+                  $("#carteDate").value =
+                    state.carteReservationRow?.jst?.start?.date || jstToday();
+                  $("#carteNextVisit").value =
+                    state.carteReservationRow
+                      ? suggestedNextVisit(state.carteReservationRow) ||
+                        state.customerDetail?.customer?.next_revisit_date ||
+                        ""
+                      : state.customerDetail?.customer?.next_revisit_date || "";
+
+                  const staff = state.staff.find(member =>
+                    member.display_name === state.carteReservationRow?.staff_name
+                  );
+                  if (staff) $("#carteStaff").value = staff.id;
+                  $("#carteReservationGuide").hidden =
+                    !state.carteReservationId;
+                  applyCarteFieldVisibility();
+                }
+
+                async function saveCarte() {'''
+              replace_regex(
+                  clear_pattern,
+                  clear_replacement,
+                  "カルテ予約情報準備"
+              )
+
+              payload_anchor = '''          customer_id:detail.customer.id,
+                    staff_id:$("#carteStaff").value,
+          '''
+              payload_insert = '''          customer_id:detail.customer.id,
+                    reservation_id:state.carteReservationId || undefined,
+                    staff_id:$("#carteStaff").value,
+          '''
+              replace_once(payload_anchor, payload_insert, "カルテ予約ID保存")
+
+              save_success_anchor = '''          toast("カルテを保存しました。");
+                    clearCarteForm();
+                    await loadCustomerDetail(detail.customer.id);
+          '''
+              save_success_insert = '''          toast(
+                      state.carteReservationId
+                        ? "今回の予約に紐づくカルテを保存しました。"
+                        : "カルテを保存しました。"
+                    );
+                    state.carteReservationId = "";
+                    state.carteReservationRow = null;
+                    $("#carteReservationGuide").hidden = true;
+                    clearCarteForm();
+                    await loadCustomerDetail(detail.customer.id);
+          '''
+              replace_once(
+                  save_success_anchor,
+                  save_success_insert,
+                  "カルテ保存後リセット"
+              )
+
+              event_anchor = '''      $("#carteSaveButton").addEventListener("click",saveCarte);
+                $("#carteClearButton").addEventListener("click",clearCarteForm);
+
+                $("#followupReload").addEventListener("click",loadFollowups);
+          '''
+              event_insert = '''      $("#carteSaveButton").addEventListener("click",saveCarte);
+                $("#carteClearButton").addEventListener("click",clearCarteForm);
+                $("#carteTreatmentType").addEventListener(
+                  "change",
+                  applyCarteFieldVisibility
+                );
+                $("#customerNewCarteButton").addEventListener("click",() => {
+                  state.carteReservationId = "";
+                  state.carteReservationRow = null;
+                  $("#carteReservationGuide").hidden = true;
+                  clearCarteForm();
+                  switchCustomerTab("new-carte");
+                });
+                $("#customerPreviousCarteButton").addEventListener("click",() =>
+                  switchCustomerTab("cartes")
+                );
+                $("#customerNextBookingButton").addEventListener(
+                  "click",
+                  prepareNextBookingForCurrentCustomer
+                );
+                $("#completeNoNextVisit").addEventListener("change",event => {
+                  $("#completeNextVisit").disabled = event.target.checked;
+                  if (event.target.checked) {
+                    $("#completeNextVisit").value = "";
+                    $("#completeGuide").textContent =
+                      "次回来店日は登録せず、施術完了だけを保存します。";
+                  } else {
+                    showCompletionFields(state.selectedReservation);
+                  }
+                });
+                $("#completeSaveButton").addEventListener("click",() =>
+                  updateReservationStatus("completed")
+                );
+
+                $("#followupReload").addEventListener("click",loadFollowups);
+          '''
+              replace_once(event_anchor, event_insert, "日常操作イベント")
+
+              if "owner-brushup.js" in text:
+                  raise SystemExit(
+                      "owner.html内に旧追加スクリプト参照が見つかったため停止しました。"
+                  )
+
+              owner_path.write_text(text, encoding="utf-8")
+
+          config_text = config_path.read_text(encoding="utf-8")
+          if "owner-brushup.js" in config_text:
+              raise SystemExit(
+                  "config.jsに旧owner-brushup.js読込が残っています。"
+                  "先にロールバックを完了してください。"
+              )
+
+          config_text, version_count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-14-OWNER-DAILY-FLOW-20260722"',
+              config_text,
+              count=1,
+          )
+          if version_count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+          config_path.write_text(config_text, encoding="utf-8")
+          PY
+
+      - name: Validate owner daily flow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f owner.html
+          test -f config.js
+
+          grep -q 'id="ownerDailyAttention"' owner.html
+          grep -q '次の操作：' owner.html
+          grep -q 'id="completeNoNextVisit"' owner.html
+          grep -q 'reservation_id:state.carteReservationId || undefined' owner.html
+          grep -q 'prepareNextBookingFromReservation' owner.html
+          grep -q 'applyCarteFieldVisibility' owner.html
+          grep -q 'EYE-14-OWNER-DAILY-FLOW-20260722' config.js
+
+          ! grep -q 'owner-brushup.js' config.js
+          ! grep -q 'MutationObserver' owner.html
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path("owner.html").read_text(encoding="utf-8")
+          scripts = re.findall(
+              r"<script(?:\s[^>]*)?>(.*?)</script>",
+              html,
+              flags=re.S,
+          )
+          inline = [script for script in scripts if script.strip()]
+          if not inline:
+              raise SystemExit(
+                  "検査対象のインラインJavaScriptがありません。"
+              )
+          Path("/tmp/owner-inline.js").write_text(
+              "\n".join(inline),
+              encoding="utf-8",
+          )
+          PY
+
+          node --check /tmp/owner-inline.js
+          node --check config.js
+
+          python3 <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              pass
+
+          parser = Parser()
+          parser.feed(Path("owner.html").read_text(encoding="utf-8"))
+          parser.close()
+          print("HTML parser check passed.")
+          PY
+
+      - name: Create backup tag and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_TAG="eye-brushup-4-backup-${{ github.run_id }}"
+          git tag "$BACKUP_TAG" "$BEFORE_SHA"
+          git push origin "$BACKUP_TAG"
+
+          rm -f ".github/workflows/step-eye-brushup-4-owner-daily-flow.yml"
+
+          git config user.name "DPRO STEP EYE-BRUSHUP-4"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "STEP EYE-BRUSHUP-4 simplify owner daily flow"
+          git push origin HEAD:main
