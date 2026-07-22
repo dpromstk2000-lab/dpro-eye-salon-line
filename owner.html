@@ -562,6 +562,93 @@
       white-space:pre-wrap;
     }
 
+    .reservation-card.daily-progress {
+      border-left:6px solid var(--blue);
+    }
+    .reservation-card.daily-completed {
+      border-left:6px solid var(--success);
+    }
+    .reservation-card.daily-cancelled {
+      border-left:6px solid var(--danger);
+      opacity:.82;
+    }
+    .reservation-actions {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(92px,1fr));
+      min-width:210px;
+    }
+    .reservation-actions .btn {
+      width:100%;
+    }
+    .daily-primary-action {
+      grid-column:1/-1;
+    }
+    .owner-attention {
+      margin-top:13px;
+      padding:15px;
+      border:2px solid #B9C7B4;
+      border-radius:14px;
+      color:#40513B;
+      background:#F1F7EF;
+    }
+    .owner-attention.alert {
+      border-color:#D8B88F;
+      color:#74491E;
+      background:#FFF5E8;
+    }
+    .owner-attention strong {
+      display:block;
+      font-size:19px;
+    }
+    .owner-attention ul {
+      margin:7px 0 0;
+      padding-left:22px;
+    }
+    .customer-quick-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      margin-top:12px;
+      padding:12px;
+      border-radius:13px;
+      background:var(--soft);
+    }
+    .complete-no-next {
+      display:flex;
+      gap:9px;
+      align-items:center;
+      min-height:52px;
+      margin-top:0;
+      padding:10px 13px;
+      border:2px solid var(--border);
+      border-radius:12px;
+      background:white;
+      cursor:pointer;
+    }
+    .complete-no-next input {
+      width:22px;
+      min-height:22px;
+      margin:0;
+      accent-color:var(--accent);
+    }
+    .complete-guide {
+      grid-column:1/-1;
+      padding:11px 13px;
+      border-radius:11px;
+      color:#60474E;
+      background:#F4EAEC;
+      font-weight:800;
+    }
+    .carte-link-guide {
+      grid-column:1/-1;
+      padding:11px 13px;
+      border-left:5px solid var(--accent);
+      border-radius:11px;
+      color:#60474E;
+      background:#FCF4F5;
+      font-weight:800;
+    }
+
     .loading {
       display:flex;
       gap:10px;
@@ -656,7 +743,11 @@
       .date-toolbar label { grid-column:1/-1; }
       .reservation-card { grid-template-columns:74px minmax(0,1fr); }
       .reservation-meta,.reservation-actions { grid-column:1/-1; }
-      .reservation-actions { justify-content:flex-start; }
+      .reservation-actions {
+        justify-content:flex-start;
+        min-width:0;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
       .form-grid,.source-grid,.menu-grid,.customer-results {
         grid-template-columns:1fr;
       }
@@ -962,6 +1053,25 @@
             </div>
           </div>
 
+          <div id="ownerDailyAttention" class="owner-attention">
+            <strong>施術上の重要な注意事項は登録されていません</strong>
+          </div>
+
+          <div class="customer-quick-actions">
+            <button id="customerNewCarteButton" class="btn btn-primary btn-small"
+              type="button">
+              新しいカルテ
+            </button>
+            <button id="customerPreviousCarteButton"
+              class="btn btn-secondary btn-small" type="button">
+              前回カルテ
+            </button>
+            <button id="customerNextBookingButton"
+              class="btn btn-success btn-small" type="button">
+              次回予約
+            </button>
+          </div>
+
           <div class="tabs">
             <button class="tab active" type="button" data-tab="summary">概要</button>
             <button class="tab" type="button" data-tab="history">予約履歴</button>
@@ -1007,6 +1117,9 @@
 
           <div id="tabNewCarte" class="tab-panel">
             <div class="form-grid">
+              <div id="carteReservationGuide" class="carte-link-guide" hidden>
+                この予約に紐づく今回分のカルテとして保存します。
+              </div>
               <label class="field">
                 施術区分
                 <select id="carteTreatmentType">
@@ -1136,10 +1249,22 @@
       <div id="modalReservationInfo" class="status-message"></div>
       <div id="statusButtons" class="button-row" style="margin-top:14px"></div>
       <div id="completeFields" class="form-grid" style="margin-top:14px" hidden>
+        <div id="completeGuide" class="complete-guide">
+          メニュー設定の再来店目安から候補日を表示します。
+        </div>
         <label class="field">
           次回来店目安
           <input id="completeNextVisit" type="date">
         </label>
+        <label class="complete-no-next">
+          <input id="completeNoNextVisit" type="checkbox">
+          <span>次回来店日は未定のまま完了する</span>
+        </label>
+        <div class="field full">
+          <button id="completeSaveButton" class="btn btn-success" type="button">
+            施術完了を保存
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1209,6 +1334,8 @@
           slot:null,
         },
         customerDetail:null,
+        carteReservationId:"",
+        carteReservationRow:null,
       };
 
       function jstToday() {
@@ -1378,6 +1505,323 @@
         return "badge";
       }
 
+      function normalizeDailyText(value) {
+        return String(value || "")
+          .normalize("NFKC")
+          .replace(/\s+/g,"")
+          .toLowerCase();
+      }
+
+      function allServices() {
+        const map = new Map();
+        for (const service of state.services || []) {
+          if (service?.id) map.set(service.id,service);
+        }
+        for (const category of state.categories || []) {
+          for (const service of category.services || []) {
+            if (service?.id) map.set(service.id,service);
+          }
+        }
+        return [...map.values()];
+      }
+
+      function matchingServices(row) {
+        const names = normalizeDailyText(row?.service_names);
+        if (!names) return [];
+        return allServices().filter(service =>
+          normalizeDailyText(service.service_name) &&
+          names.includes(normalizeDailyText(service.service_name))
+        );
+      }
+
+      function revisitDaysForReservation(row) {
+        const days = matchingServices(row)
+          .map(service => Number(service.revisit_days))
+          .filter(value => Number.isFinite(value) && value > 0);
+        return days.length ? Math.min(...days) : null;
+      }
+
+      function suggestedNextVisit(row) {
+        const days = revisitDaysForReservation(row);
+        const date = row?.jst?.start?.date || state.dashboardDate;
+        return days && date ? addDays(date,days) : "";
+      }
+
+      function inferCarteTreatment(row) {
+        const value = normalizeDailyText(row?.service_names);
+        if (value.includes("眉") || value.includes("brow")) {
+          if (
+            value.includes("まつげ") ||
+            value.includes("ラッシュ") ||
+            value.includes("lash")
+          ) return "set";
+          if (value.includes("ワックス") || value.includes("wax")) {
+            return "wax";
+          }
+          return "brow";
+        }
+        if (value.includes("エクステ") || value.includes("extension")) {
+          return "extension";
+        }
+        if (value.includes("リペア") || value.includes("repair")) {
+          return "repair";
+        }
+        if (value.includes("オフ") || value.includes("off")) return "off";
+        if (value.includes("パーマ") || value.includes("perm")) {
+          return "lash_perm";
+        }
+        return "lash_lift";
+      }
+
+      function nextDailyAction(status) {
+        if (["reserved","confirmed"].includes(status)) {
+          return {status:"arrived",label:"来店"};
+        }
+        if (["arrived","counseling"].includes(status)) {
+          return {status:"in_service",label:"施術開始"};
+        }
+        if (["in_service","finishing"].includes(status)) {
+          return {status:"payment_waiting",label:"会計待ち"};
+        }
+        if (status === "payment_waiting") {
+          return {status:"completed",label:"完了"};
+        }
+        return null;
+      }
+
+      function reservationCardClass(status) {
+        if (status === "completed") return "reservation-card daily-completed";
+        if (["cancelled","no_show","cancel_requested"].includes(status)) {
+          return "reservation-card daily-cancelled";
+        }
+        if (
+          ["arrived","counseling","in_service","finishing","payment_waiting"]
+            .includes(status)
+        ) {
+          return "reservation-card daily-progress";
+        }
+        return "reservation-card";
+      }
+
+      async function findCustomerForReservation(row) {
+        const query = row.customer_no || row.customer_name || "";
+        const url = new URL(config.API.admin_customer_search);
+        url.searchParams.set("q",query);
+        const data = await fetchJson(url,{headers:adminHeaders()});
+        const customers = data.customers || [];
+        const exact = customers.find(customer =>
+          row.customer_no &&
+          String(customer.customer_no) === String(row.customer_no)
+        );
+        const customer = exact || customers[0];
+        if (!customer) throw new Error("予約のお客様が見つかりません。");
+        return customer;
+      }
+
+      function currentReservationCarte(row) {
+        return (state.customerDetail?.cartes || []).find(carte =>
+          String(
+            carte.reservation_id ||
+            carte.reservation?.id ||
+            ""
+          ) === String(row?.id || "")
+        ) || null;
+      }
+
+      function applyCarteFieldVisibility() {
+        const type = $("#carteTreatmentType").value;
+        const fieldIds = [
+          "carteRod","carteCurl","carteLength","carteThickness",
+          "carteCount","carteDesign","carteDifference","carteChemical",
+          "carteProcessing","carteBrowShape","carteWaxSkin",
+          "carteFinish","carteHomecare","carteNextImprovement",
+          "cartePrivateNote","carteNextVisit",
+        ];
+        const visibleMap = {
+          lash_lift:[
+            "carteRod","carteCurl","carteDifference","carteChemical",
+            "carteProcessing","carteFinish","carteHomecare",
+            "carteNextImprovement","cartePrivateNote","carteNextVisit",
+          ],
+          lash_perm:[
+            "carteRod","carteCurl","carteDifference","carteChemical",
+            "carteProcessing","carteFinish","carteHomecare",
+            "carteNextImprovement","cartePrivateNote","carteNextVisit",
+          ],
+          extension:[
+            "carteCurl","carteLength","carteThickness","carteCount",
+            "carteDesign","carteDifference","carteChemical","carteFinish",
+            "carteHomecare","carteNextImprovement","cartePrivateNote",
+            "carteNextVisit",
+          ],
+          repair:[
+            "carteCurl","carteLength","carteThickness","carteCount",
+            "carteDesign","carteDifference","carteChemical","carteFinish",
+            "carteHomecare","carteNextImprovement","cartePrivateNote",
+            "carteNextVisit",
+          ],
+          brow:[
+            "carteDesign","carteDifference","carteBrowShape",
+            "carteWaxSkin","carteFinish","carteHomecare",
+            "carteNextImprovement","cartePrivateNote","carteNextVisit",
+          ],
+          wax:[
+            "carteDesign","carteDifference","carteChemical",
+            "carteBrowShape","carteWaxSkin","carteFinish",
+            "carteHomecare","carteNextImprovement","cartePrivateNote",
+            "carteNextVisit",
+          ],
+          set:fieldIds,
+          off:[
+            "carteChemical","carteProcessing","carteFinish",
+            "carteHomecare","carteNextImprovement","cartePrivateNote",
+            "carteNextVisit",
+          ],
+          other:fieldIds,
+        };
+        const visible = new Set(visibleMap[type] || fieldIds);
+        for (const id of fieldIds) {
+          const label = $(`#${id}`)?.closest("label");
+          if (label) label.hidden = !visible.has(id);
+        }
+      }
+
+      async function openReservationCustomer(row,requestedTab) {
+        try {
+          const customer = await findCustomerForReservation(row);
+          await openView("customers");
+          $("#customerQuery").value =
+            row.customer_no || row.customer_name || "";
+          renderCustomerResults([customer]);
+          setStatus(
+            $("#customerSearchStatus"),
+            `${customer.full_name}を開きました。`,
+            "ok"
+          );
+
+          const preserveReservation = requestedTab === "smart-carte";
+          state.carteReservationId = preserveReservation ? row.id : "";
+          state.carteReservationRow = preserveReservation ? row : null;
+          await loadCustomerDetail(
+            customer.id,
+            null,
+            {preserveReservation}
+          );
+
+          if (requestedTab === "smart-carte") {
+            const current = currentReservationCarte(row);
+            if (current) {
+              state.carteReservationId = "";
+              state.carteReservationRow = null;
+              $("#carteReservationGuide").hidden = true;
+              switchCustomerTab("cartes");
+              toast("今回のカルテは登録済みのため、カルテ履歴を開きました。");
+            } else {
+              clearCarteForm();
+              switchCustomerTab("new-carte");
+            }
+          } else {
+            switchCustomerTab(requestedTab);
+          }
+          $("#customerDetailPanel").scrollIntoView({
+            behavior:"smooth",
+            block:"start",
+          });
+        } catch (error) {
+          toast(error.message,true);
+        }
+      }
+
+      function selectBookingCustomer(customer,card=null) {
+        state.booking.customerId = customer.id;
+        state.booking.customer = customer;
+        state.booking.newCustomerMode = false;
+        $("#newCustomerFields").hidden = true;
+        $("#bookingCustomerResults")
+          .querySelectorAll(".customer-card")
+          .forEach(node => node.classList.remove("selected"));
+        if (card) card.classList.add("selected");
+        setStatus(
+          $("#selectedCustomerBox"),
+          `${customer.full_name}（${customer.customer_no}）を選択しました。`,
+          "ok"
+        );
+      }
+
+      function applyPreviousServices(row) {
+        const matched = matchingServices(row);
+        const ids = new Set(matched.map(service => service.id));
+        state.booking.selectedServiceIds = ids;
+        document.querySelectorAll(".menu-choice").forEach(label => {
+          const input = label.querySelector("input");
+          const selected = input && ids.has(input.value);
+          if (input) input.checked = selected;
+          label.classList.toggle("selected",Boolean(selected));
+        });
+        renderBookingStaffOptions();
+
+        const staff = state.staff.find(member =>
+          member.display_name === row.staff_name
+        );
+        if (
+          staff &&
+          [...$("#bookingStaff").options].some(
+            option => option.value === staff.id
+          )
+        ) {
+          $("#bookingStaff").value = staff.id;
+          state.booking.staffId = staff.id;
+        }
+
+        const candidate = suggestedNextVisit(row);
+        if (candidate) {
+          $("#bookingDate").value = candidate;
+          state.booking.date = candidate;
+        }
+        clearBookingSlots();
+      }
+
+      async function prepareNextBookingFromReservation(row) {
+        try {
+          const customer = await findCustomerForReservation(row);
+          await openView("booking");
+          resetBookingForm();
+          $("#bookingCustomerQuery").value =
+            row.customer_no || row.customer_name || "";
+          renderBookingCustomerResults([customer]);
+          selectBookingCustomer(
+            customer,
+            $("#bookingCustomerResults .customer-card")
+          );
+          applyPreviousServices(row);
+          $("#bookingMenus").scrollIntoView({
+            behavior:"smooth",
+            block:"start",
+          });
+          toast("お客様・前回メニュー・次回来店候補を入力しました。");
+        } catch (error) {
+          toast(error.message,true);
+        }
+      }
+
+      async function prepareNextBookingForCurrentCustomer() {
+        const customer = state.customerDetail?.customer;
+        if (!customer) return toast("顧客を選択してください。",true);
+        await openView("booking");
+        resetBookingForm();
+        $("#bookingCustomerQuery").value =
+          customer.customer_no || customer.full_name || "";
+        renderBookingCustomerResults([customer]);
+        selectBookingCustomer(
+          customer,
+          $("#bookingCustomerResults .customer-card")
+        );
+        $("#bookingMenus").scrollIntoView({
+          behavior:"smooth",
+          block:"start",
+        });
+      }
+
       function renderReservations(rows) {
         const container = $("#reservationList");
         container.replaceChildren();
@@ -1391,7 +1835,7 @@
 
         for (const row of rows) {
           const card = document.createElement("article");
-          card.className = "reservation-card";
+          card.className = reservationCardClass(row.status);
 
           const time = document.createElement("div");
           time.className = "time";
@@ -1419,35 +1863,92 @@
           const actions = document.createElement("div");
           actions.className = "reservation-actions";
 
-          const detail = document.createElement("button");
-          detail.type = "button";
-          detail.className = "btn btn-secondary btn-small";
-          detail.textContent = "状態変更";
-          detail.addEventListener("click",() => openReservationModal(row));
+          const next = nextDailyAction(row.status);
+          if (next) {
+            const quick = document.createElement("button");
+            quick.type = "button";
+            quick.className =
+              `btn btn-small daily-primary-action ${
+                next.status === "completed"
+                  ? "btn-success"
+                  : next.status === "payment_waiting"
+                    ? "btn-dark"
+                    : next.status === "in_service"
+                      ? "btn-warning"
+                      : "btn-primary"
+              }`;
+            quick.textContent = `次の操作：${next.label}`;
+            quick.addEventListener("click",async () => {
+              if (next.status === "completed") {
+                openReservationModal(row,"completed");
+                return;
+              }
+              state.selectedReservation = row;
+              await updateReservationStatus(next.status);
+            });
+            actions.append(quick);
+          }
 
-          const customer = document.createElement("button");
-          customer.type = "button";
-          customer.className = "btn btn-primary btn-small";
-          customer.textContent = "顧客を開く";
-          customer.addEventListener("click",async () => {
-            await openView("customers");
-            $("#customerQuery").value = row.customer_no || row.customer_name || "";
-            await searchCustomers();
-          });
+          const carte = document.createElement("button");
+          carte.type = "button";
+          carte.className = "btn btn-primary btn-small";
+          carte.textContent = "カルテ";
+          carte.addEventListener("click",() =>
+            openReservationCustomer(row,"smart-carte")
+          );
 
-          actions.append(detail,customer);
+          const previous = document.createElement("button");
+          previous.type = "button";
+          previous.className = "btn btn-secondary btn-small";
+          previous.textContent = "前回カルテ";
+          previous.addEventListener("click",() =>
+            openReservationCustomer(row,"cartes")
+          );
+
+          const nextBooking = document.createElement("button");
+          nextBooking.type = "button";
+          nextBooking.className = "btn btn-success btn-small";
+          nextBooking.textContent = "次回予約";
+          nextBooking.addEventListener("click",() =>
+            prepareNextBookingFromReservation(row)
+          );
+
+          const more = document.createElement("button");
+          more.type = "button";
+          more.className = "btn btn-secondary btn-small";
+          more.textContent = "その他";
+          more.addEventListener("click",() =>
+            openReservationModal(row)
+          );
+
+          actions.append(carte,previous,nextBooking,more);
           card.append(time,main,meta,actions);
           container.append(card);
         }
       }
 
-      function openReservationModal(row) {
+      function showCompletionFields(row) {
+        $("#completeFields").hidden = false;
+        $("#completeNoNextVisit").checked = false;
+        $("#completeNextVisit").disabled = false;
+        const candidate = suggestedNextVisit(row);
+        $("#completeNextVisit").value = candidate;
+        const days = revisitDaysForReservation(row);
+        $("#completeGuide").textContent = candidate
+          ? `メニュー設定から ${days}日後の ${candidate} を候補にしました。変更できます。`
+          : "次回来店日を入力するか、「未定のまま完了」を選択してください。";
+        $("#completeNextVisit").focus();
+      }
+
+      function openReservationModal(row,initialStatus="") {
         state.selectedReservation = row;
         $("#modalReservationInfo").textContent =
           `${row.jst?.start?.date || ""} ${row.jst?.start?.time || ""} ／ ` +
           `${row.customer_name || "お客様"} ／ ${row.service_names || ""}`;
         $("#completeFields").hidden = true;
         $("#completeNextVisit").value = "";
+        $("#completeNextVisit").disabled = false;
+        $("#completeNoNextVisit").checked = false;
         const container = $("#statusButtons");
         container.replaceChildren();
 
@@ -1458,18 +1959,18 @@
           button.textContent = label;
           button.addEventListener("click",() => {
             if (status === "completed") {
-              $("#completeFields").hidden = false;
-              button.textContent = "次回来店目安を入力後、もう一度押す";
-              if (!$("#completeNextVisit").value) {
-                $("#completeNextVisit").focus();
-                return;
-              }
+              showCompletionFields(row);
+              return;
             }
             updateReservationStatus(status);
           });
           container.append(button);
         }
+
         $("#reservationModal").classList.add("show");
+        if (initialStatus === "completed") {
+          showCompletionFields(row);
+        }
       }
 
       async function updateReservationStatus(status) {
@@ -1480,8 +1981,19 @@
             reservation_id:row.id,
             status,
           };
-          if (status === "completed" && $("#completeNextVisit").value) {
-            payload.next_revisit_date = $("#completeNextVisit").value;
+          if (status === "completed") {
+            const noNext = $("#completeNoNextVisit").checked;
+            const nextDate = $("#completeNextVisit").value;
+            if (!noNext && !nextDate) {
+              toast(
+                "次回来店日を入力するか、「未定のまま完了」を選択してください。",
+                true
+              );
+              return;
+            }
+            if (!noNext && nextDate) {
+              payload.next_revisit_date = nextDate;
+            }
           }
           await fetchJson(config.API.admin_reservation_status,{
             method:"PATCH",
@@ -1675,21 +2187,9 @@
           no.textContent =
             `${customer.customer_no} ／ 最終来店 ${customer.last_visit_at || "未登録"}`;
           card.append(name,phone,no);
-          card.addEventListener("click",() => {
-            state.booking.customerId = customer.id;
-            state.booking.customer = customer;
-            state.booking.newCustomerMode = false;
-            $("#newCustomerFields").hidden = true;
-            container.querySelectorAll(".customer-card").forEach(node =>
-              node.classList.remove("selected")
-            );
-            card.classList.add("selected");
-            setStatus(
-              $("#selectedCustomerBox"),
-              `${customer.full_name}（${customer.customer_no}）を選択しました。`,
-              "ok"
-            );
-          });
+          card.addEventListener("click",() =>
+            selectBookingCustomer(customer,card)
+          );
           container.append(card);
         }
       }
@@ -1838,7 +2338,12 @@
         }
       }
 
-      async function loadCustomerDetail(id,card) {
+      async function loadCustomerDetail(id,card,options={}) {
+        if (!options.preserveReservation) {
+          state.carteReservationId = "";
+          state.carteReservationRow = null;
+          $("#carteReservationGuide").hidden = true;
+        }
         $("#customerResults").querySelectorAll(".customer-card").forEach(node =>
           node.classList.remove("selected")
         );
@@ -1855,6 +2360,58 @@
           $("#customerDetailSubtitle").textContent = error.message;
           toast(error.message,true);
         }
+      }
+
+      function meaningfulAttention(value) {
+        const text = normalizeDailyText(value);
+        if (!text || text === "―") return false;
+        return ![
+          "なし","ありません","未設定","該当なし","いいえ","未使用"
+        ].some(word => text === normalizeDailyText(word));
+      }
+
+      function renderOwnerAttention(data) {
+        const box = $("#ownerDailyAttention");
+        const customer = data.customer || {};
+        const intake = data.intake?.[0] || {};
+        const items = [];
+
+        if (meaningfulAttention(customer.contact_lens)) {
+          items.push(`コンタクト：${customer.contact_lens}`);
+        }
+        if (customer.sensitive_skin || intake.sensitive_skin) {
+          items.push("敏感肌：あり");
+        }
+        const allergy =
+          customer.allergy_summary ||
+          customer.medical_caution ||
+          intake.allergy_note ||
+          "";
+        if (meaningfulAttention(allergy)) {
+          items.push(`アレルギー・注意事項：${allergy}`);
+        }
+        if (meaningfulAttention(intake.eye_condition_note)) {
+          items.push(`目元状態：${intake.eye_condition_note}`);
+        }
+
+        box.replaceChildren();
+        const title = document.createElement("strong");
+        if (!items.length) {
+          box.className = "owner-attention";
+          title.textContent =
+            "施術上の重要な注意事項は登録されていません";
+          box.append(title);
+          return;
+        }
+        box.className = "owner-attention alert";
+        title.textContent = "施術前に必ず確認してください";
+        const list = document.createElement("ul");
+        for (const item of items) {
+          const row = document.createElement("li");
+          row.textContent = item;
+          list.append(row);
+        }
+        box.append(title,list);
       }
 
       function renderCustomerDetail(data) {
@@ -1880,10 +2437,20 @@
             `${intake.allergy_note || intake.eye_condition_note || "特記事項なし"}`
           : "事前確認情報はありません。";
 
+        renderOwnerAttention(data);
         renderCustomerHistory(data.reservations || []);
         renderCartes(data.cartes || []);
-        $("#carteDate").value = jstToday();
-        $("#carteNextVisit").value = c.next_revisit_date || "";
+        $("#carteDate").value =
+          state.carteReservationRow?.jst?.start?.date || jstToday();
+        $("#carteNextVisit").value =
+          state.carteReservationRow
+            ? suggestedNextVisit(state.carteReservationRow) ||
+              c.next_revisit_date ||
+              ""
+            : c.next_revisit_date || "";
+        $("#carteReservationGuide").hidden =
+          !state.carteReservationId;
+        applyCarteFieldVisibility();
       }
 
       function renderCustomerHistory(rows) {
@@ -2013,10 +2580,26 @@
           "carteProcessing","carteBrowShape","carteWaxSkin","carteFinish",
           "carteHomecare","carteNextImprovement","cartePrivateNote",
         ].forEach(id => $(`#${id}`).value = "");
-        $("#carteTreatmentType").value = "lash_lift";
-        $("#carteDate").value = jstToday();
+        $("#carteTreatmentType").value =
+          state.carteReservationRow
+            ? inferCarteTreatment(state.carteReservationRow)
+            : "lash_lift";
+        $("#carteDate").value =
+          state.carteReservationRow?.jst?.start?.date || jstToday();
         $("#carteNextVisit").value =
-          state.customerDetail?.customer?.next_revisit_date || "";
+          state.carteReservationRow
+            ? suggestedNextVisit(state.carteReservationRow) ||
+              state.customerDetail?.customer?.next_revisit_date ||
+              ""
+            : state.customerDetail?.customer?.next_revisit_date || "";
+
+        const staff = state.staff.find(member =>
+          member.display_name === state.carteReservationRow?.staff_name
+        );
+        if (staff) $("#carteStaff").value = staff.id;
+        $("#carteReservationGuide").hidden =
+          !state.carteReservationId;
+        applyCarteFieldVisibility();
       }
 
       async function saveCarte() {
@@ -2027,6 +2610,7 @@
         }
         const payload = {
           customer_id:detail.customer.id,
+          reservation_id:state.carteReservationId || undefined,
           staff_id:$("#carteStaff").value,
           treatment_type:$("#carteTreatmentType").value,
           treatment_date:$("#carteDate").value,
@@ -2054,7 +2638,14 @@
             headers:adminHeaders(true),
             body:JSON.stringify(payload),
           });
-          toast("カルテを保存しました。");
+          toast(
+            state.carteReservationId
+              ? "今回の予約に紐づくカルテを保存しました。"
+              : "カルテを保存しました。"
+          );
+          state.carteReservationId = "";
+          state.carteReservationRow = null;
+          $("#carteReservationGuide").hidden = true;
           clearCarteForm();
           await loadCustomerDetail(detail.customer.id);
           switchCustomerTab("cartes");
@@ -2245,6 +2836,37 @@
       );
       $("#carteSaveButton").addEventListener("click",saveCarte);
       $("#carteClearButton").addEventListener("click",clearCarteForm);
+      $("#carteTreatmentType").addEventListener(
+        "change",
+        applyCarteFieldVisibility
+      );
+      $("#customerNewCarteButton").addEventListener("click",() => {
+        state.carteReservationId = "";
+        state.carteReservationRow = null;
+        $("#carteReservationGuide").hidden = true;
+        clearCarteForm();
+        switchCustomerTab("new-carte");
+      });
+      $("#customerPreviousCarteButton").addEventListener("click",() =>
+        switchCustomerTab("cartes")
+      );
+      $("#customerNextBookingButton").addEventListener(
+        "click",
+        prepareNextBookingForCurrentCustomer
+      );
+      $("#completeNoNextVisit").addEventListener("change",event => {
+        $("#completeNextVisit").disabled = event.target.checked;
+        if (event.target.checked) {
+          $("#completeNextVisit").value = "";
+          $("#completeGuide").textContent =
+            "次回来店日は登録せず、施術完了だけを保存します。";
+        } else {
+          showCompletionFields(state.selectedReservation);
+        }
+      });
+      $("#completeSaveButton").addEventListener("click",() =>
+        updateReservationStatus("completed")
+      );
 
       $("#followupReload").addEventListener("click",loadFollowups);
       $("#closeReservationModal").addEventListener("click",() =>
