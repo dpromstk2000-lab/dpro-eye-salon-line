@@ -1,0 +1,1106 @@
+name: STEP EYE-BRUSHUP-5 Followup Safety
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-5-followup-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-5-followup-safety
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save pre-change commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Apply followup safety patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          owner_path = Path("owner.html")
+          config_path = Path("config.js")
+
+          if not owner_path.exists():
+              raise SystemExit("owner.html が見つかりません。")
+          if not config_path.exists():
+              raise SystemExit("config.js が見つかりません。")
+
+          text = owner_path.read_text(encoding="utf-8")
+
+          if 'id="followupSummary"' in text:
+              print("STEP EYE-BRUSHUP-5 はすでに適用済みです。")
+          else:
+              def replace_once(old, new, label):
+                  global text
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。"
+                          "現行コードが想定と異なるため、安全のため停止しました。"
+                      )
+                  text = text.replace(old, new, 1)
+
+              def replace_regex(pattern, replacement, label):
+                  global text
+                  text, count = re.subn(
+                      pattern,
+                      replacement,
+                      text,
+                      count=1,
+                      flags=re.S,
+                  )
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。"
+                          "現行コードが想定と異なるため、安全のため停止しました。"
+                      )
+
+              old_followup_css = '''    .followup-list { display:grid; gap:10px; }
+              .followup-card {
+                display:grid;
+                grid-template-columns:minmax(170px,.7fr) minmax(0,1.5fr) auto;
+                gap:12px;
+                align-items:center;
+                padding:15px;
+                border:1px solid var(--border);
+                border-radius:14px;
+                background:white;
+              }
+              .message-box {
+                padding:11px;
+                border-radius:11px;
+                color:#54494B;
+                background:var(--soft);
+                white-space:pre-wrap;
+              }
+          '''
+              new_followup_css = '''    .followup-summary {
+                display:grid;
+                grid-template-columns:repeat(6,minmax(0,1fr));
+                gap:9px;
+                margin:14px 0;
+              }
+              .followup-filter {
+                min-height:94px;
+                padding:12px;
+                border:2px solid var(--border);
+                border-radius:14px;
+                color:var(--accent-dark);
+                background:white;
+                text-align:left;
+              }
+              .followup-filter.active {
+                color:white;
+                border-color:var(--accent-dark);
+                background:var(--accent-dark);
+              }
+              .followup-filter small {
+                display:block;
+                font-weight:850;
+              }
+              .followup-filter strong {
+                display:block;
+                margin-top:2px;
+                font-size:26px;
+                line-height:1.2;
+              }
+              .followup-filter span {
+                display:block;
+                margin-top:3px;
+                font-size:12px;
+                opacity:.78;
+              }
+              .followup-list { display:grid; gap:10px; }
+              .followup-card {
+                display:grid;
+                grid-template-columns:minmax(210px,.72fr) minmax(0,1.5fr) minmax(190px,.55fr);
+                gap:13px;
+                align-items:start;
+                padding:16px;
+                border:1px solid var(--border);
+                border-left:6px solid var(--accent);
+                border-radius:14px;
+                background:white;
+              }
+              .followup-card.followup-today {
+                border-left-color:var(--warning);
+              }
+              .followup-card.followup-overdue {
+                border-left-color:var(--danger);
+              }
+              .followup-card.followup-long {
+                border-left-color:#773A43;
+                background:#FFF9F8;
+              }
+              .followup-card.followup-booked {
+                border-left-color:var(--blue);
+                background:#F5F8FB;
+              }
+              .followup-card.followup-completed {
+                border-left-color:var(--success);
+                opacity:.88;
+              }
+              .followup-card.followup-skipped {
+                border-left-color:#8A8582;
+                background:#F6F4F2;
+                opacity:.88;
+              }
+              .followup-customer strong {
+                display:block;
+                font-size:19px;
+              }
+              .followup-customer .badge {
+                margin-top:7px;
+              }
+              .followup-meta {
+                margin-top:7px;
+                color:var(--muted);
+                font-size:14px;
+              }
+              .followup-warning {
+                margin-bottom:8px;
+                padding:10px 12px;
+                border-radius:10px;
+                color:#415368;
+                background:#E7EDF3;
+                font-weight:850;
+              }
+              .followup-priority {
+                margin-bottom:8px;
+                color:var(--danger);
+                font-weight:900;
+              }
+              .message-box {
+                min-height:92px;
+                padding:12px;
+                border-radius:11px;
+                color:#54494B;
+                background:var(--soft);
+                white-space:pre-wrap;
+              }
+              .followup-actions {
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:7px;
+              }
+              .followup-actions .btn {
+                width:100%;
+              }
+              .followup-actions .wide {
+                grid-column:1/-1;
+              }
+              .followup-empty-note {
+                padding:18px;
+                border:1px dashed var(--border);
+                border-radius:13px;
+                color:var(--muted);
+                text-align:center;
+                background:white;
+                font-weight:800;
+              }
+              @media (max-width:1180px) {
+                .followup-summary {
+                  grid-template-columns:repeat(3,minmax(0,1fr));
+                }
+                .followup-card {
+                  grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);
+                }
+                .followup-actions {
+                  grid-column:1/-1;
+                  grid-template-columns:repeat(4,minmax(0,1fr));
+                }
+                .followup-actions .wide {
+                  grid-column:auto;
+                }
+              }
+              @media (max-width:820px) {
+                .followup-summary {
+                  grid-template-columns:repeat(2,minmax(0,1fr));
+                }
+                .followup-card {
+                  grid-template-columns:1fr;
+                }
+                .followup-actions {
+                  grid-template-columns:repeat(2,minmax(0,1fr));
+                }
+              }
+          '''
+              replace_once(
+                  old_followup_css,
+                  new_followup_css,
+                  "再来店フォローCSS"
+              )
+
+              old_followup_html = '''      <section id="viewFollowups" class="view">
+                  <section class="panel">
+                    <div class="panel-head">
+                      <div>
+                        <h2>再来店フォロー</h2>
+                        <span class="muted">来店目安を過ぎたお客様へ送る文面を確認します。</span>
+                      </div>
+                      <button id="followupReload" class="btn btn-secondary" type="button">再読込</button>
+                    </div>
+                    <div id="followupStatus" class="status-message">
+                      フォロー対象を読み込んでいます…
+                    </div>
+                    <div id="followupList" class="followup-list" style="margin-top:12px"></div>
+                  </section>
+                </section>
+          '''
+              new_followup_html = '''      <section id="viewFollowups" class="view">
+                  <section class="panel">
+                    <div class="panel-head">
+                      <div>
+                        <h2>再来店フォロー</h2>
+                        <span class="muted">
+                          次回予約済みのお客様を除外し、優先度の高い順に確認します。
+                        </span>
+                      </div>
+                      <button id="followupReload" class="btn btn-secondary" type="button">
+                        再読込
+                      </button>
+                    </div>
+
+                    <div id="followupStatus" class="status-message">
+                      フォロー対象を読み込んでいます…
+                    </div>
+
+                    <div id="followupSummary" class="followup-summary">
+                      <button class="followup-filter active" type="button"
+                        data-followup-filter="today">
+                        <small>本日が目安</small>
+                        <strong id="followupCountToday">0</strong>
+                        <span>今日確認</span>
+                      </button>
+                      <button class="followup-filter" type="button"
+                        data-followup-filter="overdue">
+                        <small>期限超過</small>
+                        <strong id="followupCountOverdue">0</strong>
+                        <span>優先対応</span>
+                      </button>
+                      <button class="followup-filter" type="button"
+                        data-followup-filter="long">
+                        <small>長期間来店なし</small>
+                        <strong id="followupCountLong">0</strong>
+                        <span>60日超過</span>
+                      </button>
+                      <button class="followup-filter" type="button"
+                        data-followup-filter="booked">
+                        <small>次回予約済み</small>
+                        <strong id="followupCountBooked">0</strong>
+                        <span>送信対象外</span>
+                      </button>
+                      <button class="followup-filter" type="button"
+                        data-followup-filter="completed">
+                        <small>対応完了</small>
+                        <strong id="followupCountCompleted">0</strong>
+                        <span>処理済み</span>
+                      </button>
+                      <button class="followup-filter" type="button"
+                        data-followup-filter="skipped">
+                        <small>送信しない</small>
+                        <strong id="followupCountSkipped">0</strong>
+                        <span>対象外</span>
+                      </button>
+                    </div>
+
+                    <div id="followupList" class="followup-list"></div>
+                  </section>
+                </section>
+          '''
+              replace_once(
+                  old_followup_html,
+                  new_followup_html,
+                  "再来店フォロー画面"
+              )
+
+              state_anchor = '''        carteReservationId:"",
+                  carteReservationRow:null,
+                };
+          '''
+              state_insert = '''        carteReservationId:"",
+                  carteReservationRow:null,
+                  followups:[],
+                  followupFilter:"today",
+                  followupCustomerCache:new Map(),
+                };
+          '''
+              replace_once(
+                  state_anchor,
+                  state_insert,
+                  "フォロー状態管理"
+              )
+
+              followup_pattern = (
+                  r'      async function loadFollowups\(\) \{.*?'
+                  r'\n      \}\n\n      // Events'
+              )
+              followup_replacement = '''      function followupLocalSkippedIds() {
+                  try {
+                    const value = JSON.parse(
+                      localStorage.getItem("dpro_eye_followup_skipped") || "[]"
+                    );
+                    return new Set(Array.isArray(value) ? value.map(String) : []);
+                  } catch {
+                    return new Set();
+                  }
+                }
+
+                function saveFollowupLocalSkipped(ids) {
+                  localStorage.setItem(
+                    "dpro_eye_followup_skipped",
+                    JSON.stringify([...ids])
+                  );
+                }
+
+                function followupDateValue(value) {
+                  if (!value) return "";
+                  const match = String(value).match(/\\d{4}-\\d{2}-\\d{2}/);
+                  return match?.[0] || "";
+                }
+
+                function followupDaysFromToday(value) {
+                  const date = followupDateValue(value);
+                  if (!date) return 0;
+                  const today = new Date(`${jstToday()}T00:00:00+09:00`);
+                  const target = new Date(`${date}T00:00:00+09:00`);
+                  return Math.floor((today.getTime() - target.getTime()) / 86400000);
+                }
+
+                function followupCustomerId(row) {
+                  return (
+                    row.customer?.id ||
+                    row.customer_id ||
+                    row.customerId ||
+                    ""
+                  );
+                }
+
+                function followupCustomerName(row) {
+                  return (
+                    row.customer?.full_name ||
+                    row.customer_name ||
+                    "お客様"
+                  );
+                }
+
+                function followupCustomerPhone(row) {
+                  return (
+                    row.customer?.phone ||
+                    row.phone ||
+                    "電話番号なし"
+                  );
+                }
+
+                function validFutureReservation(reservation) {
+                  const status = reservation?.status || "";
+                  if (
+                    ["cancelled","no_show","cancel_requested"].includes(status)
+                  ) return false;
+                  const raw =
+                    reservation.start_at ||
+                    reservation.jst?.start?.iso ||
+                    reservation.jst?.start?.date;
+                  if (!raw) return false;
+                  const date = new Date(
+                    String(raw).length === 10
+                      ? `${raw}T23:59:59+09:00`
+                      : raw
+                  );
+                  return !Number.isNaN(date.getTime()) &&
+                    date.getTime() >= Date.now();
+                }
+
+                function directFutureReservation(row) {
+                  const direct =
+                    row.next_reservation ||
+                    row.future_reservation ||
+                    row.customer?.next_reservation ||
+                    null;
+                  if (direct && validFutureReservation(direct)) return direct;
+
+                  const date =
+                    row.next_reservation_at ||
+                    row.future_reservation_at ||
+                    row.customer?.next_reservation_at ||
+                    "";
+                  if (date && validFutureReservation({start_at:date,status:"reserved"})) {
+                    return {start_at:date,status:"reserved"};
+                  }
+                  return null;
+                }
+
+                async function loadFollowupCustomerDetail(row) {
+                  const id = followupCustomerId(row);
+                  if (!id) return null;
+                  if (state.followupCustomerCache.has(id)) {
+                    return state.followupCustomerCache.get(id);
+                  }
+                  const url = new URL(config.API.admin_customer_detail);
+                  url.searchParams.set("customer_id",id);
+                  try {
+                    const data = await fetchJson(url,{headers:adminHeaders()});
+                    state.followupCustomerCache.set(id,data);
+                    return data;
+                  } catch {
+                    state.followupCustomerCache.set(id,null);
+                    return null;
+                  }
+                }
+
+                async function enrichFollowup(row) {
+                  const direct = directFutureReservation(row);
+                  const detail = direct ? null : await loadFollowupCustomerDetail(row);
+                  const future = direct ||
+                    detail?.reservations?.find(validFutureReservation) ||
+                    null;
+                  const cartes = detail?.cartes || [];
+                  return {
+                    ...row,
+                    _futureReservation:future,
+                    _latestCarte:cartes[0] || row.latest_carte || null,
+                    _detail:detail,
+                  };
+                }
+
+                async function mapFollowupsWithLimit(rows,limit=4) {
+                  const result = new Array(rows.length);
+                  let index = 0;
+                  async function worker() {
+                    while (index < rows.length) {
+                      const current = index++;
+                      result[current] = await enrichFollowup(rows[current]);
+                    }
+                  }
+                  await Promise.all(
+                    Array.from(
+                      {length:Math.min(limit,Math.max(1,rows.length))},
+                      () => worker()
+                    )
+                  );
+                  return result;
+                }
+
+                async function fetchFollowupStatus(status,dueTo="") {
+                  const url = new URL(config.API.admin_followups);
+                  url.searchParams.set("status",status);
+                  if (dueTo) url.searchParams.set("due_to",dueTo);
+                  const data = await fetchJson(url,{headers:adminHeaders()});
+                  return data.followups || [];
+                }
+
+                function mergeFollowupRows(groups) {
+                  const map = new Map();
+                  for (const rows of groups) {
+                    for (const row of rows || []) {
+                      const key = String(
+                        row.id ||
+                        `${followupCustomerId(row)}-${row.due_date || ""}-${row.status || ""}`
+                      );
+                      const existing = map.get(key);
+                      map.set(key,existing ? {...existing,...row} : row);
+                    }
+                  }
+                  return [...map.values()];
+                }
+
+                function followupStatusValue(row) {
+                  return String(row.status || row.followup_status || "open");
+                }
+
+                function followupCategory(row) {
+                  const localSkipped = followupLocalSkippedIds();
+                  if (
+                    localSkipped.has(String(row.id)) ||
+                    ["skipped","ignored","suppressed","do_not_send"]
+                      .includes(followupStatusValue(row))
+                  ) return "skipped";
+
+                  if (
+                    ["completed","done"].includes(followupStatusValue(row))
+                  ) return "completed";
+
+                  if (row._futureReservation) return "booked";
+
+                  const overdueDays = followupDaysFromToday(row.due_date);
+                  if (overdueDays >= 60) return "long";
+                  if (overdueDays > 0) return "overdue";
+                  return "today";
+                }
+
+                function followupCategoryLabel(category) {
+                  return {
+                    today:"本日が目安",
+                    overdue:"期限超過",
+                    long:"長期間来店なし",
+                    booked:"次回予約済み",
+                    completed:"対応完了",
+                    skipped:"送信しない",
+                  }[category] || category;
+                }
+
+                function followupTreatmentKey(row) {
+                  const text = normalizeDailyText([
+                    row.service_names,
+                    row.last_service_names,
+                    row.customer?.last_service_names,
+                    row._latestCarte?.treatment_type,
+                    row._latestCarte?.lash_design,
+                    row._latestCarte?.brow_shape,
+                  ].filter(Boolean).join(" "));
+
+                  if (
+                    text.includes("セット") ||
+                    (
+                      (text.includes("眉") || text.includes("brow")) &&
+                      (
+                        text.includes("まつげ") ||
+                        text.includes("ラッシュ") ||
+                        text.includes("lash")
+                      )
+                    )
+                  ) return "set";
+                  if (
+                    text.includes("エクステ") ||
+                    text.includes("extension") ||
+                    text.includes("リペア") ||
+                    text.includes("repair")
+                  ) return "extension";
+                  if (
+                    text.includes("眉") ||
+                    text.includes("brow") ||
+                    text.includes("ワックス") ||
+                    text.includes("wax")
+                  ) return "brow";
+                  if (
+                    text.includes("ラッシュ") ||
+                    text.includes("まつげ") ||
+                    text.includes("lash") ||
+                    text.includes("perm")
+                  ) return "lash";
+                  return "generic";
+                }
+
+                function recommendedFollowupMessage(row) {
+                  const name = followupCustomerName(row);
+                  const shop = state.shop?.shop_name || "当店";
+                  const key = followupTreatmentKey(row);
+
+                  const messages = {
+                    lash:
+                      `${name}様\\n前回のまつげ施術後、カールや毛の状態はいかがでしょうか。` +
+                      `ばらつきが気になり始める頃でしたら、負担の少ない時期をご案内いたします。` +
+                      `ご都合のよい日がございましたら、お気軽にLINEでご相談ください。\\n${shop}`,
+                    extension:
+                      `${name}様\\n前回のエクステ施術後、残り方やばらつきはいかがでしょうか。` +
+                      `状態に合わせてリペアまたは付け替えをご案内できます。` +
+                      `気になる点がございましたら、LINEからお気軽にご相談ください。\\n${shop}`,
+                    brow:
+                      `${name}様\\n前回の眉・アイブロウ施術後、形や毛流れはいかがでしょうか。` +
+                      `整え直しの時期が近づいていますので、ご予定に合わせてご案内できます。` +
+                      `ご希望日がございましたらLINEでお知らせください。\\n${shop}`,
+                    set:
+                      `${name}様\\n前回のまつげ・眉施術後、仕上がりの状態はいかがでしょうか。` +
+                      `それぞれの状態に合わせて次回内容をご提案できます。` +
+                      `ご都合のよい日がございましたらLINEでお気軽にご相談ください。\\n${shop}`,
+                    generic:
+                      `${name}様\\n前回のご来店から次回目安の時期となりました。` +
+                      `現在の状態に合わせて施術内容をご案内できます。` +
+                      `ご希望日や気になる点がございましたら、LINEでお気軽にご相談ください。\\n${shop}`,
+                  };
+                  return messages[key];
+                }
+
+                function followupSortValue(row) {
+                  const category = followupCategory(row);
+                  const categoryOrder = {
+                    long:0,
+                    overdue:1,
+                    today:2,
+                    booked:3,
+                    completed:4,
+                    skipped:5,
+                  };
+                  return [
+                    categoryOrder[category] ?? 9,
+                    -followupDaysFromToday(row.due_date),
+                    followupCustomerName(row),
+                  ];
+                }
+
+                function compareFollowups(a,b) {
+                  const left = followupSortValue(a);
+                  const right = followupSortValue(b);
+                  for (let index = 0; index < left.length; index++) {
+                    if (left[index] < right[index]) return -1;
+                    if (left[index] > right[index]) return 1;
+                  }
+                  return 0;
+                }
+
+                function followupCounts() {
+                  const counts = {
+                    today:0,overdue:0,long:0,booked:0,completed:0,skipped:0,
+                  };
+                  for (const row of state.followups) {
+                    const category = followupCategory(row);
+                    if (category in counts) counts[category] += 1;
+                  }
+                  return counts;
+                }
+
+                function updateFollowupSummary() {
+                  const counts = followupCounts();
+                  $("#followupCountToday").textContent = counts.today;
+                  $("#followupCountOverdue").textContent = counts.overdue;
+                  $("#followupCountLong").textContent = counts.long;
+                  $("#followupCountBooked").textContent = counts.booked;
+                  $("#followupCountCompleted").textContent = counts.completed;
+                  $("#followupCountSkipped").textContent = counts.skipped;
+
+                  const actionable = counts.today + counts.overdue + counts.long;
+                  if (state.dashboard) {
+                    $("#kpiFollowups").textContent = actionable;
+                  }
+                }
+
+                function followupReservationDate(row) {
+                  const reservation = row._futureReservation;
+                  const raw =
+                    reservation?.start_at ||
+                    reservation?.jst?.start?.date ||
+                    "";
+                  return followupDateValue(raw) || "日付確認中";
+                }
+
+                async function openFollowupCustomer(row) {
+                  const customer = row.customer || row._detail?.customer;
+                  const id = followupCustomerId(row) || customer?.id;
+                  if (!id) {
+                    toast("顧客情報を開けませんでした。",true);
+                    return;
+                  }
+                  await openView("customers");
+                  $("#customerQuery").value =
+                    customer?.customer_no ||
+                    customer?.full_name ||
+                    followupCustomerName(row);
+                  renderCustomerResults([{
+                    ...customer,
+                    id,
+                    full_name:customer?.full_name || followupCustomerName(row),
+                    phone:customer?.phone || followupCustomerPhone(row),
+                    customer_no:customer?.customer_no || "顧客番号未設定",
+                    total_visits:customer?.total_visits || 0,
+                  }]);
+                  await loadCustomerDetail(id);
+                  switchCustomerTab("cartes");
+                  $("#customerDetailPanel").scrollIntoView({
+                    behavior:"smooth",
+                    block:"start",
+                  });
+                }
+
+                async function patchFollowupStatus(row,status) {
+                  await fetchJson(config.API.admin_followup_status,{
+                    method:"PATCH",
+                    headers:adminHeaders(true),
+                    body:JSON.stringify({
+                      followup_id:row.id,
+                      status,
+                    }),
+                  });
+                }
+
+                async function markFollowupSkipped(row) {
+                  const ids = followupLocalSkippedIds();
+                  try {
+                    await patchFollowupStatus(row,"skipped");
+                  } catch {
+                    await patchFollowupStatus(row,"completed");
+                    ids.add(String(row.id));
+                    saveFollowupLocalSkipped(ids);
+                  }
+                  toast("このお客様は「送信しない」にしました。");
+                  await loadFollowups();
+                }
+
+                async function markFollowupCompleted(row) {
+                  const ids = followupLocalSkippedIds();
+                  ids.delete(String(row.id));
+                  saveFollowupLocalSkipped(ids);
+                  await patchFollowupStatus(row,"completed");
+                  toast("対応完了にしました。");
+                  await loadFollowups();
+                }
+
+                async function copyFollowupMessage(row,message) {
+                  if (row._futureReservation) {
+                    toast(
+                      "次回予約済みのため、通常フォロー文面はコピーできません。",
+                      true
+                    );
+                    return;
+                  }
+                  try {
+                    await navigator.clipboard.writeText(message);
+                    try {
+                      await patchFollowupStatus(row,"copied");
+                    } catch {
+                      // 文面コピー自体は成功しているため、状態更新失敗では止めません。
+                    }
+                    toast("業種別フォロー文面をコピーしました。");
+                    await loadFollowups();
+                  } catch {
+                    toast("文面をコピーできませんでした。",true);
+                  }
+                }
+
+                async function loadFollowups() {
+                  setStatus(
+                    $("#followupStatus"),
+                    "フォロー対象と次回予約を確認しています…"
+                  );
+
+                  const requests = await Promise.allSettled([
+                    fetchFollowupStatus("open",jstToday()),
+                    fetchFollowupStatus("copied",jstToday()),
+                    fetchFollowupStatus("completed"),
+                    fetchFollowupStatus("skipped"),
+                  ]);
+
+                  const groups = requests
+                    .filter(result => result.status === "fulfilled")
+                    .map(result => result.value);
+
+                  try {
+                    const merged = mergeFollowupRows(groups);
+                    state.followupCustomerCache.clear();
+                    state.followups = (
+                      await mapFollowupsWithLimit(merged,4)
+                    ).sort(compareFollowups);
+
+                    updateFollowupSummary();
+
+                    const counts = followupCounts();
+                    if (
+                      counts[state.followupFilter] === 0 &&
+                      counts.today === 0
+                    ) {
+                      const firstAvailable = [
+                        "overdue","long","booked","completed","skipped",
+                      ].find(category => counts[category] > 0);
+                      if (firstAvailable) state.followupFilter = firstAvailable;
+                    }
+
+                    document
+                      .querySelectorAll("[data-followup-filter]")
+                      .forEach(button => button.classList.toggle(
+                        "active",
+                        button.dataset.followupFilter === state.followupFilter
+                      ));
+
+                    renderFollowups();
+                    const actionable = counts.today + counts.overdue + counts.long;
+                    setStatus(
+                      $("#followupStatus"),
+                      actionable
+                        ? `送信前に確認が必要な対象が ${actionable}件あります。`
+                        : "現在、送信前に確認が必要な対象はありません。",
+                      actionable ? "ok" : ""
+                    );
+                  } catch (error) {
+                    setStatus($("#followupStatus"),error.message,"ng");
+                    $("#followupList").replaceChildren();
+                  }
+                }
+
+                function renderFollowups() {
+                  const container = $("#followupList");
+                  container.replaceChildren();
+
+                  const rows = state.followups.filter(
+                    row => followupCategory(row) === state.followupFilter
+                  );
+
+                  if (!rows.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "followup-empty-note";
+                    empty.textContent =
+                      `${followupCategoryLabel(state.followupFilter)}の対象はありません。`;
+                    container.append(empty);
+                    return;
+                  }
+
+                  for (const row of rows) {
+                    const category = followupCategory(row);
+                    const overdueDays = followupDaysFromToday(row.due_date);
+                    const card = document.createElement("article");
+                    card.className = `followup-card followup-${category}`;
+
+                    const customer = document.createElement("div");
+                    customer.className = "followup-customer";
+
+                    const name = document.createElement("strong");
+                    name.textContent = followupCustomerName(row);
+
+                    const categoryBadge = document.createElement("span");
+                    categoryBadge.className =
+                      category === "booked"
+                        ? "badge blue"
+                        : category === "completed"
+                          ? "badge green"
+                          : category === "overdue" || category === "long"
+                            ? "badge red"
+                            : "badge";
+                    categoryBadge.textContent = followupCategoryLabel(category);
+
+                    const meta = document.createElement("div");
+                    meta.className = "followup-meta";
+                    meta.textContent =
+                      `来店目安 ${row.due_date || "未設定"} ／ ` +
+                      `${followupCustomerPhone(row)}`;
+
+                    customer.append(name,categoryBadge,meta);
+
+                    const content = document.createElement("div");
+
+                    if (category === "booked") {
+                      const warning = document.createElement("div");
+                      warning.className = "followup-warning";
+                      warning.textContent =
+                        `次回予約 ${followupReservationDate(row)} があるため、` +
+                        "通常の再来店メッセージは送信対象外です。";
+                      content.append(warning);
+                    } else if (category === "long") {
+                      const priority = document.createElement("div");
+                      priority.className = "followup-priority";
+                      priority.textContent =
+                        `${Math.max(0,overdueDays)}日超過：優先して状況を確認してください。`;
+                      content.append(priority);
+                    } else if (category === "overdue") {
+                      const priority = document.createElement("div");
+                      priority.className = "followup-priority";
+                      priority.textContent =
+                        `${Math.max(1,overdueDays)}日超過しています。`;
+                      content.append(priority);
+                    }
+
+                    const messageText = recommendedFollowupMessage(row);
+                    const message = document.createElement("div");
+                    message.className = "message-box";
+                    message.textContent =
+                      category === "booked"
+                        ? "次回予約済みのため、フォロー文面は表示しません。"
+                        : messageText;
+                    content.append(message);
+
+                    const actions = document.createElement("div");
+                    actions.className = "followup-actions";
+
+                    const detail = document.createElement("button");
+                    detail.type = "button";
+                    detail.className = "btn btn-secondary btn-small wide";
+                    detail.textContent = "顧客・前回施術";
+                    detail.addEventListener(
+                      "click",
+                      () => openFollowupCustomer(row)
+                    );
+
+                    const copy = document.createElement("button");
+                    copy.type = "button";
+                    copy.className = "btn btn-primary btn-small";
+                    copy.textContent = "文面コピー";
+                    copy.disabled = ["booked","completed","skipped"].includes(category);
+                    copy.addEventListener(
+                      "click",
+                      () => copyFollowupMessage(row,messageText)
+                    );
+
+                    const complete = document.createElement("button");
+                    complete.type = "button";
+                    complete.className = "btn btn-success btn-small";
+                    complete.textContent = "対応完了";
+                    complete.disabled = ["completed","skipped"].includes(category);
+                    complete.addEventListener(
+                      "click",
+                      () => markFollowupCompleted(row)
+                    );
+
+                    const skip = document.createElement("button");
+                    skip.type = "button";
+                    skip.className = "btn btn-secondary btn-small wide";
+                    skip.textContent = "送信しない";
+                    skip.disabled = ["completed","skipped"].includes(category);
+                    skip.addEventListener(
+                      "click",
+                      () => markFollowupSkipped(row)
+                    );
+
+                    actions.append(detail,copy,complete,skip);
+                    card.append(customer,content,actions);
+                    container.append(card);
+                  }
+                }
+
+                // Events'''
+              replace_regex(
+                  followup_pattern,
+                  followup_replacement,
+                  "再来店フォロー処理"
+              )
+
+              old_followup_event = '''      $("#followupReload").addEventListener("click",loadFollowups);
+          '''
+              new_followup_event = '''      $("#followupReload").addEventListener("click",loadFollowups);
+                document
+                  .querySelectorAll("[data-followup-filter]")
+                  .forEach(button => button.addEventListener("click",() => {
+                    state.followupFilter = button.dataset.followupFilter;
+                    document
+                      .querySelectorAll("[data-followup-filter]")
+                      .forEach(node => node.classList.toggle(
+                        "active",
+                        node === button
+                      ));
+                    renderFollowups();
+                  }));
+          '''
+              replace_once(
+                  old_followup_event,
+                  new_followup_event,
+                  "フォローフィルターイベント"
+              )
+
+              if "MutationObserver" in text:
+                  raise SystemExit(
+                      "owner.html内にMutationObserverが見つかったため停止しました。"
+                  )
+              if "owner-brushup.js" in text:
+                  raise SystemExit(
+                      "owner.html内に旧追加スクリプト参照が見つかったため停止しました。"
+                  )
+
+              owner_path.write_text(text,encoding="utf-8")
+
+          config_text = config_path.read_text(encoding="utf-8")
+          if "owner-brushup.js" in config_text:
+              raise SystemExit(
+                  "config.jsに旧owner-brushup.js読込が残っています。"
+              )
+
+          config_text, count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-15-FOLLOWUP-SAFETY-20260722"',
+              config_text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+          config_path.write_text(config_text,encoding="utf-8")
+          PY
+
+      - name: Validate followup safety
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f owner.html
+          test -f config.js
+
+          grep -q 'id="followupSummary"' owner.html
+          grep -q 'data-followup-filter="booked"' owner.html
+          grep -q '次回予約済みのため' owner.html
+          grep -q 'mapFollowupsWithLimit' owner.html
+          grep -q 'recommendedFollowupMessage' owner.html
+          grep -q 'markFollowupSkipped' owner.html
+          grep -q 'EYE-15-FOLLOWUP-SAFETY-20260722' config.js
+
+          ! grep -q 'MutationObserver' owner.html
+          ! grep -q 'owner-brushup.js' config.js
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path("owner.html").read_text(encoding="utf-8")
+          scripts = re.findall(
+              r"<script(?:\s[^>]*)?>(.*?)</script>",
+              html,
+              flags=re.S,
+          )
+          inline = [script for script in scripts if script.strip()]
+          if not inline:
+              raise SystemExit(
+                  "検査対象のインラインJavaScriptがありません。"
+              )
+          Path("/tmp/owner-inline.js").write_text(
+              "\n".join(inline),
+              encoding="utf-8",
+          )
+          PY
+
+          node --check /tmp/owner-inline.js
+          node --check config.js
+
+          python3 <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              pass
+
+          parser = Parser()
+          parser.feed(Path("owner.html").read_text(encoding="utf-8"))
+          parser.close()
+          print("HTML parser check passed.")
+          PY
+
+      - name: Create backup tag and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_TAG="eye-brushup-5-backup-${{ github.run_id }}"
+          git tag "$BACKUP_TAG" "$BEFORE_SHA"
+          git push origin "$BACKUP_TAG"
+
+          rm -f ".github/workflows/step-eye-brushup-5-followup-safety.yml"
+
+          git config user.name "DPRO STEP EYE-BRUSHUP-5"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "STEP EYE-BRUSHUP-5 improve followup safety"
+          git push origin HEAD:main
