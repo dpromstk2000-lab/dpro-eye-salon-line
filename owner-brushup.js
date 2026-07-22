@@ -3,6 +3,8 @@
 
   const config = window.DPRO_EYE_CONFIG;
   if (!config || !/\/owner\.html$/i.test(window.location.pathname)) return;
+  if (window.__DPRO_EYE_OWNER_BRUSHUP_R2__) return;
+  window.__DPRO_EYE_OWNER_BRUSHUP_R2__ = true;
 
   const NO_NEXT_VISIT_SENTINEL = "1900-01-01";
   const state = {
@@ -209,7 +211,7 @@
     const label = document.createElement("span");
     label.id = "eyeBrushupVersion";
     label.className = "brushup-version";
-    label.textContent = "EYE-BRUSHUP-2｜日常操作改善";
+    label.textContent = "EYE-BRUSHUP-2 R2｜無限ループ修正版";
     top.insertAdjacentElement("afterend", label);
   }
 
@@ -468,9 +470,23 @@
     }
     if (detail && !detail.dataset.brushupObserved) {
       detail.dataset.brushupObserved = "1";
-      new MutationObserver(() => {
-        renderAttention();
-        maybeFinishCustomerNavigation();
+      let refreshQueued = false;
+      new MutationObserver(mutations => {
+        const hasExternalChange = mutations.some(mutation => {
+          const target = mutation.target?.nodeType === 1
+            ? mutation.target
+            : mutation.target?.parentElement;
+          return !target?.closest?.(
+            "#brushupAttention, #brushupCustomerActions"
+          );
+        });
+        if (!hasExternalChange || refreshQueued) return;
+        refreshQueued = true;
+        queueMicrotask(() => {
+          refreshQueued = false;
+          renderAttention();
+          maybeFinishCustomerNavigation();
+        });
       }).observe(detail, {
         childList: true,
         subtree: true,
@@ -570,6 +586,10 @@
     ) {
       items.push(`事前確認：${intake}`);
     }
+
+    const signature = JSON.stringify(items);
+    if (box.dataset.attentionSignature === signature) return;
+    box.dataset.attentionSignature = signature;
 
     box.replaceChildren();
     const title = document.createElement("strong");
