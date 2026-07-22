@@ -1,0 +1,99 @@
+name: STEP EYE-BRUSHUP-2 Emergency Rollback
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-2-emergency-rollback.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-2-emergency-rollback
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove brushup loader and unstable file
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("config.js")
+          if not path.exists():
+              raise SystemExit("config.js が見つかりません。")
+
+          text = path.read_text(encoding="utf-8")
+
+          text, version_count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-12-R3-EMERGENCY-ROLLBACK-20260722"',
+              text,
+              count=1,
+          )
+          if version_count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+
+          marker = '\n  if (/\\/owner\\.html$/i.test(window.location.pathname)) {'
+          if marker in text:
+              text = text.split(marker, 1)[0].rstrip() + "\n})();\n"
+
+          if "owner-brushup.js" in text:
+              raise SystemExit("config.js からowner-brushup.js読込を除去できませんでした。")
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          rm -f owner-brushup.js
+
+      - name: Validate rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f config.js
+          test -f owner.html
+          test ! -e owner-brushup.js
+
+          node --check config.js
+          ! grep -q "owner-brushup.js" config.js
+          grep -q 'EYE-12-R3-EMERGENCY-ROLLBACK-20260722' config.js
+
+          echo "Rollback validation passed."
+
+      - name: Commit rollback and remove this workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -f ".github/workflows/step-eye-brushup-2-emergency-rollback.yml"
+
+          git config user.name "DPRO Emergency Rollback"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Rollback EYE-BRUSHUP-2 unstable owner enhancement"
+          git push origin HEAD:main
