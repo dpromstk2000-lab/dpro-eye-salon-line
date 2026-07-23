@@ -219,7 +219,7 @@
       <div class="buttons" style="margin-top:14px">
         <button id="runButton" class="btn primary" type="button">最終検査を再実行</button>
         <button id="restoreButton" class="btn success" type="button">
-          デモ環境を標準状態へ復元
+          デモ標準データを再準備
         </button>
       </div>
     </section>
@@ -285,7 +285,7 @@
       const isDemo = params.get("demo") === "1";
       const $ = selector => document.querySelector(selector);
       const state = {adminCode:"",running:false};
-      const VERSION = "EYE-18-R2-RELEASE-CHECK-RETRY-20260723";
+      const VERSION = "EYE-18-R3-DEMO-RESTORE-FIX-20260723";
 
       const attr = (name,value) => `${name}="${value}"`;
       const fn = name => `function ${name}(`;
@@ -992,24 +992,53 @@
 
       async function restore() {
         if (!confirm(
-          "デモ顧客・予約・カルテを標準状態へ復元しますか？"
+          "デモ顧客・予約・カルテの標準データを再準備しますか？"
         )) return;
+
+        const previousDecision =
+          $("#releaseDecisionTitle").textContent || "判定済み";
+
         $("#restoreButton").disabled = true;
+        $("#restoreButton").textContent = "再準備しています…";
         $("#overallStatus").className = "status warn";
-        $("#overallStatus").textContent = "デモ環境を復元しています…";
+        $("#overallStatus").textContent =
+          "デモ標準データを安全に再準備しています…";
+
         try {
-          await fetchJson(config.API.admin_demo_restore,{
-            method:"POST",headers:headers(),
-          });
-          toast("デモ環境を標準状態へ復元しました。");
+          const result = await requestWithRetry(
+            "デモ標準データ準備",
+            config.API.admin_demo_prepare,
+            {
+              method:"POST",
+              headers:headers(),
+            }
+          );
+
+          if (!result.ok) {
+            throw new Error(result.error);
+          }
+
+          toast("デモ標準データを再準備しました。");
           await run();
         } catch (error) {
-          $("#overallStatus").className = "status ng";
-          $("#overallStatus").textContent = error.message;
-          setDecision(false,[error.message]);
-          toast(error.message,true);
+          const message =
+            `デモ標準データの再準備だけが失敗しました：${error.message}`;
+
+          $("#overallStatus").className = "status warn";
+          $("#overallStatus").textContent =
+            `${message} 営業判定は「${previousDecision}」のままです。`;
+
+          toast(message,true);
+          $("#rawResult").textContent = safeStringify({
+            operation:"demo_prepare",
+            ok:false,
+            message,
+            release_decision_preserved:previousDecision,
+          });
         } finally {
           $("#restoreButton").disabled = false;
+          $("#restoreButton").textContent =
+            "デモ標準データを再準備";
         }
       }
 
