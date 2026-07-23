@@ -1,0 +1,1039 @@
+name: STEP EYE-BRUSHUP-6 Customer Repeat Booking
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-6-customer-repeat-booking.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-6-customer-repeat-booking
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save pre-change commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Apply customer repeat-booking patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          index_path = Path("index.html")
+          member_path = Path("member.html")
+          config_path = Path("config.js")
+
+          for path in (index_path, member_path, config_path):
+              if not path.exists():
+                  raise SystemExit(f"{path.name} が見つかりません。")
+
+          index = index_path.read_text(encoding="utf-8")
+          member = member_path.read_text(encoding="utf-8")
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(
+                      f"{label} の置換対象が {count} 件です。"
+                      "現行コードが想定と異なるため、安全のため停止しました。"
+                  )
+              return text.replace(old, new, 1)
+
+          def replace_regex(text, pattern, replacement, label):
+              text, count = re.subn(
+                  pattern,
+                  lambda _match: replacement,
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+              if count != 1:
+                  raise SystemExit(
+                      f"{label} の置換対象が {count} 件です。"
+                      "現行コードが想定と異なるため、安全のため停止しました。"
+                  )
+              return text
+
+          if 'id="returningPanel"' not in index:
+              index_css_anchor = '''    .progress {
+          '''
+              index_css_insert = '''    .returning-panel {
+                margin-top:16px;
+                padding:18px;
+                border:2px solid #CDAEB4;
+                border-radius:18px;
+                background:#FCF6F6;
+                box-shadow:var(--shadow);
+              }
+              .returning-panel h2 {
+                margin:0;
+                color:var(--accent-dark);
+                font-size:23px;
+              }
+              .returning-panel p {
+                margin:5px 0 0;
+                color:var(--muted);
+              }
+              .returning-actions {
+                display:flex;
+                flex-wrap:wrap;
+                gap:9px;
+                margin-top:13px;
+              }
+              .existing-customer-panel {
+                margin-bottom:14px;
+                padding:14px 16px;
+                border-left:5px solid var(--success);
+                border-radius:12px;
+                color:#40513B;
+                background:#E7EFE4;
+              }
+              .existing-customer-panel strong {
+                display:block;
+                font-size:18px;
+              }
+              .existing-customer-panel .btn {
+                margin-top:10px;
+              }
+              .duplicate-warning {
+                margin:15px 0;
+                padding:15px;
+                border:2px solid #D8B88F;
+                border-radius:14px;
+                color:#70481F;
+                background:#FFF3E4;
+              }
+              .duplicate-warning.critical {
+                color:#7E343A;
+                border-color:#D9A3A7;
+                background:#FCECEE;
+              }
+              .duplicate-warning strong {
+                display:block;
+                font-size:18px;
+              }
+              .duplicate-check {
+                display:flex;
+                gap:10px;
+                align-items:flex-start;
+                margin-top:10px;
+                font-weight:850;
+              }
+              .duplicate-check input {
+                width:23px;
+                min-height:23px;
+                margin:1px 0 0;
+                flex:none;
+                accent-color:var(--accent);
+              }
+              .repeat-selection-note {
+                margin-top:12px;
+                padding:12px 14px;
+                border-radius:12px;
+                color:#40513B;
+                background:#E7EFE4;
+                font-weight:850;
+              }
+
+              .progress {
+          '''
+              index = replace_once(
+                  index, index_css_anchor, index_css_insert, "リピーター予約CSS"
+              )
+
+              index_mobile_anchor = '''      .btn,.btn-wide { width:100%; }
+          '''
+              index_mobile_insert = '''      .btn,.btn-wide { width:100%; }
+                .returning-actions { flex-direction:column; }
+          '''
+              index = replace_once(
+                  index, index_mobile_anchor, index_mobile_insert, "リピーター予約モバイルCSS"
+              )
+
+              index_hero_anchor = '''    </header>
+
+              <nav id="progress" class="progress" aria-label="予約手順">
+          '''
+              index_hero_insert = '''    </header>
+
+              <section id="returningPanel" class="returning-panel" hidden>
+                <h2 id="returningTitle">おかえりなさい</h2>
+                <p id="returningDescription">
+                  前回と同じ内容なら、メニューと担当者を自動入力できます。
+                </p>
+                <div class="returning-actions">
+                  <button id="repeatLastBooking" class="btn btn-primary" type="button">
+                    前回と同じ内容で予約
+                  </button>
+                  <a id="returningMemberLink" class="btn btn-secondary"
+                    href="./member.html">
+                    予約確認・変更
+                  </a>
+                </div>
+                <div id="repeatSelectionNote" class="repeat-selection-note" hidden></div>
+              </section>
+
+              <nav id="progress" class="progress" aria-label="予約手順">
+          '''
+              index = replace_once(
+                  index, index_hero_anchor, index_hero_insert, "リピーター案内パネル"
+              )
+
+              step3_anchor = '''      <div id="lookupStatus" class="lookup-status"></div>
+
+                <div id="migrationRelinkBox" class="relink-box" hidden>
+          '''
+              step3_insert = '''      <div id="lookupStatus" class="lookup-status"></div>
+
+                <div id="existingCustomerPanel" class="existing-customer-panel" hidden>
+                  <strong id="existingCustomerTitle">
+                    登録済みのお客様情報を使用します
+                  </strong>
+                  <span id="existingCustomerDescription">
+                    お名前・電話番号などの再入力は不要です。
+                  </span>
+                  <button id="editCustomerInformation" class="btn btn-secondary"
+                    type="button">
+                    基本情報を修正する
+                  </button>
+                </div>
+
+                <div id="migrationRelinkBox" class="relink-box" hidden>
+          '''
+              index = replace_once(
+                  index, step3_anchor, step3_insert, "既存顧客入力省略パネル"
+              )
+
+              step5_anchor = '''      <dl id="confirmList" class="confirm-list"></dl>
+
+                <div class="attention">
+          '''
+              step5_insert = '''      <dl id="confirmList" class="confirm-list"></dl>
+
+                <div id="existingBookingWarning" class="duplicate-warning" hidden>
+                  <strong id="existingBookingWarningTitle">
+                    すでに次回予約があります
+                  </strong>
+                  <span id="existingBookingWarningText"></span>
+                  <label id="additionalBookingConfirm" class="duplicate-check">
+                    <input id="additionalBookingConfirmed" type="checkbox">
+                    <span>
+                      既存の次回予約とは別の追加予約であることを確認しました。
+                    </span>
+                  </label>
+                </div>
+
+                <div class="attention">
+          '''
+              index = replace_once(
+                  index, step5_anchor, step5_insert, "重複予約警告"
+              )
+
+              state_anchor = '''        migrationLinkToken: "",
+                };
+          '''
+              state_insert = '''        migrationLinkToken: "",
+                  memberData: null,
+                  customerFieldsLocked: false,
+                  repeatPresetApplied: false,
+                };
+          '''
+              index = replace_once(index, state_anchor, state_insert, "予約画面状態追加")
+
+              selected_services_anchor = '''      function selectedServices() {
+          '''
+              repeat_helpers = '''      function memberUpcomingReservations() {
+                  return (state.memberData?.upcoming || []).filter(reservation =>
+                    ["reserved","confirmed"].includes(reservation.status)
+                  );
+                }
+
+                function repeatableHistoryReservation() {
+                  return (state.memberData?.history || []).find(reservation =>
+                    !["cancelled","no_show","cancel_requested"].includes(
+                      reservation.status
+                    ) &&
+                    Array.isArray(reservation.items) &&
+                    reservation.items.length
+                  ) || null;
+                }
+
+                function reservationServiceIds(reservation) {
+                  return (reservation?.items || [])
+                    .map(item => item.service_id)
+                    .filter(id => state.services.some(service => service.id === id));
+                }
+
+                function repeatSuggestedDate(reservation, suppliedDate = "") {
+                  const today = jstToday();
+                  const max = addDays(
+                    today,
+                    Number(state.shop?.booking_open_days || 60)
+                  );
+                  const candidates = [
+                    suppliedDate,
+                    state.memberData?.customer?.next_revisit_date,
+                  ].filter(Boolean);
+
+                  const serviceDays = reservationServiceIds(reservation)
+                    .map(id => state.services.find(service => service.id === id))
+                    .map(service => Number(service?.revisit_days))
+                    .filter(days => Number.isFinite(days) && days > 0);
+
+                  const previousDate = reservation?.jst?.start?.date || "";
+                  if (previousDate && serviceDays.length) {
+                    candidates.push(addDays(previousDate,Math.min(...serviceDays)));
+                  }
+
+                  const valid = candidates.find(date =>
+                    /^\\d{4}-\\d{2}-\\d{2}$/.test(date) &&
+                    date >= today &&
+                    date <= max
+                  );
+                  return valid || "";
+                }
+
+                function repeatReservationFromParams() {
+                  const ids = (params.get("service_ids") || "")
+                    .split(",")
+                    .map(value => value.trim())
+                    .filter(Boolean);
+                  if (!ids.length) return null;
+                  return {
+                    items:ids.map(service_id => ({service_id})),
+                    staff:{
+                      id:params.get("staff_id") || "",
+                    },
+                    jst:{
+                      start:{
+                        date:params.get("suggested_date") || "",
+                      },
+                    },
+                  };
+                }
+
+                function applyRepeatReservation(reservation, suppliedDate = "") {
+                  if (!reservation) {
+                    toast("前回の予約内容が見つかりません。",true);
+                    return false;
+                  }
+
+                  const ids = reservationServiceIds(reservation);
+                  if (!ids.length) {
+                    toast(
+                      "前回メニューは現在の予約メニューにありません。新しく選択してください。",
+                      true
+                    );
+                    return false;
+                  }
+
+                  state.selectedServiceIds = new Set(ids);
+                  state.staffId = "";
+                  state.bookingTime = "";
+                  state.chosenSlot = null;
+
+                  syncMenuCards();
+                  renderSelectionSummary();
+                  renderStaffChoices();
+
+                  const requestedStaffId =
+                    reservation.staff?.id ||
+                    reservation.staff_id ||
+                    "";
+                  if (
+                    requestedStaffId &&
+                    eligibleStaff().some(member => member.id === requestedStaffId)
+                  ) {
+                    state.staffId = requestedStaffId;
+                    renderStaffChoices();
+                  }
+
+                  const suggested = repeatSuggestedDate(
+                    reservation,
+                    suppliedDate || reservation.jst?.start?.date || ""
+                  );
+                  $("#bookingDate").value = suggested;
+                  state.bookingDate = suggested;
+                  clearSlots(
+                    suggested
+                      ? "おすすめ日を設定しました。「空き時間を表示」を押してください。"
+                      : "希望日を選び、「空き時間を表示」を押してください。"
+                  );
+
+                  const note = $("#repeatSelectionNote");
+                  note.hidden = false;
+                  note.textContent =
+                    `前回と同じメニューを選択しました。` +
+                    `${state.staffId ? "前回担当者も設定済みです。" : "担当者はおまかせで確認します。"}` +
+                    `${suggested ? ` おすすめ日：${suggested}` : ""}`;
+
+                  state.repeatPresetApplied = true;
+                  setStep(1);
+                  $("#selectionSummary").scrollIntoView({
+                    behavior:"smooth",
+                    block:"center",
+                  });
+                  return true;
+                }
+
+                function setCustomerFieldsLocked(locked) {
+                  state.customerFieldsLocked = locked;
+                  for (const id of ["fullName","fullNameKana","phone","email"]) {
+                    const input = $(`#${id}`);
+                    if (input) input.readOnly = locked;
+                  }
+                  $("#existingCustomerPanel").hidden = !state.existingCustomer;
+                  $("#editCustomerInformation").textContent = locked
+                    ? "基本情報を修正する"
+                    : "登録済み情報に戻す";
+                }
+
+                async function loadMemberContext() {
+                  if (!state.lineUserId) return;
+                  const url = new URL(config.API.member_reservations);
+                  url.searchParams.set("line_user_id",state.lineUserId);
+                  try {
+                    const data = await fetchJson(url);
+                    if (!data.found) return;
+                    state.memberData = data;
+
+                    const returning = $("#returningPanel");
+                    returning.hidden = false;
+                    $("#returningTitle").textContent =
+                      `${data.customer?.full_name || "お客様"}、おかえりなさい`;
+                    const upcoming = memberUpcomingReservations();
+                    $("#returningDescription").textContent = upcoming.length
+                      ? `次回予約が ${upcoming.length}件あります。追加予約時は確認画面でお知らせします。`
+                      : "前回と同じ内容なら、メニューと担当者を自動入力できます。";
+
+                    $("#repeatLastBooking").disabled =
+                      !repeatableHistoryReservation();
+
+                    if (data.customer) {
+                      fillCustomer(data.customer);
+                    }
+                  } catch {
+                    // 会員情報がない初回客は通常予約として続行します。
+                  }
+                }
+
+                function exactExistingReservation() {
+                  return memberUpcomingReservations().find(reservation =>
+                    reservation.jst?.start?.date === state.bookingDate &&
+                    reservation.jst?.start?.time === state.bookingTime
+                  ) || null;
+                }
+
+                function renderExistingBookingWarning() {
+                  const warning = $("#existingBookingWarning");
+                  const title = $("#existingBookingWarningTitle");
+                  const text = $("#existingBookingWarningText");
+                  const confirmLine = $("#additionalBookingConfirm");
+                  const checkbox = $("#additionalBookingConfirmed");
+                  checkbox.checked = false;
+
+                  const exact = exactExistingReservation();
+                  if (exact) {
+                    warning.hidden = false;
+                    warning.className = "duplicate-warning critical";
+                    title.textContent = "同じ日時の予約がすでにあります";
+                    text.textContent =
+                      `${exact.jst?.start?.date || ""} ` +
+                      `${exact.jst?.start?.time || ""} の予約と重複するため、` +
+                      "この内容では予約できません。予約確認・変更をご利用ください。";
+                    confirmLine.hidden = true;
+                    return;
+                  }
+
+                  const upcoming = memberUpcomingReservations();
+                  if (!upcoming.length) {
+                    warning.hidden = true;
+                    warning.className = "duplicate-warning";
+                    confirmLine.hidden = false;
+                    return;
+                  }
+
+                  const nearest = upcoming[0];
+                  warning.hidden = false;
+                  warning.className = "duplicate-warning";
+                  title.textContent = "すでに次回予約があります";
+                  text.textContent =
+                    `${nearest.jst?.start?.date || ""} ` +
+                    `${nearest.jst?.start?.time || ""} に予約があります。` +
+                    "別日の追加予約で間違いないか確認してください。";
+                  confirmLine.hidden = false;
+                }
+
+                function validateExistingBooking() {
+                  if (exactExistingReservation()) {
+                    renderExistingBookingWarning();
+                    toast("同じ日時の予約がすでにあるため送信できません。",true);
+                    return false;
+                  }
+                  if (
+                    memberUpcomingReservations().length &&
+                    !$("#additionalBookingConfirmed").checked
+                  ) {
+                    toast(
+                      "既存予約とは別の追加予約であることを確認してください。",
+                      true
+                    );
+                    $("#additionalBookingConfirmed").focus();
+                    return false;
+                  }
+                  return true;
+                }
+
+                function selectedServices() {
+          '''
+              index = replace_once(
+                  index, selected_services_anchor, repeat_helpers, "再予約・重複確認処理"
+              )
+
+              fill_customer_anchor = '''        $("#phone").value = customer.phone || "";
+                  $("#contactLens").value = customer.contact_lens || "unknown";
+          '''
+              fill_customer_insert = '''        $("#phone").value = customer.phone || "";
+                  $("#email").value = customer.email || "";
+                  $("#contactLens").value = customer.contact_lens || "unknown";
+          '''
+              index = replace_once(
+                  index, fill_customer_anchor, fill_customer_insert, "既存顧客メール自動入力"
+              )
+
+              fill_customer_status_anchor = '''        showLookup(
+                    `既存顧客 ${customer.customer_no} の情報を読み込みました。基本情報の再入力は不要です。`,
+                    "ok"
+                  );
+          '''
+              fill_customer_status_insert = '''        setCustomerFieldsLocked(true);
+                  $("#existingCustomerTitle").textContent =
+                    `${customer.full_name || "お客様"}の登録済み情報を使用します`;
+                  $("#existingCustomerDescription").textContent =
+                    "お名前・電話番号などは自動入力済みです。変更がある場合だけ修正してください。";
+                  showLookup(
+                    `既存顧客 ${customer.customer_no} の情報を読み込みました。基本情報の再入力は不要です。`,
+                    "ok"
+                  );
+          '''
+              index = replace_once(
+                  index,
+                  fill_customer_status_anchor,
+                  fill_customer_status_insert,
+                  "リピーター基本情報ロック"
+              )
+
+              submit_anchor = '''      async function submitBooking() {
+                  if (state.submitting) return;
+                  state.submitting = true;
+          '''
+              submit_insert = '''      async function submitBooking() {
+                  if (state.submitting) return;
+                  if (!validateExistingBooking()) return;
+                  state.submitting = true;
+          '''
+              index = replace_once(
+                  index, submit_anchor, submit_insert, "予約送信前重複検査"
+              )
+
+              initialize_anchor = '''          renderStaffChoices();
+                    await resolveLineUser();
+          '''
+              initialize_insert = '''          renderStaffChoices();
+                    await resolveLineUser();
+                    await loadMemberContext();
+
+                    const preset = repeatReservationFromParams();
+                    if (params.get("repeat") === "1") {
+                      applyRepeatReservation(
+                        preset || repeatableHistoryReservation(),
+                        params.get("suggested_date") || ""
+                      );
+                    }
+          '''
+              index = replace_once(
+                  index, initialize_anchor, initialize_insert, "会員・再予約初期化"
+              )
+
+              step5_event_old = '''      $("#toStep5").addEventListener("click", () => {
+                  if (!$("#consentChecked").checked) {
+                    toast("確認事項への同意をチェックしてください。", true);
+                    $("#consentChecked").focus();
+                    return;
+                  }
+                  buildConfirm();
+                  setStep(5);
+                });
+          '''
+              step5_event_new = '''      $("#toStep5").addEventListener("click", () => {
+                  if (!$("#consentChecked").checked) {
+                    toast("確認事項への同意をチェックしてください。", true);
+                    $("#consentChecked").focus();
+                    return;
+                  }
+                  buildConfirm();
+                  renderExistingBookingWarning();
+                  setStep(5);
+                });
+          '''
+              index = replace_once(
+                  index, step5_event_old, step5_event_new, "確認画面重複警告"
+              )
+
+              index_event_anchor = '''      $("#migrationRelinkButton").addEventListener(
+                  "click",
+                  migrationRelink
+                );
+
+                $("#phone").addEventListener("blur", async () => {
+          '''
+              index_event_insert = '''      $("#migrationRelinkButton").addEventListener(
+                  "click",
+                  migrationRelink
+                );
+
+                $("#returningMemberLink").href = isDemo
+                  ? "./member.html?demo=1"
+                  : "./member.html";
+
+                $("#repeatLastBooking").addEventListener("click",() =>
+                  applyRepeatReservation(repeatableHistoryReservation())
+                );
+
+                $("#editCustomerInformation").addEventListener("click",() =>
+                  setCustomerFieldsLocked(!state.customerFieldsLocked)
+                );
+
+                $("#phone").addEventListener("blur", async () => {
+          '''
+              index = replace_once(
+                  index, index_event_anchor, index_event_insert, "再予約・顧客修正イベント"
+              )
+
+              if "MutationObserver" in index or "owner-brushup.js" in index:
+                  raise SystemExit("予約画面に禁止された追加監視処理が見つかりました。")
+
+          if 'id="memberShortcutPanel"' not in member:
+              member_css_anchor = '''    .reservation-list { display:grid; gap:13px; }
+          '''
+              member_css_insert = '''    .member-shortcuts {
+                display:grid;
+                grid-template-columns:minmax(0,1fr) auto;
+                gap:13px;
+                align-items:center;
+                margin-top:16px;
+                padding:18px;
+                border:2px solid #CDAEB4;
+                border-radius:17px;
+                background:#FCF6F6;
+              }
+              .member-shortcuts h2 {
+                margin:0;
+                font-size:23px;
+              }
+              .member-shortcuts p {
+                margin:4px 0 0;
+                color:var(--muted);
+              }
+              .member-shortcut-actions {
+                display:flex;
+                flex-wrap:wrap;
+                gap:9px;
+                justify-content:flex-end;
+              }
+              .reservation-guide {
+                margin-top:12px;
+                padding:11px 13px;
+                border-radius:11px;
+                color:#60474E;
+                background:#F4EAEC;
+                font-weight:800;
+              }
+              .cancel-note {
+                margin-top:12px;
+                padding:10px 12px;
+                border-radius:10px;
+                color:#70481F;
+                background:#FFF3E4;
+                font-size:14px;
+                font-weight:800;
+              }
+
+              .reservation-list { display:grid; gap:13px; }
+          '''
+              member = replace_once(
+                  member, member_css_anchor, member_css_insert, "会員ページ短縮導線CSS"
+              )
+
+              member_mobile_anchor = '''      .btn { width:100%; }
+          '''
+              member_mobile_insert = '''      .btn { width:100%; }
+                .member-shortcuts { grid-template-columns:1fr; }
+                .member-shortcut-actions { justify-content:stretch; }
+          '''
+              member = replace_once(
+                  member, member_mobile_anchor, member_mobile_insert, "会員ページモバイルCSS"
+              )
+
+              profile_anchor = '''    <section id="upcomingPanel" class="panel" hidden>
+          '''
+              shortcut_html = '''    <section id="memberShortcutPanel" class="member-shortcuts" hidden>
+                <div>
+                  <h2>かんたん予約</h2>
+                  <p id="memberShortcutDescription">
+                    前回と同じ内容なら、メニューと担当者を自動入力できます。
+                  </p>
+                  <div id="memberRecommendedDate" class="reservation-guide"></div>
+                </div>
+                <div class="member-shortcut-actions">
+                  <button id="memberRepeatLatest" class="btn btn-primary" type="button">
+                    前回と同じ内容で予約
+                  </button>
+                  <a id="memberDifferentBooking" class="btn btn-secondary" href="./">
+                    別の内容で予約
+                  </a>
+                </div>
+              </section>
+
+              <section id="upcomingPanel" class="panel" hidden>
+          '''
+              member = replace_once(
+                  member, profile_anchor, shortcut_html, "会員ページ短縮導線"
+              )
+
+              member_state_anchor = '''      const changeState = new Map();
+
+                $("#newBookingLink").href = isDemo ? "./?demo=1" : "./";
+          '''
+              member_state_insert = '''      const changeState = new Map();
+
+                $("#newBookingLink").href = isDemo ? "./?demo=1" : "./";
+                $("#memberDifferentBooking").href = isDemo ? "./?demo=1" : "./";
+          '''
+              member = replace_once(
+                  member, member_state_anchor, member_state_insert, "会員予約リンク"
+              )
+
+              member_helpers_anchor = '''      function reservationMenu(reservation) {
+          '''
+              member_helpers_insert = '''      function repeatableReservation() {
+                  return (memberData?.history || []).find(reservation =>
+                    !["cancelled","no_show","cancel_requested"].includes(
+                      reservation.status
+                    ) &&
+                    Array.isArray(reservation.items) &&
+                    reservation.items.length
+                  ) || null;
+                }
+
+                function repeatBookingUrl(reservation) {
+                  const url = new URL("./",location.href);
+                  url.searchParams.set("repeat","1");
+                  const serviceIds = (reservation?.items || [])
+                    .map(item => item.service_id)
+                    .filter(Boolean);
+                  if (serviceIds.length) {
+                    url.searchParams.set("service_ids",serviceIds.join(","));
+                  }
+                  const staffId =
+                    reservation?.staff?.id ||
+                    reservation?.staff_id ||
+                    "";
+                  if (staffId) url.searchParams.set("staff_id",staffId);
+
+                  const recommended =
+                    memberData?.customer?.next_revisit_date ||
+                    "";
+                  if (recommended >= todayJst()) {
+                    url.searchParams.set("suggested_date",recommended);
+                  }
+                  if (isDemo) url.searchParams.set("demo","1");
+                  return url.href;
+                }
+
+                function openRepeatBooking(reservation) {
+                  if (!reservation) {
+                    toast("前回の予約内容が見つかりません。",true);
+                    return;
+                  }
+                  location.href = repeatBookingUrl(reservation);
+                }
+
+                function reservationMenu(reservation) {
+          '''
+              member = replace_once(
+                  member, member_helpers_anchor, member_helpers_insert, "会員再予約URL処理"
+              )
+
+              upcoming_actions_anchor = '''          const change = document.createElement("button");
+                    change.type = "button";
+                    change.className = "btn btn-primary";
+                    change.textContent = "日時を変更";
+          '''
+              upcoming_actions_insert = '''          const note = document.createElement("div");
+                    note.className = "cancel-note";
+                    note.textContent =
+                      "日時変更は空き時間を選んで確定します。キャンセルは店舗への申請として受け付けます。";
+                    card.append(note);
+
+                    const change = document.createElement("button");
+                    change.type = "button";
+                    change.className = "btn btn-primary";
+                    change.textContent = "予約日時を変更";
+          '''
+              member = replace_once(
+                  member, upcoming_actions_anchor, upcoming_actions_insert, "変更・キャンセル案内"
+              )
+
+              cancel_label_anchor = '''          cancel.textContent = "キャンセル";
+          '''
+              cancel_label_insert = '''          cancel.textContent = "キャンセルを申請";
+          '''
+              member = replace_once(
+                  member, cancel_label_anchor, cancel_label_insert, "キャンセル申請表記"
+              )
+
+              render_reservation_tail = '''          card.append(actions);
+
+                    const changeBox = document.createElement("div");
+          '''
+              render_reservation_tail_new = '''          card.append(actions);
+
+                    const changeBox = document.createElement("div");
+          '''
+              # Verify anchor without changing, because the notice was inserted before actions.
+              if member.count(render_reservation_tail) != 1:
+                  raise SystemExit("予約操作欄の構造が想定と異なります。")
+
+              history_button_anchor = '''        }
+
+                  return card;
+                }
+
+                function render() {
+          '''
+              history_button_insert = '''        }
+
+                  if (
+                    !upcoming &&
+                    !["cancelled","no_show","cancel_requested"].includes(
+                      reservation.status
+                    ) &&
+                    Array.isArray(reservation.items) &&
+                    reservation.items.length
+                  ) {
+                    const repeatActions = document.createElement("div");
+                    repeatActions.className = "actions";
+                    const repeat = document.createElement("button");
+                    repeat.type = "button";
+                    repeat.className = "btn btn-primary";
+                    repeat.textContent = "同じ内容で予約";
+                    repeat.addEventListener(
+                      "click",
+                      () => openRepeatBooking(reservation)
+                    );
+                    repeatActions.append(repeat);
+                    card.append(repeatActions);
+                  }
+
+                  return card;
+                }
+
+                function render() {
+          '''
+              member = replace_once(
+                  member, history_button_anchor, history_button_insert, "履歴から再予約"
+              )
+
+              render_profile_anchor = '''        $("#profilePanel").hidden = false;
+
+                  const upcoming = memberData.upcoming || [];
+          '''
+              render_profile_insert = '''        $("#profilePanel").hidden = false;
+
+                  const repeatable = repeatableReservation();
+                  $("#memberShortcutPanel").hidden = false;
+                  $("#memberRepeatLatest").disabled = !repeatable;
+                  const recommended =
+                    customer.next_revisit_date &&
+                    customer.next_revisit_date >= todayJst()
+                      ? customer.next_revisit_date
+                      : "";
+                  $("#memberRecommendedDate").textContent = recommended
+                    ? `おすすめの次回来店日：${recommended}`
+                    : "次回来店日は予約画面で選択できます。";
+
+                  const upcoming = memberData.upcoming || [];
+                  $("#memberShortcutDescription").textContent = upcoming.length
+                    ? `次回予約が ${upcoming.length}件あります。追加予約時は予約画面で重複確認します。`
+                    : "前回と同じ内容なら、メニューと担当者を自動入力できます。";
+          '''
+              member = replace_once(
+                  member, render_profile_anchor, render_profile_insert, "会員短縮導線表示"
+              )
+
+              cancel_message_old = '''        const message =
+                    `${reservation.jst?.start?.date || ""} ` +
+                    `${reservation.jst?.start?.time || ""} の予約をキャンセルしますか？`;
+          '''
+              cancel_message_new = '''        const message =
+                    `${reservation.jst?.start?.date || ""} ` +
+                    `${reservation.jst?.start?.time || ""} の予約について、` +
+                    "店舗へキャンセル申請を送りますか？";
+          '''
+              member = replace_once(
+                  member, cancel_message_old, cancel_message_new, "キャンセル確認文"
+              )
+
+              cancel_toast_anchor = '''          toast("キャンセルを受け付けました。");
+          '''
+              cancel_toast_insert = '''          toast(
+                      "キャンセル申請を受け付けました。店舗で確認後に状態が更新されます。"
+                    );
+          '''
+              member = replace_once(
+                  member, cancel_toast_anchor, cancel_toast_insert, "キャンセル申請完了文"
+              )
+
+              member_event_anchor = '''      async function initialize() {
+          '''
+              member_event_insert = '''      $("#memberRepeatLatest").addEventListener(
+                  "click",
+                  () => openRepeatBooking(repeatableReservation())
+                );
+
+                async function initialize() {
+          '''
+              member = replace_once(
+                  member, member_event_anchor, member_event_insert, "会員再予約イベント"
+              )
+
+              if "MutationObserver" in member or "owner-brushup.js" in member:
+                  raise SystemExit("会員画面に禁止された追加監視処理が見つかりました。")
+
+          index_path.write_text(index,encoding="utf-8")
+          member_path.write_text(member,encoding="utf-8")
+
+          config = config_path.read_text(encoding="utf-8")
+          if "owner-brushup.js" in config:
+              raise SystemExit("config.jsに旧owner-brushup.js読込が残っています。")
+
+          config, count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-16-CUSTOMER-REPEAT-BOOKING-20260722"',
+              config,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+          config_path.write_text(config,encoding="utf-8")
+          PY
+
+      - name: Validate customer repeat booking
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f index.html
+          test -f member.html
+          test -f config.js
+
+          grep -q 'id="returningPanel"' index.html
+          grep -q 'id="existingBookingWarning"' index.html
+          grep -q 'member_reservations' index.html
+          grep -q 'exactExistingReservation' index.html
+          grep -q 'id="memberShortcutPanel"' member.html
+          grep -q '同じ内容で予約' member.html
+          grep -q 'キャンセルを申請' member.html
+          grep -q 'EYE-16-CUSTOMER-REPEAT-BOOKING-20260722' config.js
+
+          ! grep -q 'MutationObserver' index.html
+          ! grep -q 'MutationObserver' member.html
+          ! grep -q 'owner-brushup.js' config.js
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          for filename in ("index.html","member.html"):
+              html = Path(filename).read_text(encoding="utf-8")
+              scripts = re.findall(
+                  r"<script(?:\s[^>]*)?>(.*?)</script>",
+                  html,
+                  flags=re.S,
+              )
+              inline = [script for script in scripts if script.strip()]
+              if not inline:
+                  raise SystemExit(
+                      f"{filename}: 検査対象のインラインJavaScriptがありません。"
+                  )
+              Path(f"/tmp/{filename}.js").write_text(
+                  "\n".join(inline),
+                  encoding="utf-8",
+              )
+          PY
+
+          node --check /tmp/index.html.js
+          node --check /tmp/member.html.js
+          node --check config.js
+
+          python3 <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              pass
+
+          for filename in ("index.html","member.html"):
+              parser = Parser()
+              parser.feed(Path(filename).read_text(encoding="utf-8"))
+              parser.close()
+          print("HTML parser checks passed.")
+          PY
+
+      - name: Create backup tag and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_TAG="eye-brushup-6-backup-${{ github.run_id }}"
+          git tag "$BACKUP_TAG" "$BEFORE_SHA"
+          git push origin "$BACKUP_TAG"
+
+          rm -f ".github/workflows/step-eye-brushup-6-customer-repeat-booking.yml"
+
+          git config user.name "DPRO STEP EYE-BRUSHUP-6"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "STEP EYE-BRUSHUP-6 improve customer repeat booking"
+          git push origin HEAD:main
