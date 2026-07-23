@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6F4C55">
+<title>本番店舗導入スターターパック｜DPRO EYE SALON</title>
+<script src="./config.js"></script>
+<style>
+:root{--bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;--accent:#A86F7D;--dark:#6F4C55;--text:#2F2B2C;--muted:#6E6567;--border:#DED1CA;--ok:#64745F;--warn:#A96F32;--ng:#A14E55;--blue:#5D7084;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 28rem),var(--bg);color:var(--text);font-size:17px;line-height:1.65}button,input,select,textarea{font:inherit}button{cursor:pointer}input{width:100%;min-height:50px;margin-top:6px;padding:10px 12px;border:2px solid var(--border);border-radius:12px;background:#fff}label{display:block;font-weight:850}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card,.hero,.panel{border:1px solid var(--border);border-radius:20px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(78,53,61,.08)}.login-card{width:min(590px,100%);padding:30px}.app{width:min(1480px,calc(100% - 24px));margin:auto;padding:18px 0 70px}.hero,.panel{padding:22px}.panel{margin-top:14px}.brand{margin:0 0 5px;color:var(--dark);font-size:14px;font-weight:900;letter-spacing:.12em}h1{margin:0;font-size:34px;line-height:1.3}h2{margin:0;font-size:25px}h3{margin:0;font-size:19px}.muted{color:var(--muted)}.head{display:flex;justify-content:space-between;gap:15px;align-items:center}.links,.buttons{display:flex;gap:9px;flex-wrap:wrap}.links a{padding:8px 13px;border-radius:11px;background:var(--soft);color:var(--dark);font-weight:900;text-decoration:none}.btn{min-height:48px;padding:9px 15px;border:0;border-radius:12px;font-weight:900}.primary{color:#fff;background:var(--accent)}.secondary{color:var(--dark);background:var(--soft)}.danger{color:#fff;background:var(--ng)}.blue{color:#fff;background:var(--blue)}.success{color:#fff;background:var(--ok)}.btn:disabled{opacity:.45;cursor:not-allowed}.notice{margin-top:14px;padding:14px 16px;border-left:6px solid var(--warn);border-radius:11px;color:#70481F;background:#FFF3E4;font-weight:850}.status{margin-top:13px;padding:13px 15px;border-radius:12px;background:var(--soft);font-weight:850}.status.ok{color:#40513B;background:#E7EFE4}.status.warn{color:#70481F;background:#FFF3E4}.status.ng{color:#7E343A;background:#F7E6E7}.summary,.artifact-grid,.secret-grid,.url-grid{display:grid;gap:10px}.summary{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px}.artifact-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:13px}.secret-grid{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:13px}.url-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:13px}.summary article,.artifact,.secret,.url-card{padding:14px;border:1px solid var(--border);border-radius:13px;background:#fff}.summary small,.summary span,.artifact span,.secret span,.url-card span{display:block;color:var(--muted);font-size:13px}.summary strong{display:block;font-size:25px}.summary .ok,.artifact.ok,.secret.ok{background:#F3F7F1;border-color:#AAB5A5}.summary .ng,.artifact.ng,.secret.ng{background:#FDF2F3;border-color:#D4A6AA}.file-box{padding:14px;border:2px dashed var(--border);border-radius:14px;background:#fff}.file-box input{border:0;padding:6px}.artifact{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;align-items:start}.artifact b{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;color:#fff;background:var(--dark)}.secret{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}.secret input{width:23px;min-height:23px;margin:2px 0 0;accent-color:var(--accent)}.manifest{max-height:380px;overflow:auto;padding:14px;border-radius:12px;color:#F5F0EF;background:#2F2B2C;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.decision{padding:20px;border:3px solid #D4A6AA;border-radius:18px;color:#7E343A;background:#FDF2F3}.decision.ok{border-color:#AAB5A5;color:#40513B;background:#F3F7F1}.decision strong{display:block;font-size:33px}.decision span{display:block;margin-top:5px;font-weight:850}.blocking{display:grid;gap:5px;margin-top:10px}.blocking div{padding:8px 10px;border-radius:9px;background:#fff;font-weight:850}.progress{height:14px;margin-top:14px;border-radius:999px;background:var(--soft);overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--ok))}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,130%);padding:14px 18px;border-radius:14px;color:#fff;background:#3B3436;transition:.2s}.toast.show{transform:translate(-50%,0)}
+@media(max-width:900px){.summary,.artifact-grid,.secret-grid,.url-grid{grid-template-columns:1fr}.head{flex-direction:column;align-items:stretch}.buttons .btn{width:100%}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+<div class="login-card">
+<p class="brand">DPRO EYE SALON LINE</p>
+<h1>本番店舗導入スターターパック</h1>
+<p class="muted">STEP 11の非機密マニフェストから、本番導入用ファイルを一括生成します。</p>
+<label>管理コード<input id="loginCode" type="password" inputmode="numeric" autocomplete="off"></label>
+<div class="buttons" style="margin-top:14px"><button id="loginButton" class="btn primary">内部作成画面を開く</button><button id="clearCode" class="btn danger">削除</button></div>
+<div id="loginStatus" class="status">管理コードを入力してください。</div>
+</div>
+</section>
+
+<main id="app" class="app" hidden>
+<section class="hero">
+<div class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>本番店舗導入スターターパック</h1><p class="muted">config.js・Worker・Supabase・LINE・URL・切替・ロールバック・納品記録をまとめます。</p></div><div class="links"><a href="./production-clone.html">本番店舗複製</a><a href="./delivery.html">導入・納品進行</a><a href="./release-check.html">内部最終検査</a></div></div>
+<div class="notice">秘密鍵・管理コード・LINEトークンの実値は、生成ZIP・画面・localStorageへ保存しません。</div>
+<div class="summary">
+<article id="manifestCard"><small>マニフェスト</small><strong>未読込</strong><span>STEP 11のJSON</span></article>
+<article id="artifactCard"><small>生成ファイル</small><strong>0/10</strong><span>安全な非機密ファイル</span></article>
+<article id="secretCard"><small>Secrets設定</small><strong>0/5</strong><span>実値は各サービスへ直接設定</span></article>
+<article id="packageCard"><small>スターターパック</small><strong>停止中</strong><span>マニフェスト確認待ち</span></article>
+</div>
+<div class="progress"><span id="progress"></span></div>
+<div id="overall" class="status warn">STEP 11のマニフェストを読み込んでください。</div>
+</section>
+
+<section class="panel">
+<div class="head"><div><h2>1. STEP 11マニフェストを読み込む</h2><span class="muted">同じブラウザに保存済みなら自動読込できます。</span></div><div class="buttons"><button id="loadLocal" class="btn secondary">STEP 11から自動読込</button><button id="selectFile" class="btn blue">JSONファイルを選択</button><input id="manifestFile" type="file" accept=".json,application/json" hidden></div></div>
+<div id="fileBox" class="file-box" style="margin-top:13px">未読込</div>
+<pre id="manifestPreview" class="manifest">マニフェスト未読込</pre>
+</section>
+
+<section class="panel">
+<h2>2. 生成する10ファイル</h2>
+<div id="artifactList" class="artifact-grid"></div>
+</section>
+
+<section class="panel">
+<h2>3. Secrets設定確認</h2>
+<p class="muted">実値は入力しません。各サービスへ設定したことだけをチェックします。</p>
+<div id="secretList" class="secret-grid"></div>
+</section>
+
+<section class="panel">
+<div id="decisionBox" class="decision"><strong id="decisionTitle">ZIP生成停止中</strong><span id="decisionDetail">有効なマニフェストを読み込んでください。</span><div id="blocking" class="blocking"></div></div>
+<div class="buttons" style="margin-top:14px"><button id="downloadZip" class="btn success" disabled>本番導入スターターパックZIPを保存</button><button id="downloadRecord" class="btn secondary" disabled>納品記録JSONだけ保存</button></div>
+</section>
+
+<section class="panel">
+<h2>4. 本番URL確認</h2>
+<div id="urlList" class="url-grid"></div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(()=>{"use strict";
+const c=window.DPRO_EYE_CONFIG,p=new URLSearchParams(location.search),demo=p.get("demo")==="1",$=s=>document.querySelector(s);
+const VERSION="EYE-21-PRODUCTION-STARTER-PACK-20260723",STEP11_KEY=`dpro_eye_production_clone_${c.SHOP_CODE}`,SECRET_STATE_KEY=`dpro_eye_starter_secret_state_${c.SHOP_CODE}`;
+const ARTIFACTS=[
+["config.js","本番用フロント設定"],
+["wrangler.toml","Worker非機密設定"],
+["CLOUDFLARE-SECRETS-CHECKLIST.txt","Secrets設定一覧"],
+["SUPABASE-SETUP-CHECKLIST.txt","DB・RLS・Storage準備"],
+["LINE-LIFF-SETUP.txt","LINE・LIFF設定"],
+["PRODUCTION-URLS.txt","本番URL一覧"],
+["CUTOVER-DAY.txt","切替当日の実行順"],
+["ROLLBACK.txt","障害時の戻し方"],
+["DELIVERY-RECORD.json","納品完了記録"],
+["tenant-manifest.json","非機密店舗マニフェスト"]
+];
+const SECRETS=[
+["DPRO_ADMIN_CODE","Cloudflare Worker Secretへ新管理コードを設定"],
+["SUPABASE_URL","本番Supabase URLをWorker Secretへ設定"],
+["SUPABASE_SERVICE_ROLE_KEY","本番Service Role KeyをWorker Secretへ設定"],
+["LINE_CHANNEL_SECRET","店舗用Messaging API Secretを設定"],
+["LINE_CHANNEL_ACCESS_TOKEN","店舗用長期アクセストークンを設定"]
+];
+let manifest=null,files={},secretState={};
+function toast(m){$("#toast").textContent=m;$("#toast").className="toast show";setTimeout(()=>$("#toast").className="toast",2600)}
+async function json(url,o={}){const r=await fetch(url,{cache:"no-store",...o}),d=await r.json().catch(()=>null);if(!r.ok)throw Error(d?.message||`HTTP ${r.status}`);return d}
+function fromStep11(raw){if(raw?.schema_version==="DPRO-EYE-TENANT-1")return raw;if(raw?.fields){const f=raw.fields;return{schema_version:"DPRO-EYE-TENANT-1",template_version:raw.version||"",generated_at:new Date().toISOString(),source_demo:{shop_code:c.SHOP_CODE,repository:"dpro-eye-salon-line",worker_url:c.API_BASE,may_be_used_as_production:false},tenant:{shop_name:f.shopName,shop_code:f.shopCode,launch_date:f.launchDate,repository_name:f.repositoryName,worker_name:f.workerName,worker_url:f.workerUrl,supabase_project_ref:f.supabaseRef,liff_id:f.liffId,migration_mode:f.migrationMode,notes:f.notes},security:{admin_code:"SET_AS_CLOUDFLARE_SECRET_NOT_STORED",production_guard_initial:true,production_switch_permission_initial:false,demo_admin_code_forbidden:true,secrets_in_manifest:false},required_secrets:SECRETS.map(x=>x[0]),gates:raw.gates||{}}}throw Error("STEP 11のマニフェスト形式ではありません。")}
+function secretLeak(o,path=""){const found=[];if(!o||typeof o!=="object")return found;for(const [k,v] of Object.entries(o)){const next=path?`${path}.${k}`:k;if(v&&typeof v==="object")found.push(...secretLeak(v,next));else if(typeof v==="string"){const key=k.toLowerCase(),sentinel=v==="SET_AS_CLOUDFLARE_SECRET_NOT_STORED";if((key.includes("service_role")||key.includes("access_token")||key.includes("channel_secret")||key==="admin_code")&&!sentinel&&v.trim())found.push(next)}}return found}
+function validate(m){const t=m?.tenant||{},errors=[];if(m?.schema_version!=="DPRO-EYE-TENANT-1")errors.push("schema_versionが不正");if(!t.shop_name)errors.push("店舗名が未入力");if(!/^dpro_eye_[a-z0-9_]{2,40}$/.test(t.shop_code||"")||t.shop_code==="dpro_eye_demo")errors.push("本番店舗コードが不正");if(!/^[a-z0-9][a-z0-9-]{2,80}$/.test(t.repository_name||"")||t.repository_name==="dpro-eye-salon-line")errors.push("本番リポジトリ名が不正");if(!/^[a-z0-9][a-z0-9-]{2,62}$/.test(t.worker_name||"")||(t.worker_name||"").includes("demo"))errors.push("本番Worker名が不正");try{const u=new URL(t.worker_url);if(u.protocol!=="https:"||u.href.replace(/\/$/,"")===c.API_BASE)errors.push("本番Worker URLが不正")}catch{errors.push("本番Worker URLが不正")}if(!/^[a-z0-9]{8,40}$/.test(t.supabase_project_ref||""))errors.push("Supabase Project Refが不正");if(!/^\d{8,20}-[A-Za-z0-9_-]{6,40}$/.test(t.liff_id||"")||t.liff_id===c.LINE.LIFF_ID)errors.push("本番LIFF IDが不正");if(!/^\d{4}-\d{2}-\d{2}$/.test(t.launch_date||""))errors.push("本番開始日が不正");if(!["new","customer","customer_reservation"].includes(t.migration_mode))errors.push("移行方式が不正");const leaks=secretLeak(m);if(leaks.length)errors.push(`秘密情報の実値を検出：${leaks.join(", ")}`);return errors}
+function q(v){return JSON.stringify(v??"")}
+function pages(t){const base=`https://dpromstk2000-lab.github.io/${t.repository_name}/`;return{home:base,reservation:`${base}index.html`,member:`${base}member.html`,owner:`${base}owner.html`,owner_ipad:`${base}owner-ipad.html`,settings:`${base}settings.html`,migration:`${base}migration.html`,delivery:`${base}delivery.html`,production_clone:`${base}production-clone.html`,production_starter:`${base}production-starter.html`,system_check:`${base}system-check.html`,release_check:`${base}release-check.html`}}
+function configJs(t){return`(()=>{"use strict";
+const REPOSITORY_NAME=${q(t.repository_name)};
+const GITHUB_OWNER="dpromstk2000-lab";
+const API_BASE=${q((t.worker_url||"").replace(/\/$/,""))};
+const pageBase=\`https://\${GITHUB_OWNER}.github.io/\${REPOSITORY_NAME}/\`;
+window.DPRO_EYE_CONFIG=Object.freeze({
+PRODUCT_NAME:"DPRO まつげ・眉サロン LINE",
+PRODUCT_NAME_EN:"DPRO EYE SALON LINE",
+VERSION:${q(VERSION)},
+SHOP_CODE:${q(t.shop_code)},
+TIMEZONE:"Asia/Tokyo",
+SLOT_MINUTES:30,
+API_BASE,PAGE_BASE:pageBase,
+GITHUB_REPOSITORY:\`https://github.com/\${GITHUB_OWNER}/\${REPOSITORY_NAME}\`,
+PAGES:Object.freeze({
+home:pageBase,reservation:\`\${pageBase}index.html\`,member:\`\${pageBase}member.html\`,
+owner:\`\${pageBase}owner.html\`,owner_ipad:\`\${pageBase}owner-ipad.html\`,
+settings:\`\${pageBase}settings.html\`,system_check:\`\${pageBase}system-check.html\`,
+release_check:\`\${pageBase}release-check.html\`,migration:\`\${pageBase}migration.html\`,
+delivery:\`\${pageBase}delivery.html\`,production_clone:\`\${pageBase}production-clone.html\`,
+production_starter:\`\${pageBase}production-starter.html\`
+}),
+API:Object.freeze({
+root:\`\${API_BASE}/\`,health:\`\${API_BASE}/health\`,shop:\`\${API_BASE}/api/public/shop\`,
+services:\`\${API_BASE}/api/public/services\`,staff:\`\${API_BASE}/api/public/staff\`,
+availability:\`\${API_BASE}/api/public/availability\`,customer_lookup:\`\${API_BASE}/api/public/customer.lookup\`,
+customer_upsert:\`\${API_BASE}/api/public/customer.upsert\`,reservation_create:\`\${API_BASE}/api/public/reservation.create\`,
+reservation_lookup:\`\${API_BASE}/api/public/reservation.lookup\`,reservation_reschedule:\`\${API_BASE}/api/public/reservation.reschedule\`,
+member_reservations:\`\${API_BASE}/api/member/reservations\`,admin_login:\`\${API_BASE}/api/admin/login\`,
+admin_dashboard:\`\${API_BASE}/api/admin/dashboard\`,admin_customer_search:\`\${API_BASE}/api/admin/customers/search\`,
+admin_customer_detail:\`\${API_BASE}/api/admin/customer.detail\`,admin_reservation_create:\`\${API_BASE}/api/admin/reservation.create\`,
+admin_reservation_status:\`\${API_BASE}/api/admin/reservation.status\`,admin_carte_save:\`\${API_BASE}/api/admin/carte.save\`,
+admin_carte_photo_upload:\`\${API_BASE}/api/admin/carte.photo.upload\`,admin_followups:\`\${API_BASE}/api/admin/followups\`,
+admin_followup_status:\`\${API_BASE}/api/admin/followup.status\`,admin_demo_prepare:\`\${API_BASE}/api/admin/demo-prepare\`,
+admin_system_check:\`\${API_BASE}/api/admin/system-check\`,admin_release_check:\`\${API_BASE}/api/admin/release-check\`,
+admin_demo_restore:\`\${API_BASE}/api/admin/demo-restore\`,migration_link_request:\`\${API_BASE}/api/public/migration/link.request\`,
+migration_link_confirm:\`\${API_BASE}/api/public/migration/link.confirm\`,admin_migrations:\`\${API_BASE}/api/admin/migrations\`,
+admin_migration_batch:\`\${API_BASE}/api/admin/migration/batch\`,admin_migration_customer_preview:\`\${API_BASE}/api/admin/migration/customer.preview\`,
+admin_migration_customer_commit:\`\${API_BASE}/api/admin/migration/customer.commit\`,admin_migration_reservation_preview:\`\${API_BASE}/api/admin/migration/reservation.preview\`,
+admin_migration_reservation_commit:\`\${API_BASE}/api/admin/migration/reservation.commit\`,admin_migration_discard:\`\${API_BASE}/api/admin/migration/discard\`,
+admin_migration_rollback:\`\${API_BASE}/api/admin/migration/rollback\`,admin_migration_line_links:\`\${API_BASE}/api/admin/migration/line-links\`,
+admin_migration_line_link_review:\`\${API_BASE}/api/admin/migration/line-link.review\`,admin_migration_cutover:\`\${API_BASE}/api/admin/migration/cutover\`,
+admin_settings:\`\${API_BASE}/api/admin/settings\`,admin_settings_shop_save:\`\${API_BASE}/api/admin/settings/shop.save\`,
+admin_settings_staff_save:\`\${API_BASE}/api/admin/settings/staff.save\`,admin_settings_staff_services_save:\`\${API_BASE}/api/admin/settings/staff.services.save\`,
+admin_settings_staff_shift_save:\`\${API_BASE}/api/admin/settings/staff.shift.save\`,admin_settings_staff_closed_save:\`\${API_BASE}/api/admin/settings/staff.closed.save\`,
+admin_settings_staff_closed_delete:\`\${API_BASE}/api/admin/settings/staff.closed.delete\`,admin_settings_category_save:\`\${API_BASE}/api/admin/settings/category.save\`,
+admin_settings_service_save:\`\${API_BASE}/api/admin/settings/service.save\`,admin_settings_resource_save:\`\${API_BASE}/api/admin/settings/resource.save\`
+}),
+STORAGE_KEYS:Object.freeze({admin_code:\`dpro_eye_admin_code_\${${q(t.shop_code)}}\`}),
+DEMO:Object.freeze({admin_code:null,auto_fill_query:null,line_user_id:null,enabled:false}),
+LINE:Object.freeze({LIFF_ID:${q(t.liff_id)},use_liff_when_configured:true}),
+UI:Object.freeze({colors:Object.freeze({background:"#FAF7F2",surface:"#FFFFFF",surface_soft:"#F2EAE5",accent:"#A86F7D",accent_dark:"#6F4C55",text:"#2F2B2C",muted:"#6E6567",border:"#DED1CA",success:"#64745F",warning:"#A96F32",danger:"#A14E55"}),pc_body_px:17,mobile_body_px:16,button_height_px:52})
+});})();\n`}
+function wrangler(t){return`name = ${q(t.worker_name)}
+main = "worker.js"
+compatibility_date = "2026-07-23"
+
+[vars]
+SHOP_CODE = ${q(t.shop_code)}
+TIMEZONE = "Asia/Tokyo"
+ENVIRONMENT = "production"
+PRODUCTION_GUARD = "true"
+PRODUCTION_SWITCH_PERMISSION = "false"
+
+# 実値はCloudflare Secretsへ直接設定
+# DPRO_ADMIN_CODE
+# SUPABASE_URL
+# SUPABASE_SERVICE_ROLE_KEY
+# LINE_CHANNEL_SECRET
+# LINE_CHANNEL_ACCESS_TOKEN
+`}
+function checklist(title,items){return`${title}\n${"=".repeat(title.length)}\n\n${items.map((x,i)=>`${i+1}. [ ] ${x}`).join("\n")}\n`}
+function deliveryRecord(t){return{schema_version:"DPRO-EYE-DELIVERY-1",starter_version:VERSION,shop_name:t.shop_name,shop_code:t.shop_code,launch_date:t.launch_date,generated_at:new Date().toISOString(),environment:{repository_name:t.repository_name,worker_name:t.worker_name,worker_url:t.worker_url,supabase_project_ref:t.supabase_project_ref,liff_id:t.liff_id},checks:{config_applied:false,worker_deployed:false,secrets_set:false,supabase_ready:false,line_liff_ready:false,data_migration_complete:t.migration_mode==="new",release_check_passed:false,owner_daily_screen_approved:false,backup_confirmed:false,production_switch_permission_enabled:false,first_production_reservation_confirmed:false},completed_at:null,completed_by:null,notes:""}}
+function buildFiles(){const t=manifest.tenant,u=pages(t);files={
+"config.js":configJs(t),
+"wrangler.toml":wrangler(t),
+"CLOUDFLARE-SECRETS-CHECKLIST.txt":checklist("Cloudflare Secrets 設定確認",["本番Workerを作成","DPRO_ADMIN_CODEを1234以外で設定","SUPABASE_URLを設定","SUPABASE_SERVICE_ROLE_KEYを設定","LINE_CHANNEL_SECRETを設定","LINE_CHANNEL_ACCESS_TOKENを設定","PRODUCTION_GUARD=trueを確認","PRODUCTION_SWITCH_PERMISSION=falseで初期Deploy","設定値を画面・GitHub・JSONへ記録していないことを確認"]),
+"SUPABASE-SETUP-CHECKLIST.txt":checklist("Supabase 本番準備確認",["本番店舗専用Projectを作成","最新版SQLを適用","必須テーブルを確認","全対象テーブルのRLSを有効化","写真Storageを非公開に設定","電話番号正規化テスト","30分予約枠テスト","重複予約・二重送信防止テスト","デモ店舗・デモ顧客が本番DBに存在しないことを確認","system-checkで全項目正常を確認"]),
+"LINE-LIFF-SETUP.txt":checklist("LINE・LIFF 本番設定",["店舗のLINE公式アカウント管理権限を確認","店舗専用Messaging APIチャネルを作成","本番LIFF IDを設定","LIFFエンドポイントを本番予約URLへ設定","Webhook URLを本番Workerへ設定","Webhook検証を成功させる","リッチメニューへ予約・会員ページを設定","デモLIFF・デモトークンが残っていないことを確認","実際のLINE端末で予約完了まで確認"]),
+"PRODUCTION-URLS.txt":Object.entries(u).map(([k,v])=>`${k.padEnd(20)} ${v}`).join("\n")+"\n",
+"CUTOVER-DAY.txt":checklist("本番切替当日の実行順",["切替前バックアップを取得","旧システムの新規予約受付停止時刻を確認","最終差分の顧客・将来予約を移行","本番店舗設定を最終確認","本番Worker・Pages・LINE/LIFFを検査","オーナーが予約・PC・iPadの日常画面だけ確認","release-checkをDPRO内部で合格","PRODUCTION_SWITCH_PERMISSIONを有効化","LINEリッチメニューを本番URLへ切替","本番初回予約・通知・カルテ保存を確認","旧受付を終了し納品完了を記録"]),
+"ROLLBACK.txt":checklist("障害時ロールバック",["PRODUCTION_SWITCH_PERMISSIONをfalseへ戻す","LINEリッチメニューを旧受付または案内画面へ戻す","旧システムの受付再開可否を確認","切替後に入った予約を保全して一覧化","本番Worker・Pagesの直前バックアップへ戻す","Supabaseの変更データを確認し勝手に削除しない","店舗オーナーへ受付状況を連絡","原因修正後にsystem-check・release-checkを再実行","再切替日時を合意して記録"]),
+"DELIVERY-RECORD.json":JSON.stringify(deliveryRecord(t),null,2)+"\n",
+"tenant-manifest.json":JSON.stringify(manifest,null,2)+"\n"
+};return files}
+function renderArtifacts(ok){const box=$("#artifactList");box.replaceChildren();ARTIFACTS.forEach(([name,detail],i)=>{const a=document.createElement("article");a.className=`artifact ${ok?"ok":"ng"}`;const n=document.createElement("b");n.textContent=i+1;const d=document.createElement("div"),s=document.createElement("strong"),p=document.createElement("span");s.textContent=name;p.textContent=detail;d.append(s,p);a.append(n,d);box.append(a)})}
+function loadSecrets(){try{secretState=JSON.parse(localStorage.getItem(SECRET_STATE_KEY)||"{}")}catch{secretState={}}}
+function renderSecrets(){const box=$("#secretList");box.replaceChildren();SECRETS.forEach(([id,detail])=>{const l=document.createElement("label");l.className=`secret ${secretState[id]?"ok":""}`;const cb=document.createElement("input");cb.type="checkbox";cb.checked=secretState[id]===true;cb.onchange=()=>{secretState[id]=cb.checked;localStorage.setItem(SECRET_STATE_KEY,JSON.stringify(secretState));render()};const d=document.createElement("div"),s=document.createElement("strong"),p=document.createElement("span");s.textContent=id;p.textContent=detail;d.append(s,p);l.append(cb,d);box.append(l)})}
+function renderUrls(){const box=$("#urlList");box.replaceChildren();if(!manifest)return;Object.entries(pages(manifest.tenant)).forEach(([k,v])=>{const a=document.createElement("article");a.className="url-card";const s=document.createElement("strong"),p=document.createElement("span");s.textContent=k;p.textContent=v;a.append(s,p);box.append(a)})}
+function setCard(id,ok,title,detail){const a=$(id);a.className=ok?"ok":"ng";a.querySelector("strong").textContent=title;a.querySelector("span").textContent=detail}
+function render(){loadSecrets();const errors=manifest?validate(manifest):["マニフェスト未読込"],valid=manifest&&errors.length===0;if(valid)buildFiles();else files={};renderArtifacts(valid);renderSecrets();renderUrls();const secretDone=SECRETS.filter(x=>secretState[x[0]]).length;setCard("#manifestCard",valid,valid?"正常":"未読込",valid?manifest.tenant.shop_code:"STEP 11のJSON");setCard("#artifactCard",valid,`${valid?ARTIFACTS.length:0}/${ARTIFACTS.length}`,"安全な非機密ファイル");setCard("#secretCard",secretDone===SECRETS.length,`${secretDone}/${SECRETS.length}`,"各サービスへ直接設定");setCard("#packageCard",valid,valid?"生成可能":"停止中",valid?"ZIPを保存できます":"マニフェスト確認待ち");const pct=Math.round(((valid?10:0)+secretDone)/(10+SECRETS.length)*100);$("#progress").style.width=`${pct}%`;$("#overall").className=`status ${valid?"ok":"warn"}`;$("#overall").textContent=valid?`10ファイルを生成しました。Secrets設定確認は ${secretDone}/${SECRETS.length} です。`:"有効なSTEP 11マニフェストを読み込んでください。";$("#decisionBox").className=`decision${valid?" ok":""}`;$("#decisionTitle").textContent=valid?"スターターパック生成可能":"ZIP生成停止中";$("#decisionDetail").textContent=valid?"ZIPには秘密情報の実値を含みません。":"未完了項目を確認してください。";const b=$("#blocking");b.replaceChildren();errors.forEach(e=>{const d=document.createElement("div");d.textContent=e;b.append(d)});$("#downloadZip").disabled=!valid;$("#downloadRecord").disabled=!valid}
+function applyManifest(raw,source){manifest=fromStep11(raw);const errors=validate(manifest);$("#fileBox").textContent=`${source}：${manifest.tenant?.shop_name||"店舗名未設定"} / ${manifest.tenant?.shop_code||"店舗コード未設定"}`;$("#manifestPreview").textContent=JSON.stringify(manifest,null,2);if(errors.length)toast("マニフェストに確認項目があります。");else toast("マニフェストを読み込みました。");render()}
+function loadLocal(){const raw=JSON.parse(localStorage.getItem(STEP11_KEY)||"null");if(!raw)throw Error("このブラウザにSTEP 11の保存データがありません。");applyManifest(raw,"STEP 11自動読込")}
+function u16(n){return[n&255,n>>>8&255]}function u32(n){return[n&255,n>>>8&255,n>>>16&255,n>>>24&255]}
+let crcTable=null;function crc32(bytes){if(!crcTable){crcTable=Array.from({length:256},(_,n)=>{let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;return c>>>0})}let c=0xFFFFFFFF;for(const b of bytes)c=crcTable[(c^b)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function zipBlob(obj){const enc=new TextEncoder(),locals=[],centers=[];let offset=0;const now=new Date(),time=(now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1),date=((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();for(const [name,text] of Object.entries(obj)){const nb=enc.encode(name),db=enc.encode(text),crc=crc32(db),local=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x0800),...u16(0),...u16(time),...u16(date),...u32(crc),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0),...nb,...db]);locals.push(local);const center=new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(time),...u16(date),...u32(crc),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...nb]);centers.push(center);offset+=local.length}const centerSize=centers.reduce((a,x)=>a+x.length,0),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(centers.length),...u16(centers.length),...u32(centerSize),...u32(offset),...u16(0)]);return new Blob([...locals,...centers,end],{type:"application/zip"})}
+function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1200)}
+function downloadZip(){buildFiles();download(zipBlob(files),`${manifest.tenant.shop_code}-production-starter-pack.zip`)}
+function downloadRecord(){download(new Blob([files["DELIVERY-RECORD.json"]],{type:"application/json"}),`${manifest.tenant.shop_code}-delivery-record.json`)}
+async function login(){const code=$("#loginCode").value.trim();if(!code)return;try{await json(c.API.admin_login,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({admin_code:code})});localStorage.setItem(c.STORAGE_KEYS.admin_code,code);$("#login").hidden=true;$("#app").hidden=false;loadSecrets();render()}catch(e){$("#loginStatus").className="status ng";$("#loginStatus").textContent=e.message}}
+$("#loginButton").onclick=login;$("#clearCode").onclick=()=>{localStorage.removeItem(c.STORAGE_KEYS.admin_code);$("#loginCode").value=""};$("#loadLocal").onclick=()=>{try{loadLocal()}catch(e){toast(e.message)}};$("#selectFile").onclick=()=>$("#manifestFile").click();$("#manifestFile").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{applyManifest(JSON.parse(await f.text()),f.name)}catch(err){toast(err.message)}e.target.value=""};$("#downloadZip").onclick=downloadZip;$("#downloadRecord").onclick=downloadRecord;$("#loginCode").value=demo?c.DEMO.admin_code:(localStorage.getItem(c.STORAGE_KEYS.admin_code)||"");if(demo)login();
+})();
+</script>
+</body>
+</html>
