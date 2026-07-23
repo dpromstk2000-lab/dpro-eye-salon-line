@@ -4,246 +4,142 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#A86F7D">
-  <title>システムチェック｜DPRO まつげ・眉サロン LINE</title>
+  <title>統合システムチェック｜DPRO まつげ・眉サロン LINE</title>
   <script src="./config.js"></script>
   <style>
     :root {
       color-scheme:light;
-      --bg:#FAF7F2;
-      --surface:#FFFFFF;
-      --soft:#F2EAE5;
-      --accent:#A86F7D;
-      --accent-dark:#6F4C55;
-      --text:#2F2B2C;
-      --muted:#6E6567;
-      --border:#DED1CA;
-      --success:#64745F;
-      --warning:#A96F32;
-      --danger:#A14E55;
+      --bg:#FAF7F2; --surface:#FFFFFF; --soft:#F2EAE5;
+      --accent:#A86F7D; --accent-dark:#6F4C55;
+      --text:#2F2B2C; --muted:#6E6567; --border:#DED1CA;
+      --success:#64745F; --warning:#A96F32; --danger:#A14E55;
+      --blue:#5D7084;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
         "Noto Sans JP",sans-serif;
     }
     * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
+    [hidden] { display:none!important; }
     body {
-      margin:0;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 10% 4%,#F7E7E8 0,transparent 26rem),
-        var(--bg);
-      font-size:17px;
-      line-height:1.65;
+      margin:0; color:var(--text); font-size:17px; line-height:1.65;
+      background:radial-gradient(circle at 10% 4%,#F7E7E8 0,transparent 26rem),var(--bg);
     }
     button,input { font:inherit; }
     button { cursor:pointer; }
-    .wrap { width:min(1120px,calc(100% - 30px)); margin:0 auto; padding:28px 0 64px; }
+    .wrap { width:min(1220px,calc(100% - 28px)); margin:auto; padding:24px 0 64px; }
     .topbar {
-      display:flex;
-      justify-content:space-between;
-      gap:18px;
-      align-items:flex-start;
-      margin-bottom:18px;
+      display:flex; justify-content:space-between; gap:16px; align-items:flex-start;
+      margin-bottom:16px;
     }
-    .back {
-      display:inline-flex;
-      align-items:center;
-      min-height:48px;
-      padding:8px 16px;
-      border:1px solid var(--border);
-      border-radius:13px;
-      color:var(--accent-dark);
-      background:white;
-      text-decoration:none;
-      font-weight:800;
+    .back,.open {
+      display:inline-flex; align-items:center; justify-content:center; min-height:46px;
+      padding:8px 14px; border-radius:12px; text-decoration:none; font-weight:900;
     }
-    h1 { margin:3px 0 4px; font-size:clamp(29px,4vw,42px); line-height:1.25; }
-    .subtitle { margin:0; color:var(--muted); }
+    .back { color:var(--accent-dark); border:1px solid var(--border); background:white; }
+    .open { color:white; background:var(--accent-dark); }
+    h1 { margin:2px 0 4px; font-size:clamp(29px,4vw,42px); line-height:1.25; }
+    h2 { margin:0 0 13px; font-size:23px; }
+    .subtitle,.muted { color:var(--muted); }
     .panel {
-      margin-top:18px;
-      padding:24px;
-      border:1px solid var(--border);
-      border-radius:22px;
-      background:rgba(255,255,255,.96);
+      margin-top:14px; padding:22px; border:1px solid var(--border);
+      border-radius:20px; background:rgba(255,255,255,.97);
       box-shadow:0 12px 34px rgba(78,53,61,.08);
     }
-    .panel h2 { margin:0 0 14px; font-size:23px; }
     .code-row {
-      display:grid;
-      grid-template-columns:minmax(220px,1fr) auto auto;
-      gap:10px;
-      align-items:end;
+      display:grid; grid-template-columns:minmax(220px,1fr) auto auto;
+      gap:9px; align-items:end;
     }
-    label { display:block; font-weight:800; }
+    label { display:block; font-weight:850; }
     input {
-      width:100%;
-      min-height:52px;
-      margin-top:6px;
-      padding:10px 14px;
-      border:2px solid var(--border);
-      border-radius:13px;
-      color:var(--text);
-      background:#fff;
+      width:100%; min-height:52px; margin-top:6px; padding:10px 13px;
+      border:2px solid var(--border); border-radius:12px; background:white;
     }
     input:focus { outline:3px solid rgba(168,111,125,.18); border-color:var(--accent); }
     .btn {
-      min-height:52px;
-      padding:10px 18px;
-      border:0;
-      border-radius:13px;
-      font-weight:850;
+      min-height:50px; padding:9px 16px; border:0; border-radius:12px; font-weight:900;
     }
-    .btn-primary { color:white; background:var(--accent); }
-    .btn-secondary { color:var(--accent-dark); background:var(--soft); }
-    .btn-danger { color:white; background:var(--danger); }
-    .button-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
-    .summary {
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      gap:12px;
-      margin-top:16px;
+    .primary { color:white; background:var(--accent); }
+    .secondary { color:var(--accent-dark); background:var(--soft); }
+    .danger { color:white; background:var(--danger); }
+    .buttons { display:flex; flex-wrap:wrap; gap:9px; margin-top:14px; }
+    .notice {
+      margin-top:12px; padding:12px 14px; border-left:5px solid var(--warning);
+      border-radius:10px; color:#70481F; background:#FFF5E8;
     }
-    .summary-card {
-      min-height:98px;
-      padding:16px;
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:#fff;
+    .overall,.release-gate {
+      display:flex; gap:12px; align-items:center; padding:16px;
+      border-radius:15px; background:var(--soft); font-weight:900;
     }
-    .summary-card small { display:block; color:var(--muted); font-weight:750; }
-    .summary-card strong { display:block; margin-top:4px; font-size:25px; }
-    .overall {
-      display:flex;
-      gap:13px;
-      align-items:center;
-      padding:18px;
-      border-radius:16px;
-      background:var(--soft);
-      font-weight:850;
+    .overall.ok,.release-gate.ok { color:#40513B; background:#E7EFE4; }
+    .overall.ng,.release-gate.ng { color:#7E343A; background:#F7E6E7; }
+    .release-gate { display:block; margin-top:14px; border:2px solid transparent; }
+    .release-gate.ok { border-color:#AAB5A5; }
+    .release-gate.ng { border-color:#D4A6AA; }
+    .release-gate strong { display:block; font-size:29px; line-height:1.3; }
+    .release-gate span { display:block; margin-top:4px; }
+    .gate-metrics,.summary {
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:13px;
     }
-    .overall.ok { background:#E8EFE5; color:#3F503A; }
-    .overall.ng { background:#F7E6E7; color:#7E343A; }
-    .spinner {
-      width:22px;
-      height:22px;
-      border:3px solid rgba(168,111,125,.25);
-      border-top-color:var(--accent);
-      border-radius:50%;
-      animation:spin .8s linear infinite;
-      flex:none;
+    .metric,.summary-card {
+      padding:13px; border:1px solid var(--border); border-radius:13px; background:white;
     }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    .metric small,.summary-card small { display:block; color:var(--muted); font-weight:800; }
+    .metric strong,.summary-card strong { display:block; margin-top:2px; font-size:24px; }
     .checks {
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-      margin-top:14px;
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px;
     }
     .check {
-      display:grid;
-      grid-template-columns:38px 1fr;
-      gap:12px;
-      padding:17px;
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:#fff;
+      display:grid; grid-template-columns:36px minmax(0,1fr);
+      gap:11px; padding:15px; border:1px solid var(--border);
+      border-radius:14px; background:white;
     }
+    .check.ok { border-left:6px solid var(--success); }
+    .check.ng { border-left:6px solid var(--danger); }
     .check-icon {
-      width:34px;
-      height:34px;
-      display:grid;
-      place-items:center;
-      border-radius:50%;
-      background:#EEE9E7;
-      font-weight:900;
+      width:32px; height:32px; display:grid; place-items:center;
+      border-radius:50%; color:white; font-weight:900;
+      background:var(--danger);
     }
-    .check.ok .check-icon { color:white; background:var(--success); }
-    .check.ng .check-icon { color:white; background:var(--danger); }
-    .check.wait .check-icon { color:var(--accent-dark); background:var(--soft); }
-    .check strong { display:block; font-size:18px; }
-    .detail {
-      margin-top:8px;
-      color:var(--muted);
-      font-size:15px;
-      overflow-wrap:anywhere;
+    .check.ok .check-icon { background:var(--success); }
+    .check strong { display:block; font-size:17px; }
+    .category {
+      display:inline-flex; margin-top:4px; padding:2px 8px; border-radius:999px;
+      color:var(--accent-dark); background:var(--soft); font-size:12px; font-weight:900;
     }
-    .detail summary {
-      cursor:pointer;
-      color:var(--accent-dark);
-      font-weight:800;
-    }
-    .detail pre {
-      max-height:260px;
-      margin-top:8px;
-      color:#F5F0EF;
-      background:#2F2B2C;
-    }
-    .url-list { display:grid; gap:10px; }
-    .url-item {
-      display:grid;
-      grid-template-columns:170px minmax(0,1fr) auto;
-      gap:12px;
-      align-items:center;
-      padding:13px 15px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:#fff;
-    }
-    .url-item strong { color:var(--accent-dark); }
-    .url {
-      overflow-wrap:anywhere;
-      color:var(--muted);
-      font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
-      font-size:14px;
-    }
-    .open {
-      min-height:44px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:8px 14px;
-      border-radius:11px;
-      color:white;
-      background:var(--accent-dark);
-      text-decoration:none;
-      font-weight:800;
-    }
-    .notice {
-      margin-top:12px;
-      padding:13px 15px;
-      border-left:5px solid var(--warning);
-      border-radius:10px;
-      background:#FFF5E8;
-      color:#70481F;
-    }
+    .detail { margin-top:6px; color:var(--muted); font-size:14px; overflow-wrap:anywhere; }
+    details.detail summary { cursor:pointer; color:var(--accent-dark); font-weight:850; }
     pre {
-      max-height:360px;
-      overflow:auto;
-      margin:12px 0 0;
-      padding:16px;
-      border-radius:14px;
-      color:#F5F0EF;
-      background:#2F2B2C;
-      font-size:14px;
-      line-height:1.55;
-      white-space:pre-wrap;
-      overflow-wrap:anywhere;
+      max-height:340px; overflow:auto; margin:9px 0 0; padding:14px;
+      border-radius:12px; color:#F5F0EF; background:#2F2B2C;
+      white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px;
     }
-    @media (max-width:800px) {
+    .url-list { display:grid; gap:8px; }
+    .url-item {
+      display:grid; grid-template-columns:170px minmax(0,1fr) auto;
+      gap:10px; align-items:center; padding:12px 14px;
+      border:1px solid var(--border); border-radius:13px; background:white;
+    }
+    .url { color:var(--muted); font-family:ui-monospace,Consolas,monospace; overflow-wrap:anywhere; }
+    .spinner {
+      width:21px; height:21px; border:3px solid rgba(168,111,125,.25);
+      border-top-color:var(--accent); border-radius:50%;
+      animation:spin .8s linear infinite; flex:none;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @media(max-width:820px) {
       body { font-size:16px; }
-      .wrap { width:min(100% - 20px,1120px); padding-top:16px; }
       .topbar { flex-direction:column-reverse; }
-      .panel { padding:20px 16px; border-radius:18px; }
       .code-row { grid-template-columns:1fr 1fr; }
       .code-row label { grid-column:1/-1; }
-      .summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .checks { grid-template-columns:1fr; }
+      .gate-metrics,.summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .url-item { grid-template-columns:1fr; }
       .open { width:100%; }
     }
-    @media (max-width:430px) {
+    @media(max-width:430px) {
+      .wrap { width:min(100% - 16px,1220px); padding-top:10px; }
+      .panel { padding:17px 14px; }
       .code-row { grid-template-columns:1fr; }
       .code-row label { grid-column:auto; }
-      .summary { grid-template-columns:1fr 1fr; }
       .btn { width:100%; }
     }
   </style>
@@ -252,11 +148,13 @@
   <main class="wrap">
     <div class="topbar">
       <div>
-        <p style="margin:0;color:#6F4C55;font-weight:850;letter-spacing:.08em">
+        <p style="margin:0;color:#6F4C55;font-weight:900;letter-spacing:.08em">
           DPRO EYE SALON LINE
         </p>
-        <h1>営業前システムチェック</h1>
-        <p class="subtitle">予約を受け付ける前に、主要機能をまとめて確認します。</p>
+        <h1>全画面・全機能 統合システムチェック</h1>
+        <p class="subtitle">
+          公開ページ、ブラッシュアップ機能、Worker、Supabase、Storageを一括確認します。
+        </p>
       </div>
       <a class="back" href="./">← システムTOP</a>
     </div>
@@ -265,41 +163,43 @@
       <h2>管理コード</h2>
       <div class="code-row">
         <label>
-          管理コードを入力
+          管理コード
           <input id="adminCode" type="password" inputmode="numeric"
             autocomplete="off" maxlength="20" placeholder="管理コード">
         </label>
-        <button id="saveCode" class="btn btn-secondary" type="button">保存</button>
-        <button id="clearCode" class="btn btn-danger" type="button">削除</button>
+        <button id="saveCode" class="btn secondary" type="button">保存</button>
+        <button id="clearCode" class="btn danger" type="button">削除</button>
       </div>
       <div class="notice">
         デモURLの <strong>?demo=1</strong> では管理コード1234を自動設定します。
-        通常URLでは保存済みの管理コードを使用します。
       </div>
-      <div class="button-row">
-        <button id="runAll" class="btn btn-primary" type="button">
-          一括チェックを実行
-        </button>
-        <button id="prepareDemo" class="btn btn-secondary" type="button">
-          デモデータを準備
-        </button>
+      <div class="buttons">
+        <button id="runAll" class="btn primary" type="button">統合チェックを実行</button>
+        <button id="prepareDemo" class="btn secondary" type="button">デモデータを準備</button>
       </div>
     </section>
 
     <section class="panel">
-      <h2>確認結果</h2>
+      <h2>営業開始判定</h2>
       <div id="overall" class="overall">
-        <span class="spinner" aria-hidden="true"></span>
-        <span>まだ検査していません。</span>
+        <span class="spinner"></span><span>まだ検査していません。</span>
       </div>
-
+      <div id="integratedGate" class="release-gate">
+        <strong id="gateTitle">判定待ち</strong>
+        <span id="gateDetail">統合チェックを実行してください。</span>
+        <div class="gate-metrics">
+          <div class="metric"><small>公開ページ</small><strong id="gatePages">―</strong></div>
+          <div class="metric"><small>重要機能</small><strong id="gateFeatures">―</strong></div>
+          <div class="metric"><small>API・データ</small><strong id="gateServer">―</strong></div>
+          <div class="metric"><small>停止項目</small><strong id="gateBlocked">―</strong></div>
+        </div>
+      </div>
       <div class="summary">
         <div class="summary-card"><small>スタッフ</small><strong id="staffCount">―</strong></div>
         <div class="summary-card"><small>メニュー</small><strong id="serviceCount">―</strong></div>
         <div class="summary-card"><small>施術席</small><strong id="resourceCount">―</strong></div>
         <div class="summary-card"><small>顧客</small><strong id="customerCount">―</strong></div>
       </div>
-
       <div id="checks" class="checks"></div>
     </section>
 
@@ -310,10 +210,10 @@
 
     <section class="panel">
       <details>
-        <summary style="cursor:pointer;font-size:20px;font-weight:850;color:#6F4C55">
-          開発用の最終レスポンスを見る
+        <summary style="cursor:pointer;font-size:19px;font-weight:900;color:#6F4C55">
+          開発用の検査レスポンスを見る
         </summary>
-        <pre id="rawResult">一括チェックを実行すると結果が表示されます。</pre>
+        <pre id="rawResult">統合チェックを実行すると結果が表示されます。</pre>
       </details>
     </section>
   </main>
@@ -324,26 +224,152 @@
 
       const config = window.DPRO_EYE_CONFIG;
       const $ = selector => document.querySelector(selector);
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
       const adminInput = $("#adminCode");
       const checksNode = $("#checks");
-      const overall = $("#overall");
       const rawResult = $("#rawResult");
+      const VERSION = "EYE-18-INTEGRATED-RELEASE-CHECK-20260723";
 
-      const CHECK_LABELS = {
-        config: "config.js読み込み",
-        health: "Worker・Supabase疎通",
-        shop: "店舗設定",
-        services: "メニュー設定",
-        staff: "スタッフ設定",
-        admin_login: "管理コード認証",
-        database: "データベース",
-        phone_normalization: "電話番号正規化",
-        services_30_minute: "30分単位",
-        resources: "施術席",
-        private_photo_bucket: "写真Storage（非公開）",
-        settings: "店舗設定管理",
-        release: "最終リリース検査",
-        migration_foundation: "既存システム移行基盤",
+      const attr = (name,value) => `${name}="${value}"`;
+      const fn = name => `function ${name}(`;
+      const configScript = () =>
+        ["<script src=\"./","config.js\"><","/script>"].join("");
+      const blockedTokens = () => [
+        ["Mutation","Observer"].join(""),
+        ["owner","brushup.js"].join("-"),
+      ];
+
+      const PAGE_RULES = [
+        {
+          key:"reservation", name:"お客様LINE予約", url:config.PAGES.reservation,
+          markers:[
+            configScript(),attr("id","returningPanel"),
+            attr("id","existingBookingWarning"),fn("applyRepeatReservation"),
+            fn("validateExistingBooking"),
+          ],
+        },
+        {
+          key:"member", name:"予約確認・変更", url:config.PAGES.member,
+          markers:[
+            configScript(),attr("id","memberShortcutPanel"),
+            attr("id","memberRepeatLatest"),fn("repeatBookingUrl"),
+            "キャンセルを申請",
+          ],
+        },
+        {
+          key:"owner", name:"オーナーPC管理", url:config.PAGES.owner,
+          markers:[
+            configScript(),attr("id","ownerDailyAttention"),
+            attr("id","completeNoNextVisit"),attr("id","followupSummary"),
+            fn("nextDailyAction"),fn("validFutureReservation"),
+          ],
+        },
+        {
+          key:"ipad", name:"店舗iPad", url:config.PAGES.owner_ipad,
+          markers:[
+            configScript(),attr("id","carteModePanel"),
+            attr("id","copyPreviousCarte"),attr("id","editCurrentCarte"),
+            "前回カルテは上書きせず",
+          ],
+        },
+        {
+          key:"settings", name:"店舗設定", url:config.PAGES.settings,
+          markers:[
+            configScript(),attr("id","settingsModeBar"),
+            attr("id","settingsChecklist"),attr("id","settingsValidation"),
+            fn("settingsIssues"),fn("confirmSettingsSave"),"beforeunload",
+          ],
+        },
+        {
+          key:"migration", name:"既存システム移行", url:config.PAGES.migration,
+          markers:[configScript(),"既存システム移行"],
+        },
+        {
+          key:"system", name:"統合システムチェック", url:config.PAGES.system_check,
+          markers:[configScript(),attr("id","integratedGate")],
+        },
+        {
+          key:"release", name:"営業前最終検査", url:config.PAGES.release_check,
+          markers:[configScript(),attr("id","releaseDecision")],
+        },
+      ];
+
+      const FEATURE_RULES = [
+        {
+          key:"repeat_booking", label:"前回と同じ内容で予約",
+          requirements:[
+            ["reservation",fn("applyRepeatReservation")],
+            ["member",fn("repeatBookingUrl")],
+          ],
+        },
+        {
+          key:"duplicate_guard", label:"重複予約・連続送信防止",
+          requirements:[
+            ["reservation",fn("validateExistingBooking")],
+            ["reservation","X-Idempotency-Key"],
+          ],
+        },
+        {
+          key:"past_date_guard", label:"過去日時選択防止",
+          requirements:[
+            ["reservation",["$(\"#bookingDate\")",".min = today"].join("")],
+          ],
+        },
+        {
+          key:"phone_normalize_ui", label:"電話番号入力の正規化",
+          requirements:[
+            ["reservation",fn("validateCustomer")],
+            ["reservation","String.fromCharCode(c.charCodeAt(0) - 0xFEE0)"],
+          ],
+        },
+        {
+          key:"owner_daily", label:"予約カードの日常操作短縮",
+          requirements:[
+            ["owner",fn("nextDailyAction")],
+            ["owner",fn("prepareNextBookingFromReservation")],
+            ["owner",attr("id","ownerDailyAttention")],
+          ],
+        },
+        {
+          key:"carte_guard", label:"前回カルテ上書き防止",
+          requirements:[
+            ["ipad",attr("id","carteModePanel")],
+            ["ipad","前回カルテは上書きせず"],
+            ["owner","reservation_id:state.carteReservationId || undefined"],
+          ],
+        },
+        {
+          key:"followup_guard", label:"次回予約済みフォロー除外",
+          requirements:[
+            ["owner",attr("id","followupSummary")],
+            ["owner",fn("validFutureReservation")],
+            ["owner",fn("recommendedFollowupMessage")],
+          ],
+        },
+        {
+          key:"settings_guard", label:"店舗設定ミス・未保存防止",
+          requirements:[
+            ["settings",fn("settingsIssues")],
+            ["settings",fn("confirmSettingsSave")],
+            ["settings","beforeunload"],
+          ],
+        },
+      ];
+
+      const SERVER_LABELS = {
+        database:"データベース",
+        phone_normalization:"電話番号正規化",
+        services_30_minute:"30分単位",
+        resources:"施術席",
+        private_photo_bucket:"写真Storage（非公開）",
+        private_photo_storage:"写真Storage（非公開）",
+        settings:"店舗設定管理",
+        release:"最終リリース検査",
+        migration_foundation:"既存システム移行基盤",
+        past_datetime_guard:"過去日時防止",
+        reservation_duplicate_guard:"予約重複防止",
+        idempotency_guard:"二重送信防止",
       };
 
       function getAdminCode() {
@@ -353,327 +379,414 @@
       function adminHeaders() {
         const code = getAdminCode();
         if (!code) throw new Error("管理コードを入力してください。");
-        return { "X-DPRO-ADMIN-CODE": code };
+        return {"X-DPRO-ADMIN-CODE":code};
       }
 
-      async function fetchJson(url, options = {}) {
+      async function fetchJson(url,options={}) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 15000);
+        const timer = setTimeout(() => controller.abort(),20000);
         try {
-          const response = await fetch(url, {
-            cache: "no-store",
-            ...options,
-            signal: controller.signal,
+          const response = await fetch(url,{
+            cache:"no-store",...options,signal:controller.signal,
           });
           const data = await response.json().catch(() => null);
           if (!response.ok) {
             throw new Error(data?.message || `HTTP ${response.status}`);
           }
           return data;
+        } catch (error) {
+          if (error.name === "AbortError") {
+            throw new Error("通信に時間がかかっています。");
+          }
+          throw error;
         } finally {
           clearTimeout(timer);
         }
       }
 
-      function formatDetail(value) {
-        if (value === null || value === undefined || value === "") return "";
-        if (typeof value === "string") return value;
-        return JSON.stringify(value, null, 2);
+      async function fetchPage(rule) {
+        try {
+          const response = await fetch(rule.url,{cache:"no-store"});
+          const source = await response.text();
+          const missing = rule.markers.filter(marker => !source.includes(marker));
+          const blocked = blockedTokens().filter(token => source.includes(token));
+          return {
+            key:rule.key,name:`page_${rule.key}`,label:`${rule.name} 公開ファイル`,
+            category:"公開ページ",url:rule.url,status:response.status,source,
+            ok:response.ok && !missing.length && !blocked.length,
+            detail:{
+              http_status:response.status,
+              missing_markers:missing,
+              blocked_tokens:blocked,
+            },
+          };
+        } catch (error) {
+          return {
+            key:rule.key,name:`page_${rule.key}`,label:`${rule.name} 公開ファイル`,
+            category:"公開ページ",url:rule.url,source:"",
+            ok:false,detail:error.message,
+          };
+        }
+      }
+
+      function featureChecks(pageRows) {
+        const map = new Map(pageRows.map(row => [row.key,row.source]));
+        const rows = FEATURE_RULES.map(rule => {
+          const missing = rule.requirements.filter(([page,marker]) =>
+            !(map.get(page) || "").includes(marker)
+          );
+          return {
+            name:`feature_${rule.key}`,label:rule.label,category:"重要機能",
+            ok:missing.length === 0,
+            detail:missing.length
+              ? {missing:missing.map(([page,marker]) => ({page,marker}))}
+              : "必要コードを確認しました。",
+          };
+        });
+
+        const blocked = [];
+        for (const [page,source] of map) {
+          for (const token of blockedTokens()) {
+            if (source.includes(token)) blocked.push({page,token});
+          }
+        }
+        rows.push({
+          name:"feature_static_safety",
+          label:"旧追加スクリプト・無限監視の再混入防止",
+          category:"重要機能",
+          ok:blocked.length === 0,
+          detail:blocked.length ? blocked : "禁止コードは見つかりません。",
+        });
+        rows.unshift({
+          name:"feature_version",
+          label:"統合検査バージョン",
+          category:"重要機能",
+          ok:config.VERSION === VERSION,
+          detail:{expected:VERSION,actual:config.VERSION},
+        });
+        return rows;
+      }
+
+      function normalizeServerCheck(item) {
+        return {
+          name:`server_${item.name}`,
+          label:SERVER_LABELS[item.name] || item.label || item.name,
+          category:"API・データ",
+          ok:item.ok === true,
+          detail:item.detail,
+        };
+      }
+
+      function resultCard(item) {
+        const card = document.createElement("article");
+        card.className = `check ${item.ok ? "ok" : "ng"}`;
+        const icon = document.createElement("span");
+        icon.className = "check-icon";
+        icon.textContent = item.ok ? "✓" : "×";
+        const body = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = item.label || item.name;
+        const category = document.createElement("span");
+        category.className = "category";
+        category.textContent = item.category || "検査";
+        const summary = document.createElement("div");
+        summary.className = "detail";
+        summary.textContent = item.ok ? "正常" : "営業開始前に確認が必要です";
+        body.append(title,category,summary);
+        if (item.detail !== undefined && item.detail !== "") {
+          const details = document.createElement("details");
+          details.className = "detail";
+          const detailsTitle = document.createElement("summary");
+          detailsTitle.textContent = "詳細を見る";
+          const pre = document.createElement("pre");
+          pre.textContent = typeof item.detail === "string"
+            ? item.detail
+            : JSON.stringify(item.detail,null,2);
+          details.append(detailsTitle,pre);
+          body.append(details);
+        }
+        card.append(icon,body);
+        return card;
       }
 
       function renderChecks(items) {
         checksNode.replaceChildren();
-        for (const item of items) {
-          const card = document.createElement("article");
-          card.className = `check ${item.ok ? "ok" : "ng"}`;
-
-          const icon = document.createElement("span");
-          icon.className = "check-icon";
-          icon.textContent = item.ok ? "✓" : "×";
-
-          const body = document.createElement("div");
-          const title = document.createElement("strong");
-          title.textContent = CHECK_LABELS[item.name] || item.name;
-
-          const summaryText = document.createElement("div");
-          summaryText.className = "detail";
-          summaryText.textContent = item.ok ? "正常" : "確認が必要です";
-
-          const formatted = formatDetail(item.detail);
-          if (formatted) {
-            const details = document.createElement("details");
-            details.className = "detail";
-
-            const summary = document.createElement("summary");
-            summary.textContent = "詳細を見る";
-
-            const pre = document.createElement("pre");
-            pre.textContent = formatted;
-
-            details.append(summary, pre);
-            body.append(title, summaryText, details);
-          } else {
-            body.append(title, summaryText);
-          }
-
-          card.append(icon, body);
-          checksNode.append(card);
-        }
+        items.forEach(item => checksNode.append(resultCard(item)));
       }
 
-      function renderUrls() {
-        const values = [
-          ["システムTOP", config.PAGES.home],
-          ["オーナーPC", `${config.PAGES.owner}?demo=1`],
-          ["店舗iPad", `${config.PAGES.owner_ipad}?demo=1`],
-          ["店舗設定", `${config.PAGES.settings}?demo=1`],
-          ["既存システム移行", `${config.PAGES.migration}?demo=1`],
-          ["営業前最終検査", `${config.PAGES.release_check}?demo=1`],
-          ["システムチェック", config.PAGES.system_check],
-          ["Worker API", config.API.root],
-          ["Health", config.API.health],
-          ["GitHub", config.GITHUB_REPOSITORY],
-        ];
-
-        const container = $("#urls");
-        container.replaceChildren();
-
-        for (const [label, url] of values) {
-          const row = document.createElement("div");
-          row.className = "url-item";
-
-          const strong = document.createElement("strong");
-          strong.textContent = label;
-
-          const urlText = document.createElement("div");
-          urlText.className = "url";
-          urlText.textContent = url;
-
-          const open = document.createElement("a");
-          open.className = "open";
-          open.href = url;
-          open.target = "_blank";
-          open.rel = "noopener noreferrer";
-          open.textContent = "開く";
-
-          row.append(strong, urlText, open);
-          container.append(row);
-        }
-      }
-
-      function setOverall(mode, message) {
+      function setOverall(mode,message) {
+        const overall = $("#overall");
         overall.className = `overall ${mode || ""}`.trim();
         overall.replaceChildren();
-
         const marker = document.createElement("span");
-        marker.textContent = mode === "ok" ? "✓" : mode === "ng" ? "×" : "";
         if (!mode) marker.className = "spinner";
-
+        else marker.textContent = mode === "ok" ? "✓" : "×";
         const text = document.createElement("span");
         text.textContent = message;
-
-        overall.append(marker, text);
+        overall.append(marker,text);
       }
 
-      function updateCounts(healthData) {
-        const counts = healthData?.database?.counts || {};
+      function setGate(allOk,items) {
+        const pages = items.filter(item => item.category === "公開ページ");
+        const features = items.filter(item => item.category === "重要機能");
+        const server = items.filter(item => item.category === "API・データ");
+        const blocked = items.filter(item => !item.ok);
+        const gate = $("#integratedGate");
+        gate.className = `release-gate ${allOk ? "ok" : "ng"}`;
+        $("#gateTitle").textContent = allOk ? "営業開始可能" : "営業開始不可";
+        $("#gateDetail").textContent = allOk
+          ? "公開画面・重要機能・API・データの必須条件をすべて満たしています。"
+          : `停止項目が${blocked.length}件あります。赤い項目を修正してください。`;
+        $("#gatePages").textContent =
+          `${pages.filter(item => item.ok).length}/${pages.length}`;
+        $("#gateFeatures").textContent =
+          `${features.filter(item => item.ok).length}/${features.length}`;
+        $("#gateServer").textContent =
+          `${server.filter(item => item.ok).length}/${server.length}`;
+        $("#gateBlocked").textContent = blocked.length;
+      }
+
+      function updateCounts(health) {
+        const counts = health?.database?.counts || {};
         $("#staffCount").textContent = counts.staff ?? "―";
         $("#serviceCount").textContent = counts.services ?? "―";
         $("#resourceCount").textContent = counts.resources ?? "―";
         $("#customerCount").textContent = counts.customers ?? "―";
       }
 
+      function publicApiResult(name,label,ok,detail) {
+        return {name,label,category:"API・データ",ok:Boolean(ok),detail};
+      }
+
       async function runAll() {
-        setOverall("", "一括チェックを実行しています…");
+        setOverall("","公開画面・重要機能・API・データを検査しています…");
+        $("#runAll").disabled = true;
         checksNode.replaceChildren();
         rawResult.textContent = "検査中…";
 
-        const results = [];
         const final = {};
-
-        results.push({
-          name: "config",
-          ok: Boolean(config?.API?.health && config.SHOP_CODE === "dpro_eye_demo"),
-          detail: {
-            version: config.VERSION,
-            shop_code: config.SHOP_CODE,
-            api_base: config.API_BASE,
-          },
-        });
+        const results = [];
 
         try {
-          final.health = await fetchJson(config.API.health);
-          results.push({
-            name: "health",
-            ok: final.health.ok === true && final.health.database?.ok === true,
-            detail: final.health.database,
-          });
-          updateCounts(final.health);
-        } catch (error) {
-          results.push({ name: "health", ok: false, detail: error.message });
-        }
+          const pageRows = await Promise.all(PAGE_RULES.map(fetchPage));
+          const features = featureChecks(pageRows);
+          results.push(...pageRows.map(({source,...row}) => row),...features);
+          final.pages = pageRows.map(({source,...row}) => row);
+          final.features = features;
 
-        try {
-          final.shop = await fetchJson(config.API.shop);
-          results.push({
-            name: "shop",
-            ok: final.shop.ok === true &&
-              final.shop.shop?.shop_code === config.SHOP_CODE,
-            detail: final.shop.shop,
-          });
-        } catch (error) {
-          results.push({ name: "shop", ok: false, detail: error.message });
-        }
-
-        try {
-          final.services = await fetchJson(config.API.services);
-          results.push({
-            name: "services",
-            ok: final.services.ok === true &&
-              Array.isArray(final.services.services) &&
-              final.services.services.length > 0,
-            detail: { count: final.services.services?.length ?? 0 },
-          });
-        } catch (error) {
-          results.push({ name: "services", ok: false, detail: error.message });
-        }
-
-        try {
-          final.staff = await fetchJson(config.API.staff);
-          results.push({
-            name: "staff",
-            ok: final.staff.ok === true &&
-              Array.isArray(final.staff.staff) &&
-              final.staff.staff.length > 0,
-            detail: { count: final.staff.staff?.length ?? 0 },
-          });
-        } catch (error) {
-          results.push({ name: "staff", ok: false, detail: error.message });
-        }
-
-        try {
-          final.adminLogin = await fetchJson(config.API.admin_login, {
-            method: "POST",
-            headers: adminHeaders(),
-          });
-          results.push({
-            name: "admin_login",
-            ok: final.adminLogin.authenticated === true,
-            detail: final.adminLogin.shop,
-          });
-        } catch (error) {
-          results.push({ name: "admin_login", ok: false, detail: error.message });
-        }
-
-        try {
-          final.settings = await fetchJson(config.API.admin_settings, {
-            headers: adminHeaders(),
-          });
-          results.push({
-            name: "settings",
-            ok: final.settings.ok === true &&
-              Boolean(final.settings.settings?.shop) &&
-              Array.isArray(final.settings.settings?.staff) &&
-              Array.isArray(final.settings.settings?.services),
-            detail: final.settings.counts,
-          });
-        } catch (error) {
-          results.push({ name: "settings", ok: false, detail: error.message });
-        }
-
-        try {
-          final.release = await fetchJson(config.API.admin_release_check, {
-            headers: adminHeaders(),
-          });
-          results.push({
-            name: "release",
-            ok: final.release.demo_ready === true &&
-              final.release.switch_guard_active === true,
-            detail: {
-              demo_ready: final.release.demo_ready,
-              production_ready: final.release.production_ready,
-              switch_guard_active: final.release.switch_guard_active,
-              message: final.release.message,
-            },
-          });
-        } catch (error) {
-          results.push({ name: "release", ok: false, detail: error.message });
-        }
-
-        try {
-          final.adminSystemCheck = await fetchJson(config.API.admin_system_check, {
-            headers: adminHeaders(),
-          });
-          for (const item of final.adminSystemCheck.checks || []) {
-            results.push(item);
+          try {
+            final.health = await fetchJson(config.API.health);
+            results.push(publicApiResult(
+              "health","Worker・Supabase疎通",
+              final.health.ok === true && final.health.database?.ok === true,
+              final.health.database
+            ));
+            updateCounts(final.health);
+          } catch (error) {
+            results.push(publicApiResult("health","Worker・Supabase疎通",false,error.message));
           }
-        } catch (error) {
-          results.push({
-            name: "database",
-            ok: false,
-            detail: `管理側システムチェック：${error.message}`,
-          });
-        }
 
-        renderChecks(results);
-        const allOk = results.length > 0 && results.every(item => item.ok);
-        setOverall(
-          allOk ? "ok" : "ng",
-          allOk
-            ? `全${results.length}項目が正常です。営業デモを開始できます。`
-            : "確認が必要な項目があります。赤い項目を確認してください。"
-        );
-        rawResult.textContent = JSON.stringify(final, null, 2);
+          try {
+            final.shop = await fetchJson(config.API.shop);
+            results.push(publicApiResult(
+              "shop","店舗設定API",
+              final.shop.ok === true &&
+                final.shop.shop?.shop_code === config.SHOP_CODE,
+              final.shop.shop
+            ));
+          } catch (error) {
+            results.push(publicApiResult("shop","店舗設定API",false,error.message));
+          }
+
+          try {
+            final.services = await fetchJson(config.API.services);
+            results.push(publicApiResult(
+              "services","メニューAPI",
+              final.services.ok === true &&
+                Array.isArray(final.services.services) &&
+                final.services.services.length > 0,
+              {count:final.services.services?.length || 0}
+            ));
+          } catch (error) {
+            results.push(publicApiResult("services","メニューAPI",false,error.message));
+          }
+
+          try {
+            final.staff = await fetchJson(config.API.staff);
+            results.push(publicApiResult(
+              "staff","スタッフAPI",
+              final.staff.ok === true &&
+                Array.isArray(final.staff.staff) &&
+                final.staff.staff.length > 0,
+              {count:final.staff.staff?.length || 0}
+            ));
+          } catch (error) {
+            results.push(publicApiResult("staff","スタッフAPI",false,error.message));
+          }
+
+          try {
+            final.adminLogin = await fetchJson(config.API.admin_login,{
+              method:"POST",headers:adminHeaders(),
+            });
+            results.push(publicApiResult(
+              "admin_login","管理コード認証",
+              final.adminLogin.authenticated === true,
+              final.adminLogin.shop
+            ));
+          } catch (error) {
+            results.push(publicApiResult("admin_login","管理コード認証",false,error.message));
+          }
+
+          try {
+            final.settings = await fetchJson(config.API.admin_settings,{
+              headers:adminHeaders(),
+            });
+            results.push(publicApiResult(
+              "admin_settings","店舗設定管理API",
+              final.settings.ok === true &&
+                Boolean(final.settings.settings?.shop) &&
+                Array.isArray(final.settings.settings?.staff) &&
+                Array.isArray(final.settings.settings?.services),
+              final.settings.counts
+            ));
+          } catch (error) {
+            results.push(publicApiResult("admin_settings","店舗設定管理API",false,error.message));
+          }
+
+          try {
+            final.release = await fetchJson(config.API.admin_release_check,{
+              headers:adminHeaders(),
+            });
+            const modeOk = final.release.production_ready === true
+              ? (final.release.production_checks || []).every(row => row.ok === true)
+              : final.release.demo_ready === true &&
+                final.release.switch_guard_active === true;
+            results.push(publicApiResult(
+              "release","営業前最終判定API",modeOk,{
+                demo_ready:final.release.demo_ready,
+                production_ready:final.release.production_ready,
+                switch_guard_active:final.release.switch_guard_active,
+                message:final.release.message,
+              }
+            ));
+          } catch (error) {
+            results.push(publicApiResult("release","営業前最終判定API",false,error.message));
+          }
+
+          try {
+            final.system = await fetchJson(config.API.admin_system_check,{
+              headers:adminHeaders(),
+            });
+            const serverRows = (final.system.checks || []).map(normalizeServerCheck);
+            if (!serverRows.length) {
+              results.push(publicApiResult(
+                "admin_system_check","管理側システムチェック",false,
+                "検査項目が返されませんでした。"
+              ));
+            } else {
+              results.push(...serverRows);
+            }
+          } catch (error) {
+            results.push(publicApiResult(
+              "admin_system_check","管理側システムチェック",false,error.message
+            ));
+          }
+
+          renderChecks(results);
+          const allOk = results.length > 0 && results.every(item => item.ok);
+          setGate(allOk,results);
+          setOverall(
+            allOk ? "ok" : "ng",
+            allOk
+              ? `全${results.length}項目が正常です。営業を開始できます。`
+              : "営業開始不可です。赤い項目を修正して再検査してください。"
+          );
+          final.decision = {
+            ok:allOk,
+            blocked:results.filter(item => !item.ok).map(item => item.label),
+          };
+          rawResult.textContent = JSON.stringify(final,null,2);
+        } catch (error) {
+          setOverall("ng",`統合チェックを完了できません：${error.message}`);
+          setGate(false,[{
+            category:"API・データ",ok:false,label:"統合チェック実行",detail:error.message,
+          }]);
+          rawResult.textContent = error.stack || error.message;
+        } finally {
+          $("#runAll").disabled = false;
+        }
       }
 
       async function prepareDemo() {
         if (!confirm(
-          "デモ店舗に顧客・予約・カルテのサンプルデータを準備します。実行しますか？"
+          "デモ店舗に顧客・予約・カルテの標準データを準備します。実行しますか？"
         )) return;
-
-        setOverall("", "デモデータを準備しています…");
+        setOverall("","デモデータを準備しています…");
         try {
-          const result = await fetchJson(config.API.admin_demo_prepare, {
-            method: "POST",
-            headers: adminHeaders(),
+          const result = await fetchJson(config.API.admin_demo_prepare,{
+            method:"POST",headers:adminHeaders(),
           });
-          rawResult.textContent = JSON.stringify(result, null, 2);
-          setOverall("ok", "デモデータの準備が完了しました。続けて一括チェックします。");
+          rawResult.textContent = JSON.stringify(result,null,2);
           await runAll();
         } catch (error) {
-          setOverall("ng", `デモデータの準備に失敗しました：${error.message}`);
+          setOverall("ng",`デモデータ準備に失敗しました：${error.message}`);
           rawResult.textContent = error.stack || error.message;
         }
       }
 
-      $("#saveCode").addEventListener("click", () => {
-        const code = getAdminCode();
-        if (!code) {
-          alert("管理コードを入力してください。");
-          return;
+      function renderUrls() {
+        const values = [
+          ["お客様LINE予約",config.PAGES.reservation],
+          ["予約確認・変更",`${config.PAGES.member}?demo=1`],
+          ["オーナーPC",`${config.PAGES.owner}?demo=1`],
+          ["店舗iPad",`${config.PAGES.owner_ipad}?demo=1`],
+          ["店舗設定",`${config.PAGES.settings}?demo=1`],
+          ["既存システム移行",`${config.PAGES.migration}?demo=1`],
+          ["営業前最終検査",`${config.PAGES.release_check}?demo=1`],
+          ["Worker API",config.API.root],
+          ["Health",config.API.health],
+          ["GitHub",config.GITHUB_REPOSITORY],
+        ];
+        const box = $("#urls");
+        box.replaceChildren();
+        for (const [label,url] of values) {
+          const row = document.createElement("div");
+          row.className = "url-item";
+          const strong = document.createElement("strong");
+          strong.textContent = label;
+          const text = document.createElement("div");
+          text.className = "url";
+          text.textContent = url;
+          const open = document.createElement("a");
+          open.className = "open";
+          open.href = url;
+          open.target = "_blank";
+          open.rel = "noopener noreferrer";
+          open.textContent = "開く";
+          row.append(strong,text,open);
+          box.append(row);
         }
-        localStorage.setItem(config.STORAGE_KEYS.admin_code, code);
+      }
+
+      $("#saveCode").addEventListener("click",() => {
+        const code = getAdminCode();
+        if (!code) return alert("管理コードを入力してください。");
+        localStorage.setItem(config.STORAGE_KEYS.admin_code,code);
         alert("この端末に管理コードを保存しました。");
       });
-
-      $("#clearCode").addEventListener("click", () => {
+      $("#clearCode").addEventListener("click",() => {
         localStorage.removeItem(config.STORAGE_KEYS.admin_code);
         adminInput.value = "";
-        alert("この端末の管理コードを削除しました。");
       });
+      $("#runAll").addEventListener("click",runAll);
+      $("#prepareDemo").addEventListener("click",prepareDemo);
 
-      $("#runAll").addEventListener("click", runAll);
-      $("#prepareDemo").addEventListener("click", prepareDemo);
-
-      const params = new URLSearchParams(location.search);
-      const isDemo = params.get("demo") === "1";
       adminInput.value = isDemo
         ? config.DEMO.admin_code
         : localStorage.getItem(config.STORAGE_KEYS.admin_code) || "";
-
       renderUrls();
       if (isDemo) runAll();
-      else setOverall("", "管理コードを入力し、「一括チェックを実行」を押してください。");
+      else setOverall("","管理コードを入力し、統合チェックを実行してください。");
     })();
   </script>
 </body>
