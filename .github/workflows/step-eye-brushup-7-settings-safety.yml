@@ -1,0 +1,1121 @@
+name: STEP EYE-BRUSHUP-7 Settings Safety
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/step-eye-brushup-7-settings-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: step-eye-brushup-7-settings-safety
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Save pre-change commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Apply settings safety patch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          settings_path = Path("settings.html")
+          config_path = Path("config.js")
+
+          if not settings_path.exists():
+              raise SystemExit("settings.html が見つかりません。")
+          if not config_path.exists():
+              raise SystemExit("config.js が見つかりません。")
+
+          text = settings_path.read_text(encoding="utf-8")
+
+          if 'id="settingsModeBar"' in text:
+              print("STEP EYE-BRUSHUP-7 は適用済みです。")
+          else:
+              def replace_once(old, new, label):
+                  global text
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(
+                          f"{label} の置換対象が {count} 件です。"
+                          "現行コードが想定と異なるため停止しました。"
+                      )
+                  text = text.replace(old, new, 1)
+
+              css_anchor = '''    .toast {
+          '''
+              css_insert = '''    .settings-assistant {
+                margin-top:14px;
+                padding:18px;
+                border:1px solid var(--border);
+                border-radius:19px;
+                background:white;
+                box-shadow:var(--shadow);
+              }
+              .settings-mode-bar {
+                display:flex;
+                justify-content:space-between;
+                gap:14px;
+                align-items:center;
+              }
+              .settings-mode-bar h2 { margin:0; }
+              .settings-mode-bar p { margin:4px 0 0; color:var(--muted); }
+              .mode-switch {
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:7px;
+                min-width:300px;
+                padding:5px;
+                border-radius:14px;
+                background:var(--soft);
+              }
+              .mode-button {
+                min-height:48px;
+                padding:9px 14px;
+                border:0;
+                border-radius:11px;
+                color:var(--accent-dark);
+                background:transparent;
+                font-weight:900;
+              }
+              .mode-button.active { color:white; background:var(--accent-dark); }
+              .settings-health-grid {
+                display:grid;
+                grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+                gap:13px;
+                margin-top:15px;
+              }
+              .health-box {
+                padding:15px;
+                border:1px solid var(--border);
+                border-radius:14px;
+                background:var(--bg);
+              }
+              .health-box h3 { margin:0 0 10px; }
+              .settings-checklist,.settings-validation { display:grid; gap:8px; }
+              .checklist-row,.validation-row {
+                display:flex;
+                gap:10px;
+                align-items:flex-start;
+                padding:10px 12px;
+                border-radius:11px;
+                background:white;
+                font-weight:800;
+              }
+              .checklist-mark {
+                width:25px;
+                height:25px;
+                display:grid;
+                place-items:center;
+                border-radius:50%;
+                color:white;
+                background:var(--success);
+                flex:none;
+                font-size:14px;
+                font-weight:900;
+              }
+              .checklist-row.pending .checklist-mark {
+                color:#70481F;
+                background:#F1D5AF;
+              }
+              .validation-row.error {
+                color:#7E343A;
+                border-left:5px solid var(--danger);
+                background:#F7E6E7;
+              }
+              .validation-row.warning {
+                color:#70481F;
+                border-left:5px solid var(--warning);
+                background:#FFF3E4;
+              }
+              .validation-row.ok {
+                color:#40513B;
+                border-left:5px solid var(--success);
+                background:#E7EFE4;
+              }
+              .validation-row button { margin-left:auto; flex:none; }
+              .unsaved-status {
+                display:flex;
+                gap:10px;
+                align-items:center;
+                margin-top:13px;
+                padding:11px 13px;
+                border-radius:11px;
+                color:#40513B;
+                background:#E7EFE4;
+                font-weight:850;
+              }
+              .unsaved-status.dirty { color:#70481F; background:#FFF3E4; }
+              .unsaved-dot {
+                width:11px;
+                height:11px;
+                border-radius:50%;
+                background:var(--success);
+                flex:none;
+              }
+              .unsaved-status.dirty .unsaved-dot { background:var(--warning); }
+              .basic-mode .advanced-setting { display:none !important; }
+              .revisit-presets {
+                display:flex;
+                flex-wrap:wrap;
+                gap:6px;
+                margin-top:8px;
+              }
+              .revisit-preset {
+                min-height:38px;
+                padding:6px 10px;
+                border:1px solid var(--border);
+                border-radius:10px;
+                color:var(--accent-dark);
+                background:var(--soft);
+                font-size:14px;
+                font-weight:900;
+              }
+              .field-help-small {
+                display:block;
+                margin-top:5px;
+                color:var(--muted);
+                font-size:13px;
+                font-weight:700;
+              }
+              @media (max-width:900px) {
+                .settings-mode-bar { align-items:stretch; flex-direction:column; }
+                .mode-switch { min-width:0; width:100%; }
+                .settings-health-grid { grid-template-columns:1fr; }
+              }
+
+              .toast {
+          '''
+              replace_once(css_anchor, css_insert, "設定ガイドCSS")
+
+              html_anchor = '''    <div id="overallStatus" class="status" style="margin-top:14px">
+                設定を読み込んでいます…
+              </div>
+
+              <div class="layout">
+          '''
+              html_insert = '''    <div id="overallStatus" class="status" style="margin-top:14px">
+                設定を読み込んでいます…
+              </div>
+
+              <section id="settingsAssistant" class="settings-assistant">
+                <div id="settingsModeBar" class="settings-mode-bar">
+                  <div>
+                    <h2>設定ガイド</h2>
+                    <p>通常は基本設定だけを表示します。必要なときだけ詳細設定を開けます。</p>
+                  </div>
+                  <div class="mode-switch">
+                    <button id="basicSettingsMode" class="mode-button active"
+                      type="button" data-settings-mode="basic">基本設定</button>
+                    <button id="advancedSettingsMode" class="mode-button"
+                      type="button" data-settings-mode="advanced">詳細設定</button>
+                  </div>
+                </div>
+
+                <div class="settings-health-grid">
+                  <div class="health-box">
+                    <h3>初期設定チェック</h3>
+                    <div id="settingsChecklist" class="settings-checklist">
+                      設定を読み込んでいます…
+                    </div>
+                  </div>
+                  <div class="health-box">
+                    <h3>設定ミスチェック</h3>
+                    <div id="settingsValidation" class="settings-validation">
+                      設定を読み込んでいます…
+                    </div>
+                  </div>
+                </div>
+
+                <div id="unsavedStatus" class="unsaved-status">
+                  <span class="unsaved-dot"></span>
+                  <span id="unsavedStatusText">保存済みの設定を表示しています。</span>
+                </div>
+              </section>
+
+              <div class="layout">
+          '''
+              replace_once(html_anchor, html_insert, "設定ガイド画面")
+
+              revisit_anchor = '''              <label>
+                          再来店目安（日）
+                          <input id="serviceRevisit" type="number" min="1" max="365">
+                        </label>
+          '''
+              revisit_insert = '''              <label>
+                          再来店目安（日）
+                          <input id="serviceRevisit" type="number" min="1" max="365">
+                          <span class="field-help-small">
+                            推奨値を選択後も自由に変更できます。
+                          </span>
+                          <span id="revisitPresetButtons" class="revisit-presets"></span>
+                        </label>
+          '''
+              replace_once(revisit_anchor, revisit_insert, "再来店目安候補")
+
+              state_anchor = '''        selectedCategoryId:"",
+                  selectedResourceId:"",
+                };
+          '''
+              state_insert = '''        selectedCategoryId:"",
+                  selectedResourceId:"",
+                  settingsMode:
+                    localStorage.getItem("dpro_eye_settings_mode") === "advanced"
+                      ? "advanced"
+                      : "basic",
+                  settingsDirty:false,
+                  settingsBaseline:new Map(),
+                };
+
+                const settingsSaveBypass = new WeakSet();
+          '''
+              replace_once(state_anchor, state_insert, "設定状態管理")
+
+              helper_anchor = '''      async function login() {
+          '''
+              helper_insert = '''      function timeMinutes(value) {
+                  if (!/^\\d{2}:\\d{2}$/.test(String(value || ""))) return null;
+                  const [hour,minute] = value.split(":").map(Number);
+                  if (
+                    hour < 0 || hour > 23 ||
+                    minute < 0 || minute > 59
+                  ) return null;
+                  return hour * 60 + minute;
+                }
+
+                function thirtyMinuteTime(value) {
+                  const minutes = timeMinutes(value);
+                  return minutes !== null && minutes % 30 === 0;
+                }
+
+                function activeRows(key) {
+                  return (state.data?.[key] || []).filter(row => row.is_active !== false);
+                }
+
+                function activeOnlineServices() {
+                  return activeRows("services").filter(
+                    row => row.allows_online_booking !== false
+                  );
+                }
+
+                function assignedActiveStaff(serviceId) {
+                  const staffIds = new Set(
+                    activeRows("staff").map(row => String(row.id))
+                  );
+                  return (state.data?.staff_services || []).filter(row =>
+                    row.is_active !== false &&
+                    String(row.service_id) === String(serviceId) &&
+                    staffIds.has(String(row.staff_id))
+                  );
+                }
+
+                function addIssue(list,level,message,section,buttons=[]) {
+                  list.push({level,message,section,buttons});
+                }
+
+                function settingsIssues() {
+                  if (!state.data) return [];
+                  const issues = [];
+                  const open = $("#openTime").value;
+                  const close = $("#closeTime").value;
+                  const bookingDays = Number($("#bookingOpenDays").value);
+                  const sameDay = Number($("#sameDayDeadline").value);
+                  const staff = activeRows("staff");
+                  const services = activeOnlineServices();
+                  const resources = activeRows("resources");
+
+                  if (!$("#shopName").value.trim()) {
+                    addIssue(
+                      issues,"error","店舗名が未入力です。","shop",
+                      ["saveShopButton"]
+                    );
+                  }
+                  if (!Number.isFinite(bookingDays) || bookingDays < 1 || bookingDays > 365) {
+                    addIssue(
+                      issues,"error","予約受付日数は1〜365日にしてください。","shop",
+                      ["saveShopButton"]
+                    );
+                  }
+                  if (!Number.isFinite(sameDay) || sameDay < 0 || sameDay > 1440) {
+                    addIssue(
+                      issues,"error","当日予約締切は0〜1440分にしてください。","shop",
+                      ["saveShopButton"]
+                    );
+                  } else if (sameDay % 30 !== 0) {
+                    addIssue(
+                      issues,"error","当日予約締切は30分単位にしてください。","shop",
+                      ["saveShopButton"]
+                    );
+                  }
+                  if (!thirtyMinuteTime(open) || !thirtyMinuteTime(close)) {
+                    addIssue(
+                      issues,"error","開店・閉店時間は30分単位にしてください。","hours",
+                      ["saveHoursButton","saveShopButton"]
+                    );
+                  } else if (timeMinutes(open) >= timeMinutes(close)) {
+                    addIssue(
+                      issues,"error","閉店時間は開店時間より後にしてください。","hours",
+                      ["saveHoursButton","saveShopButton"]
+                    );
+                  }
+
+                  if (!staff.length) {
+                    addIssue(
+                      issues,"error","有効なスタッフが1名もいません。","staff",
+                      ["saveStaffButton"]
+                    );
+                  }
+                  if (!services.length) {
+                    addIssue(
+                      issues,"error","LINE予約可能な有効メニューがありません。","menus",
+                      ["saveServiceButton"]
+                    );
+                  }
+
+                  for (const service of services) {
+                    const duration = Number(service.duration_minutes);
+                    const cleanup = Number(service.cleanup_minutes || 0);
+                    if (duration <= 0 || duration % 30 !== 0) {
+                      addIssue(
+                        issues,"error",
+                        `「${service.service_name}」の施術時間が30分単位ではありません。`,
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (cleanup < 0 || cleanup % 30 !== 0) {
+                      addIssue(
+                        issues,"error",
+                        `「${service.service_name}」の片付け時間が30分単位ではありません。`,
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (!Number(service.revisit_days)) {
+                      addIssue(
+                        issues,"warning",
+                        `「${service.service_name}」の再来店目安が未設定です。`,
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (!assignedActiveStaff(service.id).length) {
+                      addIssue(
+                        issues,"error",
+                        `「${service.service_name}」を担当できる有効スタッフがいません。`,
+                        "staff",["saveStaffButton","saveServiceButton"]
+                      );
+                    }
+                  }
+
+                  for (const member of staff) {
+                    const assigned = (state.data.staff_services || []).some(row =>
+                      row.is_active !== false &&
+                      String(row.staff_id) === String(member.id) &&
+                      services.some(
+                        service => String(service.id) === String(row.service_id)
+                      )
+                    );
+                    if (!assigned) {
+                      addIssue(
+                        issues,"warning",
+                        `「${member.display_name}」に予約可能メニューが未設定です。`,
+                        "staff",["saveStaffButton"]
+                      );
+                    }
+                  }
+
+                  if ($("#resourceControl").checked && !resources.length) {
+                    addIssue(
+                      issues,"error",
+                      "施術席の重複防止が有効ですが、有効な施術席がありません。",
+                      "resources",["saveShopButton","saveResourceButton"]
+                    );
+                  } else if (
+                    $("#resourceControl").checked &&
+                    staff.length > resources.length
+                  ) {
+                    addIssue(
+                      issues,"warning",
+                      `有効スタッフ${staff.length}名に対して施術席は` +
+                      `${resources.length}席です。同時施術数を確認してください。`,
+                      "resources",["saveResourceButton"]
+                    );
+                  }
+
+                  const staffDraft = Boolean(
+                    $("#staffCode").value.trim() ||
+                    $("#staffName").value.trim() ||
+                    state.selectedStaffId
+                  );
+                  if (staffDraft) {
+                    if (!$("#staffCode").value.trim() || !$("#staffName").value.trim()) {
+                      addIssue(
+                        issues,"error",
+                        "スタッフコードと表示名を入力してください。",
+                        "staff",["saveStaffButton"]
+                      );
+                    }
+                    if (
+                      $("#staffActive").checked &&
+                      !$("#staffServiceChecks").querySelectorAll("input:checked").length
+                    ) {
+                      addIssue(
+                        issues,"error",
+                        "有効スタッフには担当可能メニューを設定してください。",
+                        "staff",["saveStaffButton"]
+                      );
+                    }
+                  }
+
+                  const serviceDraft = Boolean(
+                    $("#serviceCode").value.trim() ||
+                    $("#serviceName").value.trim() ||
+                    state.selectedServiceId
+                  );
+                  if (serviceDraft) {
+                    const duration = Number($("#serviceDuration").value);
+                    const cleanup = Number($("#serviceCleanup").value);
+                    if (
+                      !$("#serviceCategory").value ||
+                      !$("#serviceCode").value.trim() ||
+                      !$("#serviceName").value.trim()
+                    ) {
+                      addIssue(
+                        issues,"error",
+                        "カテゴリ・メニューコード・メニュー名を入力してください。",
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (duration <= 0 || duration % 30 !== 0) {
+                      addIssue(
+                        issues,"error","施術時間は30分単位にしてください。",
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (cleanup < 0 || cleanup % 30 !== 0) {
+                      addIssue(
+                        issues,"error","片付け時間は30分単位にしてください。",
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                    if (
+                      $("#serviceActive").checked &&
+                      $("#serviceOnline").checked &&
+                      !Number($("#serviceRevisit").value)
+                    ) {
+                      addIssue(
+                        issues,"warning",
+                        "予約可能メニューには再来店目安の設定を推奨します。",
+                        "menus",["saveServiceButton"]
+                      );
+                    }
+                  }
+
+                  const resourceDraft = Boolean(
+                    $("#resourceCode").value.trim() ||
+                    $("#resourceName").value.trim() ||
+                    state.selectedResourceId
+                  );
+                  if (
+                    resourceDraft &&
+                    (!$("#resourceCode").value.trim() || !$("#resourceName").value.trim())
+                  ) {
+                    addIssue(
+                      issues,"error","設備コードと設備名を入力してください。",
+                      "resources",["saveResourceButton"]
+                    );
+                  }
+
+                  document.querySelectorAll(".shift-row").forEach(row => {
+                    const get = field => row.querySelector(`[data-field="${field}"]`);
+                    if (!get("is_working")?.checked) return;
+                    const start = get("start_time")?.value || "";
+                    const end = get("end_time")?.value || "";
+                    if (!thirtyMinuteTime(start) || !thirtyMinuteTime(end)) {
+                      addIssue(
+                        issues,"error",
+                        `${WEEKDAYS[Number(row.dataset.weekday)]}曜日の勤務時間を` +
+                        "30分単位にしてください。",
+                        "hours",["saveShiftsButton"]
+                      );
+                    } else if (timeMinutes(start) >= timeMinutes(end)) {
+                      addIssue(
+                        issues,"error",
+                        `${WEEKDAYS[Number(row.dataset.weekday)]}曜日の終了時間を` +
+                        "開始時間より後にしてください。",
+                        "hours",["saveShiftsButton"]
+                      );
+                    }
+                    const breakStart = get("break_start")?.value || "";
+                    const breakEnd = get("break_end")?.value || "";
+                    if (Boolean(breakStart) !== Boolean(breakEnd)) {
+                      addIssue(
+                        issues,"error",
+                        `${WEEKDAYS[Number(row.dataset.weekday)]}曜日の休憩は` +
+                        "開始・終了を両方入力してください。",
+                        "hours",["saveShiftsButton"]
+                      );
+                    }
+                  });
+
+                  const closedStart = $("#closedStart").value;
+                  const closedEnd = $("#closedEnd").value;
+                  if (Boolean(closedStart) !== Boolean(closedEnd)) {
+                    addIssue(
+                      issues,"error",
+                      "時間休は開始・終了を両方入力してください。",
+                      "hours",["addClosedButton"]
+                    );
+                  } else if (
+                    closedStart &&
+                    (
+                      !thirtyMinuteTime(closedStart) ||
+                      !thirtyMinuteTime(closedEnd) ||
+                      timeMinutes(closedStart) >= timeMinutes(closedEnd)
+                    )
+                  ) {
+                    addIssue(
+                      issues,"error",
+                      "時間休は30分単位で、終了を開始より後にしてください。",
+                      "hours",["addClosedButton"]
+                    );
+                  }
+                  return issues;
+                }
+
+                function checklistItems() {
+                  const staff = activeRows("staff");
+                  const services = activeOnlineServices();
+                  const resources = activeRows("resources");
+                  return [
+                    {
+                      ok:Boolean($("#shopName").value.trim()),
+                      label:"店舗名・説明",
+                    },
+                    {
+                      ok:
+                        thirtyMinuteTime($("#openTime").value) &&
+                        thirtyMinuteTime($("#closeTime").value) &&
+                        timeMinutes($("#openTime").value) <
+                          timeMinutes($("#closeTime").value),
+                      label:"営業時間",
+                    },
+                    {ok:staff.length > 0,label:"有効スタッフ"},
+                    {ok:services.length > 0,label:"LINE予約メニュー"},
+                    {
+                      ok:
+                        services.length > 0 &&
+                        services.every(service =>
+                          assignedActiveStaff(service.id).length
+                        ),
+                      label:"スタッフの担当可能メニュー",
+                    },
+                    {
+                      ok:
+                        !$("#resourceControl").checked ||
+                        resources.length > 0,
+                      label:"施術席・同時予約制御",
+                    },
+                    {
+                      ok:
+                        services.length > 0 &&
+                        services.every(service => Number(service.revisit_days) > 0),
+                      label:"再来店目安",
+                    },
+                  ];
+                }
+
+                function openIssueSection(section) {
+                  if (["staff","resources"].includes(section)) {
+                    applySettingsMode("advanced");
+                  }
+                  openSection(section);
+                  document.querySelector(".content")?.scrollIntoView({
+                    behavior:"smooth",
+                    block:"start",
+                  });
+                }
+
+                function renderSettingsHealth() {
+                  if (!state.data) return;
+                  const checklist = $("#settingsChecklist");
+                  checklist.replaceChildren();
+                  for (const item of checklistItems()) {
+                    const row = document.createElement("div");
+                    row.className = `checklist-row${item.ok ? "" : " pending"}`;
+                    const mark = document.createElement("span");
+                    mark.className = "checklist-mark";
+                    mark.textContent = item.ok ? "✓" : "!";
+                    const label = document.createElement("span");
+                    label.textContent = item.label;
+                    row.append(mark,label);
+                    checklist.append(row);
+                  }
+
+                  const validation = $("#settingsValidation");
+                  validation.replaceChildren();
+                  const unique = new Map();
+                  for (const issue of settingsIssues()) {
+                    unique.set(`${issue.level}-${issue.message}`,issue);
+                  }
+                  if (!unique.size) {
+                    const row = document.createElement("div");
+                    row.className = "validation-row ok";
+                    row.textContent = "現在、明らかな設定ミスは見つかっていません。";
+                    validation.append(row);
+                    return;
+                  }
+                  for (const issue of [...unique.values()].slice(0,12)) {
+                    const row = document.createElement("div");
+                    row.className = `validation-row ${issue.level}`;
+                    const message = document.createElement("span");
+                    message.textContent = issue.message;
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "btn btn-secondary btn-small";
+                    button.textContent = "設定を開く";
+                    button.addEventListener(
+                      "click",
+                      () => openIssueSection(issue.section)
+                    );
+                    row.append(message,button);
+                    validation.append(row);
+                  }
+                }
+
+                function markAdvancedElements() {
+                  [
+                    document.querySelector('[data-section="staff"]'),
+                    document.querySelector('[data-section="resources"]'),
+                    $("#sectionStaff"),
+                    $("#sectionResources"),
+                    $("#shiftStaffSelect")?.closest(".panel"),
+                    $("#closedStaffSelect")?.closest(".panel"),
+                    $("#categoryStrip")?.closest(".panel"),
+                    $("#resourceControl")?.closest(".check-card"),
+                    $("#waitlistEnabled")?.closest(".check-card"),
+                    $("#photoEnabled")?.closest(".check-card"),
+                    $("#lineApproval")?.closest(".check-card"),
+                    $("#serviceCleanup")?.closest("label"),
+                    $("#serviceMaxQuantity")?.closest("label"),
+                    $("#serviceSort")?.closest("label"),
+                    $("#serviceConsent")?.closest(".check-card"),
+                    $("#servicePatchTest")?.closest(".check-card"),
+                    $("#serviceOption")?.closest(".check-card"),
+                  ].filter(Boolean).forEach(node =>
+                    node.classList.add("advanced-setting")
+                  );
+                }
+
+                function applySettingsMode(mode) {
+                  state.settingsMode = mode === "advanced" ? "advanced" : "basic";
+                  localStorage.setItem("dpro_eye_settings_mode",state.settingsMode);
+                  document.body.classList.toggle(
+                    "basic-mode",
+                    state.settingsMode === "basic"
+                  );
+                  document
+                    .querySelectorAll("[data-settings-mode]")
+                    .forEach(button => button.classList.toggle(
+                      "active",
+                      button.dataset.settingsMode === state.settingsMode
+                    ));
+                  if (
+                    state.settingsMode === "basic" &&
+                    ["sectionStaff","sectionResources"].includes(
+                      document.querySelector(".section.active")?.id
+                    )
+                  ) openSection("shop");
+                }
+
+                function settingsFieldEntries() {
+                  return [...$("#app").querySelectorAll("input,select,textarea")]
+                    .filter(node => node.id !== "loginCode")
+                    .map((node,index) => {
+                      const key =
+                        node.id ||
+                        `${node.dataset.field || node.name || node.tagName}-${index}`;
+                      const value = node.type === "checkbox"
+                        ? node.checked
+                        : node.value;
+                      const label = node.closest("label")
+                        ?.textContent
+                        ?.trim()
+                        ?.split(/\\n|\\s{2,}/)[0]
+                        ?.trim() || node.id || "設定項目";
+                      return {key,value,label};
+                    });
+                }
+
+                function captureSettingsBaseline() {
+                  state.settingsBaseline = new Map(
+                    settingsFieldEntries().map(row => [row.key,row.value])
+                  );
+                  state.settingsDirty = false;
+                  renderUnsavedStatus();
+                }
+
+                function changedSettingLabels() {
+                  return [...new Set(
+                    settingsFieldEntries()
+                      .filter(row =>
+                        !state.settingsBaseline.has(row.key) ||
+                        state.settingsBaseline.get(row.key) !== row.value
+                      )
+                      .map(row => row.label)
+                  )].slice(0,8);
+                }
+
+                function updateSettingsDirty() {
+                  const current = settingsFieldEntries();
+                  state.settingsDirty =
+                    current.some(row =>
+                      !state.settingsBaseline.has(row.key) ||
+                      state.settingsBaseline.get(row.key) !== row.value
+                    ) ||
+                    state.settingsBaseline.size !== current.length;
+                  renderUnsavedStatus();
+                  renderSettingsHealth();
+                }
+
+                function renderUnsavedStatus() {
+                  $("#unsavedStatus").classList.toggle(
+                    "dirty",
+                    state.settingsDirty
+                  );
+                  $("#unsavedStatusText").textContent = state.settingsDirty
+                    ? "未保存の変更があります。保存または再読込するまで画面を閉じないでください。"
+                    : "保存済みの設定を表示しています。";
+                }
+
+                function revisitPresetsForCurrentCategory() {
+                  const category = (state.data?.categories || []).find(
+                    row => String(row.id) === String($("#serviceCategory").value)
+                  );
+                  return {
+                    lash:[35,42,49],
+                    brow:[21,28,35],
+                    wax:[21,28,35],
+                    set:[28,35,42],
+                    option:[28,42,56],
+                    other:[28,42,56],
+                  }[category?.category_type || "other"] || [28,42,56];
+                }
+
+                function renderRevisitPresets() {
+                  const container = $("#revisitPresetButtons");
+                  if (!container) return;
+                  container.replaceChildren();
+                  for (const days of revisitPresetsForCurrentCategory()) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "revisit-preset";
+                    button.textContent =
+                      days % 7 === 0
+                        ? `${days / 7}週（${days}日）`
+                        : `${days}日`;
+                    button.addEventListener("click",() => {
+                      $("#serviceRevisit").value = days;
+                      updateSettingsDirty();
+                    });
+                    container.append(button);
+                  }
+                }
+
+                function issuesForSave(buttonId) {
+                  return settingsIssues().filter(
+                    issue => issue.buttons.includes(buttonId)
+                  );
+                }
+
+                function saveButtonLabel(buttonId) {
+                  return {
+                    saveShopButton:"店舗基本設定",
+                    saveHoursButton:"営業時間・定休日",
+                    saveShiftsButton:"スタッフ勤務時間",
+                    addClosedButton:"臨時休み・時間休",
+                    saveStaffButton:"スタッフ設定",
+                    saveCategoryButton:"カテゴリ設定",
+                    saveServiceButton:"メニュー・料金",
+                    saveResourceButton:"施術席",
+                  }[buttonId] || "設定";
+                }
+
+                function confirmSettingsSave(button) {
+                  const issues = issuesForSave(button.id);
+                  const errors = issues.filter(issue => issue.level === "error");
+                  if (errors.length) {
+                    toast(errors[0].message,true);
+                    openIssueSection(errors[0].section);
+                    return false;
+                  }
+                  const changes = changedSettingLabels();
+                  const warnings = issues
+                    .filter(issue => issue.level === "warning")
+                    .map(issue => `・${issue.message}`)
+                    .slice(0,5);
+                  return confirm([
+                    `${saveButtonLabel(button.id)}を保存します。`,
+                    changes.length
+                      ? `変更項目：${changes.join("、")}`
+                      : "現在表示している内容を保存します。",
+                    warnings.length
+                      ? `\\n確認事項：\\n${warnings.join("\\n")}`
+                      : "",
+                    "\\n保存してよろしいですか？",
+                  ].filter(Boolean).join("\\n"));
+                }
+
+                function handleSaveCapture(event) {
+                  const button = event.target.closest("button");
+                  const ids = new Set([
+                    "saveShopButton",
+                    "saveHoursButton",
+                    "saveShiftsButton",
+                    "addClosedButton",
+                    "saveStaffButton",
+                    "saveCategoryButton",
+                    "saveServiceButton",
+                    "saveResourceButton",
+                  ]);
+                  if (!button || !ids.has(button.id)) return;
+                  if (settingsSaveBypass.has(button)) {
+                    settingsSaveBypass.delete(button);
+                    return;
+                  }
+                  event.preventDefault();
+                  event.stopImmediatePropagation();
+                  if (!confirmSettingsSave(button)) return;
+                  settingsSaveBypass.add(button);
+                  button.click();
+                }
+
+                function confirmUnsavedNavigation() {
+                  return !state.settingsDirty ||
+                    confirm(
+                      "未保存の変更があります。保存せずに移動してよろしいですか？"
+                    );
+                }
+
+                async function login() {
+          '''
+              replace_once(helper_anchor, helper_insert, "設定検査処理")
+
+              render_all_anchor = '''      function renderAll() {
+                  renderSummary();
+                  renderShop();
+                  renderClosedWeekdays();
+                  renderStaffSelects();
+                  renderShifts();
+                  renderClosedDates();
+                  renderStaffList();
+                  renderStaffServiceChecks();
+                  renderCategories();
+                  renderServices();
+                  renderResources();
+                }
+          '''
+              render_all_insert = '''      function renderAll() {
+                  renderSummary();
+                  renderShop();
+                  renderClosedWeekdays();
+                  renderStaffSelects();
+                  renderShifts();
+                  renderClosedDates();
+                  renderStaffList();
+                  renderStaffServiceChecks();
+                  renderCategories();
+                  renderServices();
+                  renderResources();
+                  markAdvancedElements();
+                  applySettingsMode(state.settingsMode);
+                  renderRevisitPresets();
+                  renderSettingsHealth();
+                  queueMicrotask(captureSettingsBaseline);
+                }
+          '''
+              replace_once(render_all_anchor, render_all_insert, "設定描画後検査")
+
+              event_anchor = '''      $("#reloadButton").addEventListener("click",loadSettings);
+          '''
+              event_insert = '''      $("#reloadButton").addEventListener("click",loadSettings);
+
+                document.addEventListener("click",handleSaveCapture,true);
+                document.addEventListener("input",event => {
+                  if ($("#app").contains(event.target)) updateSettingsDirty();
+                },true);
+                document.addEventListener("change",event => {
+                  if ($("#app").contains(event.target)) updateSettingsDirty();
+                },true);
+
+                document
+                  .querySelectorAll("[data-settings-mode]")
+                  .forEach(button => button.addEventListener("click",() =>
+                    applySettingsMode(button.dataset.settingsMode)
+                  ));
+
+                document.addEventListener("click",event => {
+                  const nav = event.target.closest("[data-section]");
+                  if (!nav || !state.settingsDirty) return;
+                  if (!confirmUnsavedNavigation()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                  }
+                },true);
+
+                $("#reloadButton").addEventListener("click",event => {
+                  if (!state.settingsDirty) return;
+                  if (!confirmUnsavedNavigation()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                  }
+                },true);
+
+                $("#serviceCategory").addEventListener(
+                  "change",
+                  renderRevisitPresets
+                );
+                $("#serviceList").addEventListener("click",() =>
+                  setTimeout(renderRevisitPresets,0)
+                );
+                $("#newServiceButton").addEventListener("click",() =>
+                  setTimeout(renderRevisitPresets,0)
+                );
+                $("#clearServiceButton").addEventListener("click",() =>
+                  setTimeout(renderRevisitPresets,0)
+                );
+
+                window.addEventListener("beforeunload",event => {
+                  if (!state.settingsDirty) return;
+                  event.preventDefault();
+                  event.returnValue = "";
+                });
+          '''
+              replace_once(event_anchor, event_insert, "設定ガイドイベント")
+
+              if "MutationObserver" in text:
+                  raise SystemExit(
+                      "settings.html内にMutationObserverが見つかったため停止しました。"
+                  )
+              if "owner-brushup.js" in text:
+                  raise SystemExit(
+                      "settings.html内に旧追加スクリプト参照が見つかったため停止しました。"
+                  )
+
+              settings_path.write_text(text,encoding="utf-8")
+
+          config_text = config_path.read_text(encoding="utf-8")
+          if "owner-brushup.js" in config_text:
+              raise SystemExit("config.jsに旧追加スクリプト読込が残っています。")
+
+          config_text, count = re.subn(
+              r'VERSION:\s*"[^"]+"',
+              'VERSION: "EYE-17-SETTINGS-SAFETY-20260723"',
+              config_text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("config.js のVERSIONを更新できませんでした。")
+          config_path.write_text(config_text,encoding="utf-8")
+          PY
+
+      - name: Validate settings safety
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f settings.html
+          test -f config.js
+
+          grep -q 'id="settingsModeBar"' settings.html
+          grep -q 'id="settingsChecklist"' settings.html
+          grep -q 'id="settingsValidation"' settings.html
+          grep -q 'id="revisitPresetButtons"' settings.html
+          grep -q 'confirmSettingsSave' settings.html
+          grep -q 'beforeunload' settings.html
+          grep -q 'EYE-17-SETTINGS-SAFETY-20260723' config.js
+
+          ! grep -q 'MutationObserver' settings.html
+          ! grep -q 'owner-brushup.js' config.js
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          html = Path("settings.html").read_text(encoding="utf-8")
+          scripts = re.findall(
+              r"<script(?:\s[^>]*)?>(.*?)</script>",
+              html,
+              flags=re.S,
+          )
+          inline = [script for script in scripts if script.strip()]
+          if not inline:
+              raise SystemExit(
+                  "検査対象のインラインJavaScriptがありません。"
+              )
+          Path("/tmp/settings-inline.js").write_text(
+              "\n".join(inline),
+              encoding="utf-8",
+          )
+          PY
+
+          node --check /tmp/settings-inline.js
+          node --check config.js
+
+          python3 <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              pass
+
+          parser = Parser()
+          parser.feed(Path("settings.html").read_text(encoding="utf-8"))
+          parser.close()
+          print("HTML parser check passed.")
+          PY
+
+      - name: Create backup tag and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_TAG="eye-brushup-7-backup-${{ github.run_id }}"
+          git tag "$BACKUP_TAG" "$BEFORE_SHA"
+          git push origin "$BACKUP_TAG"
+
+          rm -f ".github/workflows/step-eye-brushup-7-settings-safety.yml"
+
+          git config user.name "DPRO STEP EYE-BRUSHUP-7"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "STEP EYE-BRUSHUP-7 simplify settings safely"
+          git push origin HEAD:main
