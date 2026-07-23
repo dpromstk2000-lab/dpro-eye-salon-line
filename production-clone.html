@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6F4C55">
+<title>本番店舗複製・切替｜DPRO EYE SALON</title>
+<script src="./config.js"></script>
+<style>
+:root{--bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;--accent:#A86F7D;--dark:#6F4C55;--text:#2F2B2C;--muted:#6E6567;--border:#DED1CA;--ok:#64745F;--warn:#A96F32;--ng:#A14E55;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 28rem),var(--bg);color:var(--text);font-size:17px;line-height:1.65}button,input,select,textarea{font:inherit}button{cursor:pointer}input,select,textarea{width:100%;min-height:50px;margin-top:6px;padding:10px 12px;border:2px solid var(--border);border-radius:12px;background:#fff}textarea{min-height:95px}input[type=checkbox]{width:23px;min-height:23px;margin:0;accent-color:var(--accent)}label{display:block;font-weight:850}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.card,.hero,.panel{border:1px solid var(--border);border-radius:20px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(78,53,61,.08)}.card{width:min(590px,100%);padding:30px}.app{width:min(1480px,calc(100% - 24px));margin:auto;padding:18px 0 70px}.hero,.panel{padding:22px}.panel{margin-top:14px}.brand{margin:0 0 5px;color:var(--dark);font-size:14px;font-weight:900;letter-spacing:.12em}h1{margin:0;font-size:34px;line-height:1.3}h2{margin:0;font-size:25px}.muted{color:var(--muted)}.head{display:flex;justify-content:space-between;gap:15px;align-items:center}.links,.buttons{display:flex;gap:9px;flex-wrap:wrap}.links a{padding:8px 13px;border-radius:11px;background:var(--soft);color:var(--dark);font-weight:900;text-decoration:none}.btn{min-height:48px;padding:9px 15px;border:0;border-radius:12px;font-weight:900}.primary{color:#fff;background:var(--accent)}.secondary{color:var(--dark);background:var(--soft)}.danger{color:#fff;background:var(--ng)}.blue{color:#fff;background:#5D7084}.notice{margin-top:14px;padding:14px 16px;border-left:6px solid var(--ng);border-radius:11px;color:#7E343A;background:#F7E6E7;font-weight:850}.status{margin-top:13px;padding:13px 15px;border-radius:12px;background:var(--soft);font-weight:850}.status.ok{color:#40513B;background:#E7EFE4}.status.warn{color:#70481F;background:#FFF3E4}.status.ng{color:#7E343A;background:#F7E6E7}.summary,.grid3,.preview,.secrets{display:grid;gap:10px}.summary{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px}.grid3{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:13px}.preview{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:13px}.secrets{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:12px}.summary article,.secret,.preview article{padding:14px;border:1px solid var(--border);border-radius:13px;background:#fff}.summary small,.summary span,.secret span{display:block;color:var(--muted);font-size:13px}.summary strong{display:block;font-size:25px}.summary .ok{background:#F3F7F1;border-color:#AAB5A5}.summary .ng{background:#FDF2F3;border-color:#D4A6AA}.full{grid-column:1/-1}.field{display:block;margin-top:5px;font-size:13px}.field.ok{color:#40513B}.field.ng{color:#7E343A}.gates{display:grid;gap:8px;margin-top:13px}.gate{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;padding:13px;border:1px solid var(--border);border-radius:13px;background:#fff}.gate.done{background:#F6F9F4;border-color:#AAB5A5}.gate strong{display:block}.gate p{margin:3px 0 0;color:var(--muted);font-size:14px}.role{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:900}.assistant{color:#485769;background:#E7EDF3}.iwaguchi{color:#6F4C55;background:#F2E5E8}.owner{color:#40513B;background:#E7EFE4}.decision{padding:20px;border:3px solid #D4A6AA;border-radius:18px;color:#7E343A;background:#FDF2F3}.decision.ok{border-color:#AAB5A5;color:#40513B;background:#F3F7F1}.decision strong{display:block;font-size:33px}.blocking{display:grid;gap:5px;margin-top:10px}.blocking div{padding:8px 10px;border-radius:9px;background:#fff;font-weight:850}pre{max-height:330px;overflow:auto;padding:14px;border-radius:12px;color:#F5F0EF;background:#2F2B2C;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.progress{height:14px;margin-top:14px;border-radius:999px;background:var(--soft);overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--ok))}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,130%);padding:14px 18px;border-radius:14px;color:#fff;background:#3B3436;transition:.2s}.toast.show{transform:translate(-50%,0)}
+@media(max-width:900px){.summary,.grid3,.preview,.secrets{grid-template-columns:1fr}.head{flex-direction:column;align-items:stretch}.full{grid-column:auto}.gate{grid-template-columns:auto minmax(0,1fr)}.gate .role{grid-column:2}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+<div class="card">
+<p class="brand">DPRO EYE SALON LINE</p>
+<h1>本番店舗複製・切替</h1>
+<p class="muted">デモ環境を直接本番化せず、契約店舗ごとに別環境を準備します。</p>
+<label>管理コード<input id="loginCode" type="password" inputmode="numeric" autocomplete="off"></label>
+<div class="buttons" style="margin-top:14px"><button id="loginButton" class="btn primary">内部テンプレートを開く</button><button id="clearCode" class="btn danger">削除</button></div>
+<div id="loginStatus" class="status">管理コードを入力してください。</div>
+</div>
+</section>
+
+<main id="app" class="app" hidden>
+<section class="hero">
+<div class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>本番店舗複製・切替テンプレート</h1><p class="muted">店舗別の識別情報・環境分離・切替条件を確認します。</p></div><div class="links"><a href="./delivery.html">導入・納品進行</a><a href="./settings.html">店舗設定</a><a href="./migration.html">既存システム移行</a><a href="./release-check.html">内部最終検査</a></div></div>
+<div class="notice"><strong>禁止：</strong><code>dpro_eye_demo</code>、管理コード<code>1234</code>、デモSupabase、デモWorker、デモLIFFを本番流用しません。</div>
+<div class="summary">
+<article id="identityCard"><small>店舗識別情報</small><strong>未完了</strong><span>店舗コード・URL・LIFF</span></article>
+<article id="separationCard"><small>環境分離</small><strong>未完了</strong><span>GitHub・Supabase・Worker</span></article>
+<article id="securityCard"><small>秘密情報</small><strong>未完了</strong><span>画面・JSONへ保存しない</span></article>
+<article id="switchCard"><small>本番切替</small><strong>停止中</strong><span>全条件完了まで禁止</span></article>
+</div>
+<div class="progress"><span id="progress"></span></div>
+<div id="overall" class="status warn">本番店舗情報を入力してください。</div>
+</section>
+
+<section class="panel">
+<div class="head"><div><h2>1. 本番店舗の非機密情報</h2><span class="muted">管理コードや秘密鍵の実値は入力しません。</span></div><div class="buttons"><button id="save" class="btn secondary">端末へ保存</button><button id="export" class="btn blue">安全なJSONを保存</button><button id="reset" class="btn danger">初期化</button></div></div>
+<div class="grid3">
+<label>店舗名<input id="shopName"><span id="shopNameState" class="field"></span></label>
+<label>本番店舗コード<input id="shopCode" placeholder="dpro_eye_store01"><span id="shopCodeState" class="field"></span></label>
+<label>本番開始予定日<input id="launchDate" type="date"><span id="launchDateState" class="field"></span></label>
+<label>GitHubリポジトリ名<input id="repositoryName" placeholder="dpro-eye-salon-store01"><span id="repositoryState" class="field"></span></label>
+<label>Cloudflare Worker名<input id="workerName" placeholder="dpro-eye-salon-store01-api"><span id="workerNameState" class="field"></span></label>
+<label>本番Worker URL<input id="workerUrl" type="url" placeholder="https://...workers.dev"><span id="workerUrlState" class="field"></span></label>
+<label>Supabase Project Ref<input id="supabaseRef"><span id="supabaseState" class="field"></span></label>
+<label>本番LIFF ID<input id="liffId" placeholder="1234567890-AbCdEfGh"><span id="liffState" class="field"></span></label>
+<label>移行方式<select id="migrationMode"><option value="">選択</option><option value="new">新規・移行なし</option><option value="customer">顧客CSV</option><option value="customer_reservation">顧客＋将来予約</option></select><span id="migrationState" class="field"></span></label>
+<label class="full">店舗固有メモ<textarea id="notes" placeholder="秘密情報は書かないでください。"></textarea></label>
+</div>
+</section>
+
+<section class="panel">
+<h2>2. 秘密情報は各サービスへ直接設定</h2>
+<p class="muted">実値はこの画面・JSON・GitHubへ保存しません。</p>
+<div class="secrets">
+<article class="secret"><strong>DPRO_ADMIN_CODE</strong><span>1234以外をWorker Secretへ設定</span></article>
+<article class="secret"><strong>SUPABASE_URL</strong><span>本番店舗専用Project</span></article>
+<article class="secret"><strong>SUPABASE_SERVICE_ROLE_KEY</strong><span>GitHubへ書かない</span></article>
+<article class="secret"><strong>LINE_CHANNEL_SECRET</strong><span>店舗用チャネル</span></article>
+<article class="secret"><strong>LINE_CHANNEL_ACCESS_TOKEN</strong><span>店舗用長期トークン</span></article>
+<article class="secret"><strong>PRODUCTION_SWITCH_PERMISSION</strong><span>最終検査までfalse</span></article>
+</div>
+</section>
+
+<section class="panel"><h2>3. 本番複製・切替ゲート</h2><div id="gateList" class="gates"></div></section>
+
+<section class="panel"><div id="decisionBox" class="decision"><strong id="decisionTitle">本番切替禁止</strong><span id="decisionDetail">未完了項目があります。</span><div id="blocking" class="blocking"></div></div></section>
+
+<section class="panel">
+<div class="head"><div><h2>4. 非機密テンプレート</h2><span class="muted">入力内容から安全な設定案を生成します。</span></div><button id="generate" class="btn primary">更新</button></div>
+<div class="preview">
+<article><strong>tenant-manifest.json</strong><pre id="manifestPreview">入力待ち</pre><button class="btn secondary copy" data-id="manifestPreview">コピー</button></article>
+<article><strong>config.production.js 差替え値</strong><pre id="configPreview">入力待ち</pre><button class="btn secondary copy" data-id="configPreview">コピー</button></article>
+<article><strong>wrangler.toml 非機密変数</strong><pre id="wranglerPreview">入力待ち</pre><button class="btn secondary copy" data-id="wranglerPreview">コピー</button></article>
+<article><strong>切替手順</strong><pre id="cutoverPreview">入力待ち</pre><button class="btn secondary copy" data-id="cutoverPreview">コピー</button></article>
+</div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(()=>{"use strict";
+const c=window.DPRO_EYE_CONFIG,p=new URLSearchParams(location.search),demo=p.get("demo")==="1",$=s=>document.querySelector(s);
+const KEY=`dpro_eye_production_clone_${c.SHOP_CODE}`,VERSION="EYE-20-PRODUCTION-CLONE-TEMPLATE-20260723",DEMO_WORKER="https://dpro-eye-salon-line-api.dpromstk2000.workers.dev",DEMO_REPO="dpro-eye-salon-line";
+const ids=["shopName","shopCode","launchDate","repositoryName","workerName","workerUrl","supabaseRef","liffId","migrationMode","notes"];
+const roles={assistant:"DPRO制作・検査",iwaguchi:"岩口さん",owner:"店舗オーナー"};
+const gates=[
+["contract","owner","店舗情報と開始予定日の承認を受領","オーナーは情報提供と日常画面の確認だけ。"],
+["repository","iwaguchi","本番店舗専用GitHubリポジトリを作成","デモリポジトリと分離。"],
+["supabase","iwaguchi","本番店舗専用Supabase Projectを作成","URL・キー・データを分離。"],
+["database","assistant","本番DB・RLS・非公開Storageを検査","テーブル、電話正規化、写真Storageを確認。"],
+["worker","iwaguchi","本番店舗専用Cloudflare Workerを作成","デモWorkerを流用しない。"],
+["secrets","iwaguchi","新管理コードと各Secretsを設定","1234禁止。実値は画面やGitHubへ保存しない。"],
+["guard","assistant","production_guard=true・切替許可=falseを確認","準備中は本番処理を停止。"],
+["line","iwaguchi","店舗専用LINEチャネル・LIFFを設定","デモLIFF・トークンを流用しない。"],
+["migration","assistant","移行プレビュー・重複・戻し方を確認","対象店舗だけ段階移行。"],
+["urls","assistant","新環境の予約・会員・PC・iPadを検査","旧デモURLが残っていないことを確認。"],
+["release","iwaguchi","本番環境の営業前最終検査を実行","公開画面・API・Storage・ガードを確認。"],
+["owner_test","owner","オーナーが日常画面だけ最終確認","内部検査は操作させない。"],
+["backup","assistant","切替前バックアップとロールバックを確定","旧受付へ戻す手順を記録。"],
+["permission","iwaguchi","全検査後に本番切替許可を有効化","最後の1操作として実施。"],
+["postcheck","assistant","本番初回予約・通知・カルテを確認","問題なければ納品完了。"]
+];
+let state={fields:{},gates:{}};
+function toast(m){$("#toast").textContent=m;$("#toast").className="toast show";setTimeout(()=>$("#toast").className="toast",2500)}
+async function json(url,o={}){const r=await fetch(url,{cache:"no-store",...o}),d=await r.json().catch(()=>null);if(!r.ok)throw Error(d?.message||`HTTP ${r.status}`);return d}
+function defaults(){return{version:VERSION,fields:Object.fromEntries(ids.map(x=>[x,""])),gates:{},updated_at:new Date().toISOString()}}
+function load(){try{state=JSON.parse(localStorage.getItem(KEY)||"null")||defaults()}catch{state=defaults()}state.fields||=defaults().fields;state.gates||={}}
+function collect(){ids.forEach(id=>state.fields[id]=$(`#${id}`).value.trim());state.version=VERSION;state.updated_at=new Date().toISOString()}
+function fill(){ids.forEach(id=>$(`#${id}`).value=state.fields[id]||"")}
+function checks(){const f=state.fields;return{
+shopName:[f.shopName.length>=2,"店舗名を入力"],
+shopCode:[/^dpro_eye_[a-z0-9_]{2,40}$/.test(f.shopCode)&&f.shopCode!=="dpro_eye_demo","本番専用店舗コード"],
+launchDate:[/^\d{4}-\d{2}-\d{2}$/.test(f.launchDate),"開始予定日を選択"],
+repository:[/^[a-z0-9][a-z0-9-]{2,80}$/.test(f.repositoryName)&&f.repositoryName!==DEMO_REPO,"デモと別のリポジトリ"],
+workerName:[/^[a-z0-9][a-z0-9-]{2,62}$/.test(f.workerName)&&!f.workerName.includes("demo"),"本番専用Worker名"],
+workerUrl:[(()=>{try{const u=new URL(f.workerUrl);return u.protocol==="https:"&&u.href.replace(/\/$/,"")!==DEMO_WORKER}catch{return false}})(),"デモと別のHTTPS Worker URL"],
+supabase:[/^[a-z0-9]{8,40}$/.test(f.supabaseRef),"本番Supabase Project Ref"],
+liff:[/^\d{8,20}-[A-Za-z0-9_-]{6,40}$/.test(f.liffId)&&f.liffId!==c.LINE.LIFF_ID,"デモと別の本番LIFF ID"],
+migration:[["new","customer","customer_reservation"].includes(f.migrationMode),"移行方式を選択"]
+}}
+function showChecks(ch){[["shopNameState","shopName"],["shopCodeState","shopCode"],["launchDateState","launchDate"],["repositoryState","repository"],["workerNameState","workerName"],["workerUrlState","workerUrl"],["supabaseState","supabase"],["liffState","liff"],["migrationState","migration"]].forEach(([id,k])=>{const n=$(`#${id}`),v=ch[k];n.className=`field ${v[0]?"ok":"ng"}`;n.textContent=`${v[0]?"✓":"×"} ${v[1]}`})}
+function renderGates(){const box=$("#gateList");box.replaceChildren();gates.forEach(([id,role,title,detail])=>{const row=document.createElement("label"),done=state.gates[id]===true;row.className=`gate${done?" done":""}`;const cb=document.createElement("input");cb.type="checkbox";cb.checked=done;cb.onchange=()=>{state.gates[id]=cb.checked;collect();localStorage.setItem(KEY,JSON.stringify(state));render()};const body=document.createElement("div"),st=document.createElement("strong"),p=document.createElement("p"),r=document.createElement("span");st.textContent=title;p.textContent=detail;body.append(st,p);r.className=`role ${role}`;r.textContent=roles[role];row.append(cb,body,r);box.append(row)})}
+function manifest(ch){return{schema_version:"DPRO-EYE-TENANT-1",template_version:VERSION,generated_at:new Date().toISOString(),source_demo:{shop_code:c.SHOP_CODE,repository:DEMO_REPO,worker_url:DEMO_WORKER,may_be_used_as_production:false},tenant:{shop_name:state.fields.shopName,shop_code:state.fields.shopCode,launch_date:state.fields.launchDate,repository_name:state.fields.repositoryName,worker_name:state.fields.workerName,worker_url:state.fields.workerUrl,supabase_project_ref:state.fields.supabaseRef,liff_id:state.fields.liffId,migration_mode:state.fields.migrationMode,notes:state.fields.notes},security:{admin_code:"SET_AS_CLOUDFLARE_SECRET_NOT_STORED",production_guard_initial:true,production_switch_permission_initial:false,demo_admin_code_forbidden:true,secrets_in_manifest:false},required_secrets:["DPRO_ADMIN_CODE","SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY","LINE_CHANNEL_SECRET","LINE_CHANNEL_ACCESS_TOKEN"],field_checks:Object.fromEntries(Object.entries(ch).map(([k,v])=>[k,v[0]])),gates:Object.fromEntries(gates.map(g=>[g[0],state.gates[g[0]]===true]))}}
+function previews(ch){const f=state.fields;$("#manifestPreview").textContent=JSON.stringify(manifest(ch),null,2);$("#configPreview").textContent=[`const REPOSITORY_NAME = ${JSON.stringify(f.repositoryName)};`,`const API_BASE = ${JSON.stringify((f.workerUrl||"").replace(/\/$/,""))};`,`SHOP_CODE: ${JSON.stringify(f.shopCode)},`,`VERSION: ${JSON.stringify(VERSION)},`,`LINE: { LIFF_ID: ${JSON.stringify(f.liffId)} },`,`DEMO: { enabled:false, admin_code:null }`].join("\n");$("#wranglerPreview").textContent=[`name = ${JSON.stringify(f.workerName)}`,`main = "worker.js"`,`compatibility_date = "2026-07-23"`,``,`[vars]`,`SHOP_CODE = ${JSON.stringify(f.shopCode)}`,`TIMEZONE = "Asia/Tokyo"`,`PRODUCTION_GUARD = "true"`,`PRODUCTION_SWITCH_PERMISSION = "false"`,``,`# Secretsへ直接設定`,`# DPRO_ADMIN_CODE`,`# SUPABASE_URL`,`# SUPABASE_SERVICE_ROLE_KEY`,`# LINE_CHANNEL_SECRET`,`# LINE_CHANNEL_ACCESS_TOKEN`].join("\n");$("#cutoverPreview").textContent=[`1. 本番専用GitHub・Supabase・Worker・LINE/LIFFを作成`,`2. production_guard=true / 切替許可=falseで設定`,`3. 店舗設定・必要データ移行・実機確認`,`4. DPRO内部の公開画面・API・Storage・RLS検査`,`5. オーナーは日常画面だけ確認`,`6. バックアップと戻し方を確定`,`7. 全項目合格後だけ切替許可を有効化`,`8. 本番初回予約・通知・カルテを確認`,``,`禁止：dpro_eye_demo、1234、デモWorker、デモLIFFの流用`].join("\n")}
+function card(id,ok,a,b){const n=$(id);n.className=ok?"ok":"ng";n.querySelector("strong").textContent=a;n.querySelector("span").textContent=b}
+function render(){collect();const ch=checks();showChecks(ch);renderGates();previews(ch);const fieldsOk=Object.values(ch).every(v=>v[0]),done=gates.filter(g=>state.gates[g[0]]===true).length,gatesOk=done===gates.length,separation=["repository","supabase","worker"].every(x=>state.gates[x]),security=["secrets","guard","permission"].every(x=>state.gates[x]),all=fieldsOk&&gatesOk,total=Object.keys(ch).length+gates.length,finished=Object.values(ch).filter(v=>v[0]).length+done,pct=Math.round(finished/total*100);card("#identityCard",fieldsOk,fieldsOk?"完了":"未完了","店舗コード・URL・LIFF");card("#separationCard",separation,separation?"分離済み":"未完了","GitHub・Supabase・Worker");card("#securityCard",security,security?"設定済み":"未完了","Secrets・ガード・許可");card("#switchCard",all,all?"切替可能":"停止中",all?"全条件確認":"全条件完了まで禁止");$("#progress").style.width=`${pct}%`;$("#overall").className=`status ${all?"ok":"warn"}`;$("#overall").textContent=all?"本番切替条件が揃いました。最終操作は岩口さんが行います。":`進捗 ${finished}/${total}（${pct}%）。本番切替は禁止です。`;$("#decisionBox").className=`decision${all?" ok":""}`;$("#decisionTitle").textContent=all?"本番切替可能":"本番切替禁止";$("#decisionDetail").textContent=all?"環境分離・秘密情報・検査・承認・戻し方を確認済みです。":"PRODUCTION_SWITCH_PERMISSIONを有効化しないでください。";const b=$("#blocking");b.replaceChildren();Object.values(ch).filter(v=>!v[0]).forEach(v=>{const d=document.createElement("div");d.textContent=`入力：${v[1]}`;b.append(d)});gates.filter(g=>!state.gates[g[0]]).slice(0,10).forEach(g=>{const d=document.createElement("div");d.textContent=`未完了：${g[2]}`;b.append(d)})}
+function save(){collect();localStorage.setItem(KEY,JSON.stringify(state));toast("非機密情報を保存しました。")}
+function exportJson(){collect();const blob=new Blob([JSON.stringify(manifest(checks()),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${state.fields.shopCode||"dpro-eye-tenant"}-manifest.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function login(){const code=$("#loginCode").value.trim();if(!code)return;try{await json(c.API.admin_login,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({admin_code:code})});localStorage.setItem(c.STORAGE_KEYS.admin_code,code);$("#login").hidden=true;$("#app").hidden=false;load();fill();render()}catch(e){$("#loginStatus").className="status ng";$("#loginStatus").textContent=e.message}}
+$("#loginButton").onclick=login;$("#clearCode").onclick=()=>{localStorage.removeItem(c.STORAGE_KEYS.admin_code);$("#loginCode").value=""};ids.forEach(id=>{$(`#${id}`).oninput=render;$(`#${id}`).onchange=render});$("#save").onclick=save;$("#export").onclick=exportJson;$("#generate").onclick=render;$("#reset").onclick=()=>{if(confirm("初期化しますか？")){localStorage.removeItem(KEY);state=defaults();fill();render()}};document.querySelectorAll(".copy").forEach(x=>x.onclick=()=>navigator.clipboard.writeText($(`#${x.dataset.id}`).textContent).then(()=>toast("コピーしました。")));$("#loginCode").value=demo?c.DEMO.admin_code:(localStorage.getItem(c.STORAGE_KEYS.admin_code)||"");if(demo)login();
+})();
+</script>
+</body>
+</html>

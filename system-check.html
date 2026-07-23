@@ -229,7 +229,7 @@
       const adminInput = $("#adminCode");
       const checksNode = $("#checks");
       const rawResult = $("#rawResult");
-      const VERSION = "EYE-19-DELIVERY-WORKFLOW-20260723";
+      const VERSION = "EYE-20-PRODUCTION-CLONE-TEMPLATE-20260723";
 
       const attr = (name,value) => `${name}="${value}"`;
       const fn = name => `function ${name}(`;
@@ -279,6 +279,15 @@
             configScript(),attr("id","settingsModeBar"),
             attr("id","settingsChecklist"),attr("id","settingsValidation"),
             fn("settingsIssues"),fn("confirmSettingsSave"),"beforeunload",
+          ],
+        },
+        {
+          key:"production_clone",name:"本番店舗複製・切替",url:config.PAGES.production_clone,
+          markers:[
+            configScript(),attr("id","decisionBox"),
+            "dpro_eye_demo",
+            "PRODUCTION_SWITCH_PERMISSION",
+            fn("manifest"),
           ],
         },
         {
@@ -353,6 +362,15 @@
             ["owner",attr("id","followupSummary")],
             ["owner",fn("validFutureReservation")],
             ["owner",fn("recommendedFollowupMessage")],
+          ],
+        },
+        {
+          key:"production_clone_guard",label:"デモ直本番化防止・店舗別環境分離",
+          requirements:[
+            ["production_clone",attr("id","decisionBox")],
+            ["production_clone","dpro_eye_demo"],
+            ["production_clone","PRODUCTION_SWITCH_PERMISSION"],
+            ["production_clone",fn("manifest")],
           ],
         },
         {
