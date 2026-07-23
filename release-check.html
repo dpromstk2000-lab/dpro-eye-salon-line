@@ -285,7 +285,7 @@
       const isDemo = params.get("demo") === "1";
       const $ = selector => document.querySelector(selector);
       const state = {adminCode:"",running:false};
-      const VERSION = "EYE-18-INTEGRATED-RELEASE-CHECK-20260723";
+      const VERSION = "EYE-18-R2-RELEASE-CHECK-RETRY-20260723";
 
       const attr = (name,value) => `${name}="${value}"`;
       const fn = name => `function ${name}(`;
@@ -623,6 +623,7 @@
         const rows = [];
         for (const group of groups) {
           for (const row of group || []) {
+            if (!row || typeof row !== "object") continue;
             rows.push({
               name:row.name || row.key || "check",
               label:row.label,
@@ -632,6 +633,92 @@
           }
         }
         return rows;
+      }
+
+      function wait(milliseconds) {
+        return new Promise(resolve => setTimeout(resolve,milliseconds));
+      }
+
+      async function requestWithRetry(label,url,options={}) {
+        let lastError = null;
+        for (let attempt = 1; attempt <= 2; attempt += 1) {
+          try {
+            const data = await fetchJson(url,options);
+            return {ok:true,label,data,attempt};
+          } catch (error) {
+            lastError = error;
+            if (attempt < 2) await wait(650);
+          }
+        }
+        return {
+          ok:false,
+          label,
+          data:null,
+          error:`${label}：${lastError?.message || "通信エラー"}`,
+        };
+      }
+
+      function endpointRow(result,name,label,validator,detailBuilder) {
+        if (!result.ok) {
+          return {
+            name,
+            label,
+            ok:false,
+            detail:result.error,
+            error:result.error,
+          };
+        }
+        const data = result.data;
+        let valid = false;
+        try {
+          valid = validator(data) === true;
+        } catch (error) {
+          return {
+            name,
+            label,
+            ok:false,
+            detail:`${label}の応答判定に失敗しました：${error.message}`,
+            error:`${label}の応答判定に失敗しました`,
+          };
+        }
+        return {
+          name,
+          label,
+          ok:valid,
+          detail:detailBuilder ? detailBuilder(data) : data,
+          error:valid ? "" : `${label}の応答内容を確認してください。`,
+        };
+      }
+
+      function safeStringify(value) {
+        try {
+          return JSON.stringify(value,null,2);
+        } catch (error) {
+          return JSON.stringify({
+            message:"検査結果の表示用変換に失敗しました。",
+            error:error.message,
+          },null,2);
+        }
+      }
+
+      function resetRunDisplay() {
+        $("#pageChecks").replaceChildren();
+        $("#featureChecks").replaceChildren();
+        $("#apiChecks").replaceChildren();
+        $("#productionChecks").replaceChildren();
+
+        for (const [selector,label] of [
+          ["#demoCard","API・データ"],
+          ["#pagesCard","公開画面"],
+          ["#featureCard","重要機能"],
+          ["#guardCard","本番切替ガード"],
+        ]) {
+          const card = $(selector);
+          card.className = "summary-card";
+          card.querySelector("strong").textContent = "検査中";
+          card.querySelector("span").textContent = `${label}を確認しています。`;
+        }
+        $("#rawResult").textContent = "検査中…";
       }
 
       function setDecision(allOk,blocked) {
@@ -656,88 +743,162 @@
         state.running = true;
         $("#runButton").disabled = true;
         $("#restoreButton").disabled = true;
+        resetRunDisplay();
         $("#overallStatus").className = "status";
         $("#overallStatus").textContent =
           "公開画面・重要機能・API・データを検査しています…";
         setDecision(false,["検査中"]);
 
         try {
-          const pageRows = await Promise.all(PAGE_RULES.map(checkPage));
-          const featureRows = checkFeatures(pageRows);
+          const [
+            pageRows,
+            healthResult,
+            shopResult,
+            servicesResult,
+            staffResult,
+            settingsResult,
+            releaseResult,
+            systemResult,
+          ] = await Promise.all([
+            Promise.all(PAGE_RULES.map(checkPage)),
+            requestWithRetry("Worker・Supabase疎通",config.API.health),
+            requestWithRetry("店舗設定API",config.API.shop),
+            requestWithRetry("メニューAPI",config.API.services),
+            requestWithRetry("スタッフAPI",config.API.staff),
+            requestWithRetry(
+              "店舗設定管理API",
+              config.API.admin_settings,
+              {headers:headers()}
+            ),
+            requestWithRetry(
+              "営業前最終判定API",
+              config.API.admin_release_check,
+              {headers:headers()}
+            ),
+            requestWithRetry(
+              "管理側システムチェック",
+              config.API.admin_system_check,
+              {headers:headers()}
+            ),
+          ]);
 
-          const [health,shop,services,staff,settings,release,system] =
-            await Promise.all([
-              fetchJson(config.API.health),
-              fetchJson(config.API.shop),
-              fetchJson(config.API.services),
-              fetchJson(config.API.staff),
-              fetchJson(config.API.admin_settings,{headers:headers()}),
-              fetchJson(config.API.admin_release_check,{headers:headers()}),
-              fetchJson(config.API.admin_system_check,{headers:headers()}),
-            ]);
+          const featureRows = checkFeatures(pageRows);
+          const health = healthResult.data;
+          const release = releaseResult.data;
+          const system = systemResult.data;
 
           const directApi = [
-            {
-              name:"health",
-              ok:health.ok === true && health.database?.ok === true,
-              detail:health.database,
-            },
-            {
-              name:"shop",
-              ok:shop.ok === true &&
-                shop.shop?.shop_code === config.SHOP_CODE,
-              detail:shop.shop,
-            },
-            {
-              name:"services",
-              ok:services.ok === true &&
-                Array.isArray(services.services) &&
-                services.services.length > 0,
-              detail:{count:services.services?.length || 0},
-            },
-            {
-              name:"staff",
-              ok:staff.ok === true &&
-                Array.isArray(staff.staff) &&
-                staff.staff.length > 0,
-              detail:{count:staff.staff?.length || 0},
-            },
-            {
-              name:"admin_settings",
-              ok:settings.ok === true &&
-                Boolean(settings.settings?.shop) &&
-                Array.isArray(settings.settings?.staff) &&
-                Array.isArray(settings.settings?.services),
-              detail:settings.counts,
-            },
+            endpointRow(
+              healthResult,
+              "health",
+              "Worker・Supabase疎通",
+              data => data?.ok === true && data?.database?.ok === true,
+              data => data?.database
+            ),
+            endpointRow(
+              shopResult,
+              "shop",
+              "店舗設定API",
+              data =>
+                data?.ok === true &&
+                data?.shop?.shop_code === config.SHOP_CODE,
+              data => data?.shop
+            ),
+            endpointRow(
+              servicesResult,
+              "services",
+              "メニューAPI",
+              data =>
+                data?.ok === true &&
+                Array.isArray(data?.services) &&
+                data.services.length > 0,
+              data => ({count:data?.services?.length || 0})
+            ),
+            endpointRow(
+              staffResult,
+              "staff",
+              "スタッフAPI",
+              data =>
+                data?.ok === true &&
+                Array.isArray(data?.staff) &&
+                data.staff.length > 0,
+              data => ({count:data?.staff?.length || 0})
+            ),
+            endpointRow(
+              settingsResult,
+              "admin_settings",
+              "店舗設定管理API",
+              data =>
+                data?.ok === true &&
+                Boolean(data?.settings?.shop) &&
+                Array.isArray(data?.settings?.staff) &&
+                Array.isArray(data?.settings?.services),
+              data => data?.counts
+            ),
+            endpointRow(
+              releaseResult,
+              "release_endpoint",
+              "営業前最終判定API",
+              data =>
+                data &&
+                typeof data.demo_ready === "boolean" &&
+                typeof data.production_ready === "boolean",
+              data => ({
+                demo_ready:data?.demo_ready,
+                production_ready:data?.production_ready,
+                switch_guard_active:data?.switch_guard_active,
+                message:data?.message,
+              })
+            ),
+            endpointRow(
+              systemResult,
+              "system_endpoint",
+              "管理側システムチェック",
+              data => Array.isArray(data?.checks) && data.checks.length > 0,
+              data => ({count:data?.checks?.length || 0})
+            ),
           ];
 
           const apiRows = mergeApiRows(
             directApi,
-            release.demo_checks,
-            system.checks
+            release?.demo_checks,
+            system?.checks
           );
 
-          const pageOk = pageRows.length > 0 && pageRows.every(row => row.ok);
+          const productionRows = Array.isArray(release?.production_checks)
+            ? release.production_checks.filter(
+                row => row && typeof row === "object"
+              )
+            : [];
+
+          const pageOk =
+            pageRows.length > 0 && pageRows.every(row => row.ok);
           const featureOk =
             featureRows.length > 0 && featureRows.every(row => row.ok);
-          const apiOk = apiRows.length > 0 && apiRows.every(row => row.ok);
-          const modeIsProduction = release.production_ready === true;
-          const guardOk = modeIsProduction
-            ? (release.production_checks || []).every(row => row.ok === true)
-            : release.switch_guard_active === true &&
-              release.production_ready === false;
+          const apiOk =
+            apiRows.length > 0 && apiRows.every(row => row.ok);
+
+          const modeIsProduction = release?.production_ready === true;
+          const guardOk = releaseResult.ok && (
+            modeIsProduction
+              ? productionRows.length > 0 &&
+                productionRows.every(row => row.ok === true)
+              : release?.switch_guard_active === true &&
+                release?.production_ready === false
+          );
           const demoOk = modeIsProduction
             ? apiOk
-            : release.demo_ready === true &&
-              health.ok === true &&
-              health.database?.ok === true &&
+            : releaseResult.ok &&
+              release?.demo_ready === true &&
+              healthResult.ok &&
+              health?.ok === true &&
+              health?.database?.ok === true &&
               apiOk;
 
           renderPages(pageRows);
           renderFeatures(featureRows);
           renderApi(apiRows);
-          renderGuards(release.production_checks || []);
+          renderGuards(productionRows);
 
           setSummary(
             $("#demoCard"),demoOk ? "ok" : "ng",
@@ -755,7 +916,8 @@
             `${featureRows.filter(row => row.ok).length}/${featureRows.length}機能`
           );
           setSummary(
-            $("#guardCard"),guardOk ? (modeIsProduction ? "ok" : "warn") : "ng",
+            $("#guardCard"),
+            guardOk ? (modeIsProduction ? "ok" : "warn") : "ng",
             guardOk
               ? (modeIsProduction ? "本番条件達成" : "本番切替を停止中")
               : "安全ガード要確認",
@@ -769,37 +931,58 @@
           );
 
           const blocked = [
-            ...pageRows.filter(row => !row.ok).map(row => `公開画面：${row.name}`),
-            ...featureRows.filter(row => !row.ok).map(row => `重要機能：${row.name}`),
-            ...apiRows.filter(row => !row.ok).map(
-              row => `API・データ：${API_LABELS[row.name] || row.label || row.name}`
-            ),
+            ...pageRows
+              .filter(row => !row.ok)
+              .map(row => `公開画面：${row.name}`),
+            ...featureRows
+              .filter(row => !row.ok)
+              .map(row => `重要機能：${row.name}`),
+            ...apiRows
+              .filter(row => !row.ok)
+              .map(row =>
+                `API・データ：${
+                  API_LABELS[row.name] || row.label || row.name
+                }`
+              ),
             ...(guardOk ? [] : ["本番切替ガード"]),
           ];
+
           const allOk = pageOk && featureOk && demoOk && guardOk;
           setDecision(allOk,blocked);
 
-          $("#overallStatus").className = `status ${allOk ? "ok" : "ng"}`;
+          $("#overallStatus").className =
+            `status ${allOk ? "ok" : "ng"}`;
           $("#overallStatus").textContent = allOk
             ? "全検査が正常です。営業を開始できます。"
             : "営業開始不可です。赤い項目を修正して再検査してください。";
 
-          $("#rawResult").textContent = JSON.stringify({
+          $("#rawResult").textContent = safeStringify({
             decision:{ok:allOk,blocked},
+            requests:{
+              health:healthResult,
+              shop:shopResult,
+              services:servicesResult,
+              staff:staffResult,
+              settings:settingsResult,
+              release:releaseResult,
+              system:systemResult,
+            },
             pages:pageRows.map(({source,...row}) => row),
             features:featureRows,
             api:apiRows,
             release,
             health,
             system,
-          },null,2);
+          });
         } catch (error) {
+          const message =
+            `画面集計処理でエラーが発生しました：${error.message}`;
           $("#overallStatus").className = "status ng";
-          $("#overallStatus").textContent =
-            `営業開始不可：${error.message}`;
-          setDecision(false,[error.message]);
-          toast(error.message,true);
-          $("#rawResult").textContent = error.stack || error.message;
+          $("#overallStatus").textContent = `営業開始不可：${message}`;
+          setDecision(false,[message]);
+          toast(message,true);
+          $("#rawResult").textContent =
+            error.stack || message;
         } finally {
           state.running = false;
           $("#runButton").disabled = false;
