@@ -26,7 +26,7 @@
 
 <main id="app" class="app" hidden>
 <section class="hero">
-<div class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>本番店舗複製・切替テンプレート</h1><p class="muted">店舗別の識別情報・環境分離・切替条件を確認します。</p></div><div class="links"><a href="./delivery.html">導入・納品進行</a><a href="./settings.html">店舗設定</a><a href="./migration.html">既存システム移行</a><a href="./production-starter.html">導入スターターパック</a><a href="./release-check.html">内部最終検査</a></div></div>
+<div class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>本番店舗複製・切替テンプレート</h1><p class="muted">店舗別の識別情報・環境分離・切替条件を確認します。</p></div><div class="links"><a href="./delivery.html">導入・納品進行</a><a href="./settings.html">店舗設定</a><a href="./migration.html">既存システム移行</a><a href="./production-starter.html">導入スターターパック</a><a href="./dpro-next-standard.html">DPRO NEXT標準</a><a href="./release-check.html">内部最終検査</a></div></div>
 <div class="notice"><strong>禁止：</strong><code>dpro_eye_demo</code>、管理コード<code>1234</code>、デモSupabase、デモWorker、デモLIFFを本番流用しません。</div>
 <div class="summary">
 <article id="identityCard"><small>店舗識別情報</small><strong>未完了</strong><span>店舗コード・URL・LIFF</span></article>
@@ -86,7 +86,7 @@
 <script>
 (()=>{"use strict";
 const c=window.DPRO_EYE_CONFIG,p=new URLSearchParams(location.search),demo=p.get("demo")==="1",$=s=>document.querySelector(s);
-const KEY=`dpro_eye_production_clone_${c.SHOP_CODE}`,VERSION="EYE-21-PRODUCTION-STARTER-PACK-20260723",DEMO_WORKER="https://dpro-eye-salon-line-api.dpromstk2000.workers.dev",DEMO_REPO="dpro-eye-salon-line";
+const KEY=`dpro_eye_production_clone_${c.SHOP_CODE}`,VERSION="EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723",DEMO_WORKER="https://dpro-eye-salon-line-api.dpromstk2000.workers.dev",DEMO_REPO="dpro-eye-salon-line";
 const ids=["shopName","shopCode","launchDate","repositoryName","workerName","workerUrl","supabaseRef","liffId","migrationMode","notes"];
 const roles={assistant:"DPRO制作・検査",iwaguchi:"岩口さん",owner:"店舗オーナー"};
 const gates=[
@@ -105,6 +105,7 @@ const gates=[
 ["backup","assistant","切替前バックアップとロールバックを確定","旧受付へ戻す手順を記録。"],
 ["permission","iwaguchi","全検査後に本番切替許可を有効化","最後の1操作として実施。"],
 ["starter_pack","assistant","本番店舗導入スターターパックを生成","config.js・Worker・Supabase・LINE・URL・切替・ロールバック・納品記録をZIP化。"],
+["next_standard","assistant","DPRO NEXT美容・予約型標準を確認","必須部品・禁止事項・作業境界・変更管理が固定されていることを確認。"],
 ["postcheck","assistant","本番初回予約・通知・カルテを確認","問題なければ納品完了。"]
 ];
 let state={fields:{},gates:{}};

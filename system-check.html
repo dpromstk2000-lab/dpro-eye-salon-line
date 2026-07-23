@@ -229,7 +229,7 @@
       const adminInput = $("#adminCode");
       const checksNode = $("#checks");
       const rawResult = $("#rawResult");
-      const VERSION = "EYE-21-PRODUCTION-STARTER-PACK-20260723";
+      const VERSION = "EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723";
 
       const attr = (name,value) => `${name}="${value}"`;
       const fn = name => `function ${name}(`;
@@ -279,6 +279,15 @@
             configScript(),attr("id","settingsModeBar"),
             attr("id","settingsChecklist"),attr("id","settingsValidation"),
             fn("settingsIssues"),fn("confirmSettingsSave"),"beforeunload",
+          ],
+        },
+        {
+          key:"next_standard",name:"DPRO NEXT 美容・予約型標準",url:config.PAGES.next_standard,
+          markers:[
+            configScript(),attr("id","standardLock"),
+            "DPRO-NEXT-BEAUTY-RESERVATION-1",
+            "NEXT・標準固定済み",
+            "function promptText",
           ],
         },
         {
@@ -371,6 +380,15 @@
             ["owner",attr("id","followupSummary")],
             ["owner",fn("validFutureReservation")],
             ["owner",fn("recommendedFollowupMessage")],
+          ],
+        },
+        {
+          key:"dpro_next_standard_lock",label:"DPRO NEXT美容・予約型標準の固定",
+          requirements:[
+            ["next_standard",attr("id","standardLock")],
+            ["next_standard","DPRO-NEXT-BEAUTY-RESERVATION-1"],
+            ["next_standard","NEXT・標準固定済み"],
+            ["next_standard",fn("promptText")],
           ],
         },
         {

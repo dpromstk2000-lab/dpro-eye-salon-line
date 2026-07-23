@@ -60,7 +60,7 @@
     .task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}
     .task.done{border-color:#AAB5A5;background:#F6F9F4}.task input{margin-top:3px}
     .task strong{display:block}.task p{margin:3px 0 0;color:var(--muted);font-size:14px}.task .optional{color:var(--warning);font-size:12px;font-weight:900}
-    .quick-links{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px}
+    .quick-links{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}
     .quick-link{min-height:82px;display:flex;flex-direction:column;justify-content:center;padding:12px;border:1px solid var(--border);border-radius:13px;background:white;text-decoration:none;font-weight:900}
     .quick-link span{display:block;margin-top:2px;color:var(--muted);font-size:13px;font-weight:700}
     .auto-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}
@@ -105,6 +105,7 @@
           <a href="./migration.html">既存システム移行</a>
           <a href="./production-clone.html">本番店舗複製</a>
           <a href="./production-starter.html">導入スターターパック</a>
+          <a href="./dpro-next-standard.html">DPRO NEXT標準</a>
           <a href="./release-check.html">DPRO内部最終検査</a>
         </div>
       </div>
@@ -164,6 +165,7 @@
         <a class="quick-link" href="./migration.html"><strong>既存システム移行</strong><span>顧客CSV・将来予約・LINE再連携</span></a>
         <a class="quick-link" href="./production-clone.html"><strong>本番店舗複製</strong><span>別環境・Secrets・切替ゲート</span></a>
         <a class="quick-link" href="./production-starter.html"><strong>導入スターターパック</strong><span>本番用10ファイルをZIP生成</span></a>
+        <a class="quick-link" href="./dpro-next-standard.html"><strong>DPRO NEXT標準</strong><span>美容・予約型の必須仕様を確認</span></a>
         <a class="quick-link" href="./index.html"><strong>お客様予約</strong><span>実際の予約導線を確認</span></a>
         <a class="quick-link" href="./owner.html"><strong>オーナーPC</strong><span>予約・顧客・カルテ・再来店</span></a>
         <a class="quick-link" href="./owner-ipad.html"><strong>店舗iPad</strong><span>施術進行・写真カルテ</span></a>
@@ -198,7 +200,7 @@
       const isDemo = params.get("demo") === "1";
       const $ = selector => document.querySelector(selector);
       const STORAGE_KEY = `dpro_eye_delivery_workflow_${config.SHOP_CODE}`;
-      const VERSION = "EYE-21-PRODUCTION-STARTER-PACK-20260723";
+      const VERSION = "EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723";
       const state = {
         adminCode:"",
         data:{meta:{},tasks:{},updated_at:""},
@@ -266,6 +268,7 @@
           tasks:[
             {id:"production_clone_plan",role:"assistant",title:"本番店舗複製・切替テンプレートを確定",detail:"デモ環境を直接本番化せず、店舗専用のSupabase・Worker・店舗コード・LINE設定を分離します。"},
             {id:"starter_pack",role:"assistant",title:"本番店舗導入スターターパックを生成",detail:"本番用config.js、Worker・Supabase・LINE設定、URL、切替、ロールバック、納品記録を安全なZIPにまとめます。"},
+            {id:"next_standard_lock",role:"assistant",title:"DPRO NEXT美容・予約型標準として固定",detail:"必須機能、禁止事項、オーナー作業境界、変更管理を標準JSONと内部画面へ固定します。"},
             {id:"cutover",role:"iwaguchi",title:"本番切替・公開URL・LINE導線を確定",detail:"切替時間を決め、旧予約受付の停止と新予約開始を合わせます。"},
             {id:"owner_sheet",role:"assistant",title:"A4縦1枚のオーナー様用操作体験シートを納品",detail:"営業前チェックは掲載せず、日常操作だけを案内します。"},
             {id:"delivery_urls",role:"assistant",title:"予約・会員・PC・iPad・店舗設定URLを整理",detail:"DPRO内部検査URLは内部資料だけへ記録します。"},

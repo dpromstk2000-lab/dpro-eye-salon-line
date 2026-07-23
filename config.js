@@ -10,7 +10,7 @@
   window.DPRO_EYE_CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
-    VERSION: "EYE-21-PRODUCTION-STARTER-PACK-20260723",
+    VERSION: "EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -33,6 +33,7 @@
       delivery: `${pageBase}delivery.html`,
       production_clone: `${pageBase}production-clone.html`,
       production_starter: `${pageBase}production-starter.html`,
+      next_standard: `${pageBase}dpro-next-standard.html`,
     }),
 
     API: Object.freeze({

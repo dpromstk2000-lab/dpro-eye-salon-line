@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6F4C55">
+<title>DPRO NEXT 美容・予約型標準｜DPRO EYE SALON</title>
+<script src="./config.js"></script>
+<style>
+:root{--bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;--accent:#A86F7D;--dark:#6F4C55;--text:#2F2B2C;--muted:#6E6567;--border:#DED1CA;--ok:#64745F;--warn:#A96F32;--ng:#A14E55;--blue:#5D7084;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 28rem),var(--bg);color:var(--text);font-size:17px;line-height:1.65}button,input,select{font:inherit}button{cursor:pointer}select{min-height:49px;padding:8px 12px;border:2px solid var(--border);border-radius:12px;background:#fff}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card,.hero,.panel{border:1px solid var(--border);border-radius:20px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(78,53,61,.08)}.login-card{width:min(590px,100%);padding:30px}.login-card input{width:100%;min-height:50px;margin-top:6px;padding:10px 12px;border:2px solid var(--border);border-radius:12px}.app{width:min(1480px,calc(100% - 24px));margin:auto;padding:18px 0 70px}.hero,.panel{padding:22px}.panel{margin-top:14px}.brand{margin:0 0 5px;color:var(--dark);font-size:14px;font-weight:900;letter-spacing:.12em}h1{margin:0;font-size:34px;line-height:1.3}h2{margin:0;font-size:25px}h3{margin:0;font-size:19px}.muted{color:var(--muted)}.head{display:flex;justify-content:space-between;gap:15px;align-items:center}.links,.buttons{display:flex;gap:9px;flex-wrap:wrap}.links a{padding:8px 13px;border-radius:11px;background:var(--soft);color:var(--dark);font-weight:900;text-decoration:none}.btn{min-height:48px;padding:9px 15px;border:0;border-radius:12px;font-weight:900}.primary{color:#fff;background:var(--accent)}.secondary{color:var(--dark);background:var(--soft)}.danger{color:#fff;background:var(--ng)}.blue{color:#fff;background:var(--blue)}.success{color:#fff;background:var(--ok)}.status{margin-top:13px;padding:13px 15px;border-radius:12px;background:var(--soft);font-weight:850}.status.ok{color:#40513B;background:#E7EFE4}.status.warn{color:#70481F;background:#FFF3E4}.status.ng{color:#7E343A;background:#F7E6E7}.lock{margin-top:14px;padding:17px;border:3px solid #AAB5A5;border-radius:16px;color:#40513B;background:#F3F7F1}.lock strong{display:block;font-size:31px}.summary,.component-grid,.boundary-grid,.target-grid{display:grid;gap:10px}.summary{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px}.component-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:13px}.boundary-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:13px}.target-grid{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:13px}.summary article,.component,.boundary,.target,.forbidden{padding:14px;border:1px solid var(--border);border-radius:13px;background:#fff}.summary small,.summary span,.component p,.boundary li,.target span{color:var(--muted);font-size:14px}.summary strong{display:block;font-size:25px}.component{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px}.component b{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:#fff;background:var(--dark)}.component h3{margin:0}.component p{margin:3px 0 0}.target strong,.target span{display:block}.boundary ul{margin:8px 0 0;padding-left:22px}.boundary.good{border-color:#AAB5A5;background:#F3F7F1}.boundary.bad{border-color:#D4A6AA;background:#FDF2F3}.forbidden-list{display:grid;gap:8px;margin-top:13px}.forbidden{border-left:6px solid var(--ng);font-weight:850}.change-list{display:grid;gap:8px;margin-top:13px}.change-item{padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;font-weight:850}.prompt{white-space:pre-wrap;padding:15px;border-radius:13px;color:#F5F0EF;background:#2F2B2C;font-size:14px}.version-ok{color:#40513B}.version-ng{color:#7E343A}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,130%);padding:14px 18px;border-radius:14px;color:#fff;background:#3B3436;transition:.2s}.toast.show{transform:translate(-50%,0)}
+@media(max-width:1000px){.summary,.component-grid,.boundary-grid,.target-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.summary,.component-grid,.boundary-grid,.target-grid{grid-template-columns:1fr}.head{flex-direction:column;align-items:stretch}.buttons .btn{width:100%}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+<div class="login-card">
+<p class="brand">DPRO NEXT STANDARD</p>
+<h1>美容・予約型標準</h1>
+<p class="muted">EYE SALONで完成した共通設計をNEXT標準として確認します。</p>
+<label>管理コード<input id="loginCode" type="password" inputmode="numeric" autocomplete="off"></label>
+<div class="buttons" style="margin-top:14px"><button id="loginButton" class="btn primary">標準仕様を開く</button><button id="clearCode" class="btn danger">削除</button></div>
+<div id="loginStatus" class="status">管理コードを入力してください。</div>
+</div>
+</section>
+
+<main id="app" class="app" hidden>
+<section class="hero">
+<div class="head"><div><p class="brand">DPRO NEXT STANDARD</p><h1>DPRO NEXT 美容・予約型標準</h1><p class="muted">EYE SALONの完成仕様を、他の美容系システムへ安全に横展開する基準です。</p></div><div class="links"><a href="./delivery.html">導入・納品進行</a><a href="./production-clone.html">本番店舗複製</a><a href="./production-starter.html">導入スターターパック</a><a href="./release-check.html">内部最終検査</a></div></div>
+<div id="standardLock" class="lock"><strong>NEXT・標準固定済み</strong><span id="lockDetail">標準JSONと現在バージョンを確認しています。</span></div>
+<div class="summary">
+<article><small>標準ID</small><strong id="standardId">-</strong><span>機械判定可能な識別子</span></article>
+<article><small>必須部品</small><strong id="componentCount">0</strong><span>横展開時に省略不可</span></article>
+<article><small>横展開候補</small><strong id="targetCount">0</strong><span>美容・予約型</span></article>
+<article><small>公開検査</small><strong id="pageCount">0</strong><span>最低必要画面数</span></article>
+</div>
+<div id="overall" class="status">標準仕様を読み込んでいます。</div>
+</section>
+
+<section class="panel">
+<div class="head"><div><h2>1. 横展開対象</h2><span class="muted">業種を選ぶと標準適用指示を生成します。</span></div><div class="buttons"><select id="targetSelect"></select><button id="copyPrompt" class="btn blue">横展開指示をコピー</button><button id="downloadStandard" class="btn success">標準JSONを保存</button></div></div>
+<div id="targetList" class="target-grid"></div>
+<pre id="promptPreview" class="prompt"></pre>
+</section>
+
+<section class="panel">
+<h2>2. 省略できない標準部品</h2>
+<div id="componentList" class="component-grid"></div>
+</section>
+
+<section class="panel">
+<h2>3. 店舗オーナーとの作業境界</h2>
+<div class="boundary-grid">
+<article class="boundary good"><h3>オーナーへお願いすること</h3><ul id="ownerDoes"></ul></article>
+<article class="boundary bad"><h3>オーナーへお願いしないこと</h3><ul id="ownerDoesNot"></ul></article>
+</div>
+</section>
+
+<section class="panel">
+<h2>4. 禁止事項</h2>
+<div id="forbiddenList" class="forbidden-list"></div>
+</section>
+
+<section class="panel">
+<h2>5. 標準変更ルール</h2>
+<p class="muted">標準を黙って書き換えず、変更時は必ず次を行います。</p>
+<div id="changeList" class="change-list"></div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(()=>{"use strict";
+const c=window.DPRO_EYE_CONFIG,p=new URLSearchParams(location.search),demo=p.get("demo")==="1",$=s=>document.querySelector(s);
+const VERSION="EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723",STANDARD={"schema_version":"DPRO-NEXT-STANDARD-1","standard_id":"DPRO-NEXT-BEAUTY-RESERVATION-1","standard_name":"DPRO NEXT 美容・予約型標準","source_product":"DPRO まつげ・眉サロン LINE","source_repository":"dpromstk2000-lab/dpro-eye-salon-line","source_version":"EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723","status":"NEXT","locked":true,"locked_at":"2026-07-23","classification":{"primary_template":"予約・受付型","industry_group":"美容・健康","data_pattern":"顧客・予約・カルテ・写真・再来店"},"recommended_targets":["まつげ・眉サロン","美容室","ネイルサロン","エステサロン","ペットサロン"],"mandatory_components":[{"id":"customer_repeat_booking","name":"前回と同じ内容で予約","requirements":["前回メニュー・担当・所要時間を安全に引き継ぐ","次回予約済みの場合は重複導線を警告する","変更・キャンセル・来店履歴へ接続する"]},{"id":"reservation_safety","name":"予約安全ガード","requirements":["30分単位","過去日時禁止","重複予約防止","X-Idempotency-Keyによる二重送信防止"]},{"id":"phone_normalization","name":"電話番号正規化","requirements":["ハイフン・空白・全角を正規化","+81を0始まりへ変換","検索・重複判定を正規化済み番号で行う"]},{"id":"owner_daily_flow","name":"オーナー日常操作短縮","requirements":["今日必要な操作を先頭表示","予約カードから来店・施術・完了へ進める","次回予約作成を予約情報から開始できる"]},{"id":"carte_guard","name":"カルテ・写真保護","requirements":["前回カルテを上書きしない","今回カルテを予約単位で保存","写真Storageを非公開にする","写真表示は署名付きURL等で保護する"]},{"id":"followup_guard","name":"再来店フォロー安全化","requirements":["次回予約済み顧客を除外","施術別の次回来店目安を管理","個別文面を確認してから送信"]},{"id":"settings_guard","name":"店舗設定ミス・未保存防止","requirements":["営業時間・スタッフ・メニュー・施術席を一元管理","保存前に設定矛盾を表示","未保存のまま離脱する場合に警告"]},{"id":"migration_foundation","name":"既存システム移行","requirements":["CSVを即登録せずプレビュー","電話番号正規化と重複候補表示","顧客・将来予約を段階登録","移行バッチの破棄・ロールバック","LINEユーザー再連携"]},{"id":"delivery_boundary","name":"導入・納品の作業分担","requirements":["DPRO制作・検査側が設計・コード・検査を担当","岩口さんがアカウント・Deploy・実機操作を担当","店舗オーナーは情報提供と日常画面の最終確認のみ"]},{"id":"production_isolation","name":"本番店舗別環境分離","requirements":["店舗別GitHub・Supabase・Worker・LINE/LIFF","デモ店舗コード・デモWorker・デモLIFFの流用禁止","秘密情報を画面・JSON・GitHubへ保存しない","全検査完了まで本番切替許可をfalse"]},{"id":"starter_pack","name":"本番導入スターターパック","requirements":["本番config.js","Worker非機密設定","Secrets設定一覧","Supabase・LINE設定手順","本番URL・切替・ロールバック・納品記録"]},{"id":"release_gate","name":"統合検査・営業前最終検査","requirements":["公開画面の必須要素検査","重要機能の退行検査","Worker・DB・Storage検査","デモ・本番切替ガード検査","1件でも失敗した場合は営業開始不可"]}],"owner_boundary":{"owner_does":["店舗情報・メニュー・スタッフ情報を提供する","既存サービスから必要なCSVを出力する","予約・オーナーPC・店舗iPadの日常操作を確認する","本番開始を了承する"],"owner_does_not":["GitHub Actionsを操作する","Supabase SQLを実行する","Cloudflare WorkerをDeployする","system-check・release-checkを操作する","秘密鍵やService Role Keyを扱う"]},"forbidden_patterns":["MutationObserverによる後付けUI改修","owner-brushup.js等の追加パッチスクリプト","デモ店舗コードを本番利用","管理コード1234を本番利用","Service Role Key・LINEトークンのGitHub保存","営業前チェックをオーナー向け資料へ掲載","CSVをプレビューせず即時本登録","前回カルテの直接上書き","次回予約済み顧客への自動フォロー"],"change_control":{"silent_change_forbidden":true,"required_on_change":["標準バージョンを更新する","変更理由と影響対象を記録する","HTML・JavaScript・YML構文検査を実行する","system-check・release-checkへ退行検査を追加する","公開URLと実機確認を行う","標準JSONと標準画面を同時更新する"]},"acceptance":{"minimum_public_pages":12,"required_checks":["予約・会員・オーナーPC・iPad・設定","移行・導入進行・本番複製・スターターパック","DPRO NEXT標準・system-check・release-check","電話番号正規化・30分単位・過去日時・重複・二重送信","非公開写真Storage・カルテ上書き防止","次回予約済みフォロー除外","秘密情報非保存・デモ直本番化防止"]},"standard_files":["dpro-next-standard.json","dpro-next-standard.html","config.js","system-check.html","release-check.html"]};
+function toast(m){$("#toast").textContent=m;$("#toast").className="toast show";setTimeout(()=>$("#toast").className="toast",2600)}
+async function api(url,o={}){const r=await fetch(url,{cache:"no-store",...o}),d=await r.json().catch(()=>null);if(!r.ok)throw Error(d?.message||`HTTP ${r.status}`);return d}
+function addList(id,items){const box=$(id);box.replaceChildren();items.forEach(text=>{const li=document.createElement("li");li.textContent=text;box.append(li)})}
+function promptText(target){return`DPRO NEXT「美容・予約型標準」${STANDARD.standard_id}を基準に、${target}システムを制作・ブラッシュアップしてください。
+
+必須条件：
+・${STANDARD.mandatory_components.map(x=>x.name).join("、")}
+・店舗オーナーへGitHub、SQL、Worker Deploy、system-check、release-checkを操作させない
+・MutationObserverや後付けパッチスクリプトを使わず対象ファイルを直接修正
+・デモ環境を直接本番化せず、店舗別GitHub・Supabase・Worker・LINE/LIFFへ分離
+・秘密情報を画面、JSON、GitHubへ保存しない
+・変更後は公開画面、重要機能、API、Storage、本番切替ガードを統合検査
+・業種に不要な機能は機械的に追加せず、業種固有機能だけを精査する
+
+標準バージョン：${STANDARD.source_version}
+標準状態：${STANDARD.status} / locked=${STANDARD.locked}`;}
+function render(){
+$("#standardId").textContent=STANDARD.standard_id;
+$("#componentCount").textContent=STANDARD.mandatory_components.length;
+$("#targetCount").textContent=STANDARD.recommended_targets.length;
+$("#pageCount").textContent=STANDARD.acceptance.minimum_public_pages;
+const versionOk=c.VERSION===VERSION&&STANDARD.source_version===VERSION&&STANDARD.locked===true&&STANDARD.status==="NEXT";
+$("#standardLock").className=`lock ${versionOk?"version-ok":"version-ng"}`;
+$("#lockDetail").textContent=versionOk?`標準JSON・画面・config.jsは ${VERSION} で一致しています。`:`バージョン不一致があります。config=${c.VERSION} / standard=${STANDARD.source_version}`;
+$("#overall").className=`status ${versionOk?"ok":"ng"}`;
+$("#overall").textContent=versionOk?"DPRO NEXT標準は固定済みです。":"標準固定状態を確認してください。";
+const select=$("#targetSelect"),targets=$("#targetList");select.replaceChildren();targets.replaceChildren();
+STANDARD.recommended_targets.forEach((target,i)=>{const option=document.createElement("option");option.value=target;option.textContent=target;select.append(option);const card=document.createElement("article");card.className="target";const strong=document.createElement("strong"),span=document.createElement("span");strong.textContent=target;span.textContent=i===0?"基準システム":"標準を適用し業種固有機能を精査";card.append(strong,span);targets.append(card)});
+function updatePrompt(){$("#promptPreview").textContent=promptText(select.value)}select.onchange=updatePrompt;updatePrompt();
+const components=$("#componentList");components.replaceChildren();STANDARD.mandatory_components.forEach((item,i)=>{const card=document.createElement("article");card.className="component";const n=document.createElement("b");n.textContent=i+1;const body=document.createElement("div"),h=document.createElement("h3"),p=document.createElement("p");h.textContent=item.name;p.textContent=item.requirements.join("／");body.append(h,p);card.append(n,body);components.append(card)});
+addList("#ownerDoes",STANDARD.owner_boundary.owner_does);addList("#ownerDoesNot",STANDARD.owner_boundary.owner_does_not);
+const forbidden=$("#forbiddenList");forbidden.replaceChildren();STANDARD.forbidden_patterns.forEach(text=>{const div=document.createElement("div");div.className="forbidden";div.textContent=text;forbidden.append(div)});
+const changes=$("#changeList");changes.replaceChildren();STANDARD.change_control.required_on_change.forEach((text,i)=>{const div=document.createElement("div");div.className="change-item";div.textContent=`${i+1}. ${text}`;changes.append(div)});
+}
+function download(){const blob=new Blob([JSON.stringify(STANDARD,null,2)+"\n"],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="dpro-next-standard.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function login(){const code=$("#loginCode").value.trim();if(!code)return;try{await api(c.API.admin_login,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({admin_code:code})});localStorage.setItem(c.STORAGE_KEYS.admin_code,code);$("#login").hidden=true;$("#app").hidden=false;render()}catch(e){$("#loginStatus").className="status ng";$("#loginStatus").textContent=e.message}}
+$("#loginButton").onclick=login;$("#clearCode").onclick=()=>{localStorage.removeItem(c.STORAGE_KEYS.admin_code);$("#loginCode").value=""};$("#copyPrompt").onclick=()=>navigator.clipboard.writeText($("#promptPreview").textContent).then(()=>toast("横展開指示をコピーしました。"));$("#downloadStandard").onclick=download;$("#loginCode").value=demo?c.DEMO.admin_code:(localStorage.getItem(c.STORAGE_KEYS.admin_code)||"");if(demo)login();
+})();
+</script>
+</body>
+</html>

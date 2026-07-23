@@ -1,0 +1,198 @@
+{
+  "schema_version": "DPRO-NEXT-STANDARD-1",
+  "standard_id": "DPRO-NEXT-BEAUTY-RESERVATION-1",
+  "standard_name": "DPRO NEXT 美容・予約型標準",
+  "source_product": "DPRO まつげ・眉サロン LINE",
+  "source_repository": "dpromstk2000-lab/dpro-eye-salon-line",
+  "source_version": "EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723",
+  "status": "NEXT",
+  "locked": true,
+  "locked_at": "2026-07-23",
+  "classification": {
+    "primary_template": "予約・受付型",
+    "industry_group": "美容・健康",
+    "data_pattern": "顧客・予約・カルテ・写真・再来店"
+  },
+  "recommended_targets": [
+    "まつげ・眉サロン",
+    "美容室",
+    "ネイルサロン",
+    "エステサロン",
+    "ペットサロン"
+  ],
+  "mandatory_components": [
+    {
+      "id": "customer_repeat_booking",
+      "name": "前回と同じ内容で予約",
+      "requirements": [
+        "前回メニュー・担当・所要時間を安全に引き継ぐ",
+        "次回予約済みの場合は重複導線を警告する",
+        "変更・キャンセル・来店履歴へ接続する"
+      ]
+    },
+    {
+      "id": "reservation_safety",
+      "name": "予約安全ガード",
+      "requirements": [
+        "30分単位",
+        "過去日時禁止",
+        "重複予約防止",
+        "X-Idempotency-Keyによる二重送信防止"
+      ]
+    },
+    {
+      "id": "phone_normalization",
+      "name": "電話番号正規化",
+      "requirements": [
+        "ハイフン・空白・全角を正規化",
+        "+81を0始まりへ変換",
+        "検索・重複判定を正規化済み番号で行う"
+      ]
+    },
+    {
+      "id": "owner_daily_flow",
+      "name": "オーナー日常操作短縮",
+      "requirements": [
+        "今日必要な操作を先頭表示",
+        "予約カードから来店・施術・完了へ進める",
+        "次回予約作成を予約情報から開始できる"
+      ]
+    },
+    {
+      "id": "carte_guard",
+      "name": "カルテ・写真保護",
+      "requirements": [
+        "前回カルテを上書きしない",
+        "今回カルテを予約単位で保存",
+        "写真Storageを非公開にする",
+        "写真表示は署名付きURL等で保護する"
+      ]
+    },
+    {
+      "id": "followup_guard",
+      "name": "再来店フォロー安全化",
+      "requirements": [
+        "次回予約済み顧客を除外",
+        "施術別の次回来店目安を管理",
+        "個別文面を確認してから送信"
+      ]
+    },
+    {
+      "id": "settings_guard",
+      "name": "店舗設定ミス・未保存防止",
+      "requirements": [
+        "営業時間・スタッフ・メニュー・施術席を一元管理",
+        "保存前に設定矛盾を表示",
+        "未保存のまま離脱する場合に警告"
+      ]
+    },
+    {
+      "id": "migration_foundation",
+      "name": "既存システム移行",
+      "requirements": [
+        "CSVを即登録せずプレビュー",
+        "電話番号正規化と重複候補表示",
+        "顧客・将来予約を段階登録",
+        "移行バッチの破棄・ロールバック",
+        "LINEユーザー再連携"
+      ]
+    },
+    {
+      "id": "delivery_boundary",
+      "name": "導入・納品の作業分担",
+      "requirements": [
+        "DPRO制作・検査側が設計・コード・検査を担当",
+        "岩口さんがアカウント・Deploy・実機操作を担当",
+        "店舗オーナーは情報提供と日常画面の最終確認のみ"
+      ]
+    },
+    {
+      "id": "production_isolation",
+      "name": "本番店舗別環境分離",
+      "requirements": [
+        "店舗別GitHub・Supabase・Worker・LINE/LIFF",
+        "デモ店舗コード・デモWorker・デモLIFFの流用禁止",
+        "秘密情報を画面・JSON・GitHubへ保存しない",
+        "全検査完了まで本番切替許可をfalse"
+      ]
+    },
+    {
+      "id": "starter_pack",
+      "name": "本番導入スターターパック",
+      "requirements": [
+        "本番config.js",
+        "Worker非機密設定",
+        "Secrets設定一覧",
+        "Supabase・LINE設定手順",
+        "本番URL・切替・ロールバック・納品記録"
+      ]
+    },
+    {
+      "id": "release_gate",
+      "name": "統合検査・営業前最終検査",
+      "requirements": [
+        "公開画面の必須要素検査",
+        "重要機能の退行検査",
+        "Worker・DB・Storage検査",
+        "デモ・本番切替ガード検査",
+        "1件でも失敗した場合は営業開始不可"
+      ]
+    }
+  ],
+  "owner_boundary": {
+    "owner_does": [
+      "店舗情報・メニュー・スタッフ情報を提供する",
+      "既存サービスから必要なCSVを出力する",
+      "予約・オーナーPC・店舗iPadの日常操作を確認する",
+      "本番開始を了承する"
+    ],
+    "owner_does_not": [
+      "GitHub Actionsを操作する",
+      "Supabase SQLを実行する",
+      "Cloudflare WorkerをDeployする",
+      "system-check・release-checkを操作する",
+      "秘密鍵やService Role Keyを扱う"
+    ]
+  },
+  "forbidden_patterns": [
+    "MutationObserverによる後付けUI改修",
+    "owner-brushup.js等の追加パッチスクリプト",
+    "デモ店舗コードを本番利用",
+    "管理コード1234を本番利用",
+    "Service Role Key・LINEトークンのGitHub保存",
+    "営業前チェックをオーナー向け資料へ掲載",
+    "CSVをプレビューせず即時本登録",
+    "前回カルテの直接上書き",
+    "次回予約済み顧客への自動フォロー"
+  ],
+  "change_control": {
+    "silent_change_forbidden": true,
+    "required_on_change": [
+      "標準バージョンを更新する",
+      "変更理由と影響対象を記録する",
+      "HTML・JavaScript・YML構文検査を実行する",
+      "system-check・release-checkへ退行検査を追加する",
+      "公開URLと実機確認を行う",
+      "標準JSONと標準画面を同時更新する"
+    ]
+  },
+  "acceptance": {
+    "minimum_public_pages": 12,
+    "required_checks": [
+      "予約・会員・オーナーPC・iPad・設定",
+      "移行・導入進行・本番複製・スターターパック",
+      "DPRO NEXT標準・system-check・release-check",
+      "電話番号正規化・30分単位・過去日時・重複・二重送信",
+      "非公開写真Storage・カルテ上書き防止",
+      "次回予約済みフォロー除外",
+      "秘密情報非保存・デモ直本番化防止"
+    ]
+  },
+  "standard_files": [
+    "dpro-next-standard.json",
+    "dpro-next-standard.html",
+    "config.js",
+    "system-check.html",
+    "release-check.html"
+  ]
+}
