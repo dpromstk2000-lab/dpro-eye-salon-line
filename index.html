@@ -96,6 +96,84 @@
     }
     .demo-banner.show { display:block; }
 
+    .returning-panel {
+      margin-top:16px;
+      padding:18px;
+      border:2px solid #CDAEB4;
+      border-radius:18px;
+      background:#FCF6F6;
+      box-shadow:var(--shadow);
+    }
+    .returning-panel h2 {
+      margin:0;
+      color:var(--accent-dark);
+      font-size:23px;
+    }
+    .returning-panel p {
+      margin:5px 0 0;
+      color:var(--muted);
+    }
+    .returning-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      margin-top:13px;
+    }
+    .existing-customer-panel {
+      margin-bottom:14px;
+      padding:14px 16px;
+      border-left:5px solid var(--success);
+      border-radius:12px;
+      color:#40513B;
+      background:#E7EFE4;
+    }
+    .existing-customer-panel strong {
+      display:block;
+      font-size:18px;
+    }
+    .existing-customer-panel .btn {
+      margin-top:10px;
+    }
+    .duplicate-warning {
+      margin:15px 0;
+      padding:15px;
+      border:2px solid #D8B88F;
+      border-radius:14px;
+      color:#70481F;
+      background:#FFF3E4;
+    }
+    .duplicate-warning.critical {
+      color:#7E343A;
+      border-color:#D9A3A7;
+      background:#FCECEE;
+    }
+    .duplicate-warning strong {
+      display:block;
+      font-size:18px;
+    }
+    .duplicate-check {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      margin-top:10px;
+      font-weight:850;
+    }
+    .duplicate-check input {
+      width:23px;
+      min-height:23px;
+      margin:1px 0 0;
+      flex:none;
+      accent-color:var(--accent);
+    }
+    .repeat-selection-note {
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      color:#40513B;
+      background:#E7EFE4;
+      font-weight:850;
+    }
+
     .progress {
       display:grid;
       grid-template-columns:repeat(5,1fr);
@@ -540,6 +618,7 @@
       .confirm-row { grid-template-columns:1fr; gap:2px; }
       .buttons { flex-direction:column-reverse; }
       .btn,.btn-wide { width:100%; }
+      .returning-actions { flex-direction:column; }
     }
     @media (max-width:390px) {
       .slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -563,6 +642,23 @@
         デモ表示です。既存顧客「山田 花子」の情報をLINE連携として読み込みます。
       </div>
     </header>
+
+    <section id="returningPanel" class="returning-panel" hidden>
+      <h2 id="returningTitle">おかえりなさい</h2>
+      <p id="returningDescription">
+        前回と同じ内容なら、メニューと担当者を自動入力できます。
+      </p>
+      <div class="returning-actions">
+        <button id="repeatLastBooking" class="btn btn-primary" type="button">
+          前回と同じ内容で予約
+        </button>
+        <a id="returningMemberLink" class="btn btn-secondary"
+          href="./member.html">
+          予約確認・変更
+        </a>
+      </div>
+      <div id="repeatSelectionNote" class="repeat-selection-note" hidden></div>
+    </section>
 
     <nav id="progress" class="progress" aria-label="予約手順">
       <div class="progress-item active" data-progress="1">1 メニュー</div>
@@ -649,6 +745,19 @@
       </div>
 
       <div id="lookupStatus" class="lookup-status"></div>
+
+      <div id="existingCustomerPanel" class="existing-customer-panel" hidden>
+        <strong id="existingCustomerTitle">
+          登録済みのお客様情報を使用します
+        </strong>
+        <span id="existingCustomerDescription">
+          お名前・電話番号などの再入力は不要です。
+        </span>
+        <button id="editCustomerInformation" class="btn btn-secondary"
+          type="button">
+          基本情報を修正する
+        </button>
+      </div>
 
       <div id="migrationRelinkBox" class="relink-box" hidden>
         <h3>以前からご利用のお客様</h3>
@@ -802,6 +911,19 @@
 
       <dl id="confirmList" class="confirm-list"></dl>
 
+      <div id="existingBookingWarning" class="duplicate-warning" hidden>
+        <strong id="existingBookingWarningTitle">
+          すでに次回予約があります
+        </strong>
+        <span id="existingBookingWarningText"></span>
+        <label id="additionalBookingConfirm" class="duplicate-check">
+          <input id="additionalBookingConfirmed" type="checkbox">
+          <span>
+            既存の次回予約とは別の追加予約であることを確認しました。
+          </span>
+        </label>
+      </div>
+
       <div class="attention">
         予約確定ボタンを連続して押しても、同じ予約が重複登録されないように
         制御しています。
@@ -870,6 +992,9 @@
         idempotencyKey: crypto.randomUUID(),
         submitting: false,
         migrationLinkToken: "",
+        memberData: null,
+        customerFieldsLocked: false,
+        repeatPresetApplied: false,
       };
 
       const categoryTypeByServiceId = new Map();
@@ -961,6 +1086,248 @@
           month: "2-digit",
           day: "2-digit",
         }).format(new Date());
+      }
+
+      function memberUpcomingReservations() {
+        return (state.memberData?.upcoming || []).filter(reservation =>
+          ["reserved","confirmed"].includes(reservation.status)
+        );
+      }
+
+      function repeatableHistoryReservation() {
+        return (state.memberData?.history || []).find(reservation =>
+          !["cancelled","no_show","cancel_requested"].includes(
+            reservation.status
+          ) &&
+          Array.isArray(reservation.items) &&
+          reservation.items.length
+        ) || null;
+      }
+
+      function reservationServiceIds(reservation) {
+        return (reservation?.items || [])
+          .map(item => item.service_id)
+          .filter(id => state.services.some(service => service.id === id));
+      }
+
+      function repeatSuggestedDate(reservation, suppliedDate = "") {
+        const today = jstToday();
+        const max = addDays(
+          today,
+          Number(state.shop?.booking_open_days || 60)
+        );
+        const candidates = [
+          suppliedDate,
+          state.memberData?.customer?.next_revisit_date,
+        ].filter(Boolean);
+
+        const serviceDays = reservationServiceIds(reservation)
+          .map(id => state.services.find(service => service.id === id))
+          .map(service => Number(service?.revisit_days))
+          .filter(days => Number.isFinite(days) && days > 0);
+
+        const previousDate = reservation?.jst?.start?.date || "";
+        if (previousDate && serviceDays.length) {
+          candidates.push(addDays(previousDate,Math.min(...serviceDays)));
+        }
+
+        const valid = candidates.find(date =>
+          /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+          date >= today &&
+          date <= max
+        );
+        return valid || "";
+      }
+
+      function repeatReservationFromParams() {
+        const ids = (params.get("service_ids") || "")
+          .split(",")
+          .map(value => value.trim())
+          .filter(Boolean);
+        if (!ids.length) return null;
+        return {
+          items:ids.map(service_id => ({service_id})),
+          staff:{
+            id:params.get("staff_id") || "",
+          },
+          jst:{
+            start:{
+              date:params.get("suggested_date") || "",
+            },
+          },
+        };
+      }
+
+      function applyRepeatReservation(reservation, suppliedDate = "") {
+        if (!reservation) {
+          toast("前回の予約内容が見つかりません。",true);
+          return false;
+        }
+
+        const ids = reservationServiceIds(reservation);
+        if (!ids.length) {
+          toast(
+            "前回メニューは現在の予約メニューにありません。新しく選択してください。",
+            true
+          );
+          return false;
+        }
+
+        state.selectedServiceIds = new Set(ids);
+        state.staffId = "";
+        state.bookingTime = "";
+        state.chosenSlot = null;
+
+        syncMenuCards();
+        renderSelectionSummary();
+        renderStaffChoices();
+
+        const requestedStaffId =
+          reservation.staff?.id ||
+          reservation.staff_id ||
+          "";
+        if (
+          requestedStaffId &&
+          eligibleStaff().some(member => member.id === requestedStaffId)
+        ) {
+          state.staffId = requestedStaffId;
+          renderStaffChoices();
+        }
+
+        const suggested = repeatSuggestedDate(
+          reservation,
+          suppliedDate || reservation.jst?.start?.date || ""
+        );
+        $("#bookingDate").value = suggested;
+        state.bookingDate = suggested;
+        clearSlots(
+          suggested
+            ? "おすすめ日を設定しました。「空き時間を表示」を押してください。"
+            : "希望日を選び、「空き時間を表示」を押してください。"
+        );
+
+        const note = $("#repeatSelectionNote");
+        note.hidden = false;
+        note.textContent =
+          `前回と同じメニューを選択しました。` +
+          `${state.staffId ? "前回担当者も設定済みです。" : "担当者はおまかせで確認します。"}` +
+          `${suggested ? ` おすすめ日：${suggested}` : ""}`;
+
+        state.repeatPresetApplied = true;
+        setStep(1);
+        $("#selectionSummary").scrollIntoView({
+          behavior:"smooth",
+          block:"center",
+        });
+        return true;
+      }
+
+      function setCustomerFieldsLocked(locked) {
+        state.customerFieldsLocked = locked;
+        for (const id of ["fullName","fullNameKana","phone","email"]) {
+          const input = $(`#${id}`);
+          if (input) input.readOnly = locked;
+        }
+        $("#existingCustomerPanel").hidden = !state.existingCustomer;
+        $("#editCustomerInformation").textContent = locked
+          ? "基本情報を修正する"
+          : "登録済み情報に戻す";
+      }
+
+      async function loadMemberContext() {
+        if (!state.lineUserId) return;
+        const url = new URL(config.API.member_reservations);
+        url.searchParams.set("line_user_id",state.lineUserId);
+        try {
+          const data = await fetchJson(url);
+          if (!data.found) return;
+          state.memberData = data;
+
+          const returning = $("#returningPanel");
+          returning.hidden = false;
+          $("#returningTitle").textContent =
+            `${data.customer?.full_name || "お客様"}、おかえりなさい`;
+          const upcoming = memberUpcomingReservations();
+          $("#returningDescription").textContent = upcoming.length
+            ? `次回予約が ${upcoming.length}件あります。追加予約時は確認画面でお知らせします。`
+            : "前回と同じ内容なら、メニューと担当者を自動入力できます。";
+
+          $("#repeatLastBooking").disabled =
+            !repeatableHistoryReservation();
+
+          if (data.customer) {
+            fillCustomer(data.customer);
+          }
+        } catch {
+          // 会員情報がない初回客は通常予約として続行します。
+        }
+      }
+
+      function exactExistingReservation() {
+        return memberUpcomingReservations().find(reservation =>
+          reservation.jst?.start?.date === state.bookingDate &&
+          reservation.jst?.start?.time === state.bookingTime
+        ) || null;
+      }
+
+      function renderExistingBookingWarning() {
+        const warning = $("#existingBookingWarning");
+        const title = $("#existingBookingWarningTitle");
+        const text = $("#existingBookingWarningText");
+        const confirmLine = $("#additionalBookingConfirm");
+        const checkbox = $("#additionalBookingConfirmed");
+        checkbox.checked = false;
+
+        const exact = exactExistingReservation();
+        if (exact) {
+          warning.hidden = false;
+          warning.className = "duplicate-warning critical";
+          title.textContent = "同じ日時の予約がすでにあります";
+          text.textContent =
+            `${exact.jst?.start?.date || ""} ` +
+            `${exact.jst?.start?.time || ""} の予約と重複するため、` +
+            "この内容では予約できません。予約確認・変更をご利用ください。";
+          confirmLine.hidden = true;
+          return;
+        }
+
+        const upcoming = memberUpcomingReservations();
+        if (!upcoming.length) {
+          warning.hidden = true;
+          warning.className = "duplicate-warning";
+          confirmLine.hidden = false;
+          return;
+        }
+
+        const nearest = upcoming[0];
+        warning.hidden = false;
+        warning.className = "duplicate-warning";
+        title.textContent = "すでに次回予約があります";
+        text.textContent =
+          `${nearest.jst?.start?.date || ""} ` +
+          `${nearest.jst?.start?.time || ""} に予約があります。` +
+          "別日の追加予約で間違いないか確認してください。";
+        confirmLine.hidden = false;
+      }
+
+      function validateExistingBooking() {
+        if (exactExistingReservation()) {
+          renderExistingBookingWarning();
+          toast("同じ日時の予約がすでにあるため送信できません。",true);
+          return false;
+        }
+        if (
+          memberUpcomingReservations().length &&
+          !$("#additionalBookingConfirmed").checked
+        ) {
+          toast(
+            "既存予約とは別の追加予約であることを確認してください。",
+            true
+          );
+          $("#additionalBookingConfirmed").focus();
+          return false;
+        }
+        return true;
       }
 
       function selectedServices() {
@@ -1267,11 +1634,17 @@
         $("#fullName").value = customer.full_name || "";
         $("#fullNameKana").value = customer.full_name_kana || "";
         $("#phone").value = customer.phone || "";
+        $("#email").value = customer.email || "";
         $("#contactLens").value = customer.contact_lens || "unknown";
         $("#sensitiveSkin").checked = customer.sensitive_skin === true;
         if (customer.allergy_summary) {
           $("#allergyNote").value = customer.allergy_summary;
         }
+        setCustomerFieldsLocked(true);
+        $("#existingCustomerTitle").textContent =
+          `${customer.full_name || "お客様"}の登録済み情報を使用します`;
+        $("#existingCustomerDescription").textContent =
+          "お名前・電話番号などは自動入力済みです。変更がある場合だけ修正してください。";
         showLookup(
           `既存顧客 ${customer.customer_no} の情報を読み込みました。基本情報の再入力は不要です。`,
           "ok"
@@ -1504,6 +1877,7 @@
 
       async function submitBooking() {
         if (state.submitting) return;
+        if (!validateExistingBooking()) return;
         state.submitting = true;
         const button = $("#submitBooking");
         button.disabled = true;
@@ -1617,6 +1991,15 @@
           renderSelectionSummary();
           renderStaffChoices();
           await resolveLineUser();
+          await loadMemberContext();
+
+          const preset = repeatReservationFromParams();
+          if (params.get("repeat") === "1") {
+            applyRepeatReservation(
+              preset || repeatableHistoryReservation(),
+              params.get("suggested_date") || ""
+            );
+          }
         } catch (error) {
           $("#menuContainer").innerHTML =
             `<div class="empty">システムを読み込めません：${error.message}</div>`;
@@ -1649,6 +2032,18 @@
         migrationRelink
       );
 
+      $("#returningMemberLink").href = isDemo
+        ? "./member.html?demo=1"
+        : "./member.html";
+
+      $("#repeatLastBooking").addEventListener("click",() =>
+        applyRepeatReservation(repeatableHistoryReservation())
+      );
+
+      $("#editCustomerInformation").addEventListener("click",() =>
+        setCustomerFieldsLocked(!state.customerFieldsLocked)
+      );
+
       $("#phone").addEventListener("blur", async () => {
         const value = $("#phone").value.trim();
         if (!value || state.lineUserId || state.existingCustomer) return;
@@ -1674,6 +2069,7 @@
           return;
         }
         buildConfirm();
+        renderExistingBookingWarning();
         setStep(5);
       });
 

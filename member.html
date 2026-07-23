@@ -97,6 +97,49 @@
     }
     .profile-item small { display:block; color:var(--muted); font-weight:750; }
     .profile-item strong { display:block; margin-top:3px; font-size:18px; }
+    .member-shortcuts {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:13px;
+      align-items:center;
+      margin-top:16px;
+      padding:18px;
+      border:2px solid #CDAEB4;
+      border-radius:17px;
+      background:#FCF6F6;
+    }
+    .member-shortcuts h2 {
+      margin:0;
+      font-size:23px;
+    }
+    .member-shortcuts p {
+      margin:4px 0 0;
+      color:var(--muted);
+    }
+    .member-shortcut-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      justify-content:flex-end;
+    }
+    .reservation-guide {
+      margin-top:12px;
+      padding:11px 13px;
+      border-radius:11px;
+      color:#60474E;
+      background:#F4EAEC;
+      font-weight:800;
+    }
+    .cancel-note {
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:#70481F;
+      background:#FFF3E4;
+      font-size:14px;
+      font-weight:800;
+    }
+
     .reservation-list { display:grid; gap:13px; }
     .reservation {
       padding:19px;
@@ -285,6 +328,8 @@
       .change-grid { grid-template-columns:1fr; }
       .slot-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
       .btn { width:100%; }
+      .member-shortcuts { grid-template-columns:1fr; }
+      .member-shortcut-actions { justify-content:stretch; }
     }
     @media (max-width:390px) {
       .slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -311,6 +356,24 @@
         <div class="profile-item"><small>お名前</small><strong id="profileName">―</strong></div>
         <div class="profile-item"><small>顧客番号</small><strong id="profileNo">―</strong></div>
         <div class="profile-item"><small>次回来店目安</small><strong id="profileNext">―</strong></div>
+      </div>
+    </section>
+
+    <section id="memberShortcutPanel" class="member-shortcuts" hidden>
+      <div>
+        <h2>かんたん予約</h2>
+        <p id="memberShortcutDescription">
+          前回と同じ内容なら、メニューと担当者を自動入力できます。
+        </p>
+        <div id="memberRecommendedDate" class="reservation-guide"></div>
+      </div>
+      <div class="member-shortcut-actions">
+        <button id="memberRepeatLatest" class="btn btn-primary" type="button">
+          前回と同じ内容で予約
+        </button>
+        <a id="memberDifferentBooking" class="btn btn-secondary" href="./">
+          別の内容で予約
+        </a>
       </div>
     </section>
 
@@ -369,6 +432,7 @@
       const changeState = new Map();
 
       $("#newBookingLink").href = isDemo ? "./?demo=1" : "./";
+      $("#memberDifferentBooking").href = isDemo ? "./?demo=1" : "./";
       if (!isDemo) $("#systemCheckLink").style.display = "none";
 
       function toast(message, error = false) {
@@ -425,6 +489,49 @@
         const node = $("#pageStatus");
         node.textContent = message;
         node.className = `status ${mode}`.trim();
+      }
+
+      function repeatableReservation() {
+        return (memberData?.history || []).find(reservation =>
+          !["cancelled","no_show","cancel_requested"].includes(
+            reservation.status
+          ) &&
+          Array.isArray(reservation.items) &&
+          reservation.items.length
+        ) || null;
+      }
+
+      function repeatBookingUrl(reservation) {
+        const url = new URL("./",location.href);
+        url.searchParams.set("repeat","1");
+        const serviceIds = (reservation?.items || [])
+          .map(item => item.service_id)
+          .filter(Boolean);
+        if (serviceIds.length) {
+          url.searchParams.set("service_ids",serviceIds.join(","));
+        }
+        const staffId =
+          reservation?.staff?.id ||
+          reservation?.staff_id ||
+          "";
+        if (staffId) url.searchParams.set("staff_id",staffId);
+
+        const recommended =
+          memberData?.customer?.next_revisit_date ||
+          "";
+        if (recommended >= todayJst()) {
+          url.searchParams.set("suggested_date",recommended);
+        }
+        if (isDemo) url.searchParams.set("demo","1");
+        return url.href;
+      }
+
+      function openRepeatBooking(reservation) {
+        if (!reservation) {
+          toast("前回の予約内容が見つかりません。",true);
+          return;
+        }
+        location.href = repeatBookingUrl(reservation);
       }
 
       function reservationMenu(reservation) {
@@ -489,16 +596,22 @@
           const actions = document.createElement("div");
           actions.className = "actions";
 
+          const note = document.createElement("div");
+          note.className = "cancel-note";
+          note.textContent =
+            "日時変更は空き時間を選んで確定します。キャンセルは店舗への申請として受け付けます。";
+          card.append(note);
+
           const change = document.createElement("button");
           change.type = "button";
           change.className = "btn btn-primary";
-          change.textContent = "日時を変更";
+          change.textContent = "予約日時を変更";
           change.addEventListener("click", () => toggleChange(reservation, card));
 
           const cancel = document.createElement("button");
           cancel.type = "button";
           cancel.className = "btn btn-danger";
-          cancel.textContent = "キャンセル";
+          cancel.textContent = "キャンセルを申請";
           cancel.addEventListener("click", () => cancelReservation(reservation));
 
           actions.append(change, cancel);
@@ -508,6 +621,28 @@
           changeBox.className = "change-box";
           changeBox.dataset.changeBox = reservation.id;
           card.append(changeBox);
+        }
+
+        if (
+          !upcoming &&
+          !["cancelled","no_show","cancel_requested"].includes(
+            reservation.status
+          ) &&
+          Array.isArray(reservation.items) &&
+          reservation.items.length
+        ) {
+          const repeatActions = document.createElement("div");
+          repeatActions.className = "actions";
+          const repeat = document.createElement("button");
+          repeat.type = "button";
+          repeat.className = "btn btn-primary";
+          repeat.textContent = "同じ内容で予約";
+          repeat.addEventListener(
+            "click",
+            () => openRepeatBooking(reservation)
+          );
+          repeatActions.append(repeat);
+          card.append(repeatActions);
         }
 
         return card;
@@ -520,7 +655,22 @@
         $("#profileNext").textContent = customer.next_revisit_date || "未設定";
         $("#profilePanel").hidden = false;
 
+        const repeatable = repeatableReservation();
+        $("#memberShortcutPanel").hidden = false;
+        $("#memberRepeatLatest").disabled = !repeatable;
+        const recommended =
+          customer.next_revisit_date &&
+          customer.next_revisit_date >= todayJst()
+            ? customer.next_revisit_date
+            : "";
+        $("#memberRecommendedDate").textContent = recommended
+          ? `おすすめの次回来店日：${recommended}`
+          : "次回来店日は予約画面で選択できます。";
+
         const upcoming = memberData.upcoming || [];
+        $("#memberShortcutDescription").textContent = upcoming.length
+          ? `次回予約が ${upcoming.length}件あります。追加予約時は予約画面で重複確認します。`
+          : "前回と同じ内容なら、メニューと担当者を自動入力できます。";
         const history = memberData.history || [];
 
         $("#upcomingPanel").hidden = false;
@@ -698,7 +848,8 @@
       async function cancelReservation(reservation) {
         const message =
           `${reservation.jst?.start?.date || ""} ` +
-          `${reservation.jst?.start?.time || ""} の予約をキャンセルしますか？`;
+          `${reservation.jst?.start?.time || ""} の予約について、` +
+          "店舗へキャンセル申請を送りますか？";
         if (!confirm(message)) return;
 
         try {
@@ -714,7 +865,9 @@
               reason:"会員ページからのキャンセル",
             }),
           });
-          toast("キャンセルを受け付けました。");
+          toast(
+            "キャンセル申請を受け付けました。店舗で確認後に状態が更新されます。"
+          );
           await loadMember();
         } catch (error) {
           toast(error.message, true);
@@ -769,6 +922,11 @@
           setStatus(`予約情報を取得できません：${error.message}`, "ng");
         }
       }
+
+      $("#memberRepeatLatest").addEventListener(
+        "click",
+        () => openRepeatBooking(repeatableReservation())
+      );
 
       async function initialize() {
         try {
