@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6F4C55">
+  <meta name="description" content="DPRO EYE SALON 導入・乗り換え・納品進行管理">
+  <title>導入・納品進行｜DPRO EYE SALON</title>
+  <script src="./config.js"></script>
+  <style>
+    :root {
+      color-scheme:light;
+      --bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;
+      --accent:#A86F7D;--accent-dark:#6F4C55;--text:#2F2B2C;
+      --muted:#6E6567;--border:#DED1CA;--success:#64745F;
+      --warning:#A96F32;--danger:#A14E55;--blue:#5D7084;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
+    }
+    *{box-sizing:border-box}[hidden]{display:none!important}
+    body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 8% 0,#F1DEE1 0,transparent 27rem),var(--bg);font-size:17px;line-height:1.65}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:inherit}
+    input,select,textarea{width:100%;min-height:50px;margin-top:6px;padding:10px 12px;border:2px solid var(--border);border-radius:12px;background:white;color:var(--text)}
+    textarea{min-height:94px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:3px solid rgba(168,111,125,.16);border-color:var(--accent)}
+    input[type=checkbox]{width:23px;min-height:23px;margin:0;accent-color:var(--accent)}
+    label{display:block;font-weight:850}
+    .login{min-height:100vh;display:grid;place-items:center;padding:20px}
+    .login-card,.hero,.panel{border:1px solid var(--border);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:0 12px 34px rgba(78,53,61,.08)}
+    .login-card{width:min(570px,100%);padding:30px}
+    .brand{margin:0 0 5px;color:var(--accent-dark);font-size:14px;font-weight:900;letter-spacing:.12em}
+    h1{margin:0;font-size:34px;line-height:1.3}h2{margin:0;font-size:25px}h3{margin:0;font-size:20px}.muted{color:var(--muted)}
+    .app{width:min(1480px,calc(100% - 24px));margin:auto;padding:18px 0 70px}
+    .hero,.panel{padding:22px}.panel{margin-top:14px}
+    .head{display:flex;justify-content:space-between;gap:15px;align-items:center}
+    .links,.buttons{display:flex;flex-wrap:wrap;gap:9px}
+    .links a{min-height:44px;display:inline-flex;align-items:center;padding:8px 13px;border-radius:11px;background:var(--soft);color:var(--accent-dark);text-decoration:none;font-weight:900}
+    .btn{min-height:48px;padding:9px 15px;border:0;border-radius:12px;font-weight:900}
+    .primary{color:white;background:var(--accent)}.success{color:white;background:var(--success)}.danger{color:white;background:var(--danger)}.secondary{color:var(--accent-dark);background:var(--soft)}.blue{color:white;background:var(--blue)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .internal-notice{margin-top:14px;padding:13px 15px;border-left:6px solid var(--accent-dark);border-radius:11px;color:var(--accent-dark);background:#F5EDEF;font-weight:850}
+    .status{margin-top:13px;padding:13px 15px;border-radius:12px;color:var(--muted);background:var(--soft);font-weight:850}
+    .status.ok{color:#40513B;background:#E7EFE4}.status.warn{color:#70481F;background:#FFF3E4}.status.ng{color:#7E343A;background:#F7E6E7}
+    .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .summary-card{padding:15px;border:1px solid var(--border);border-radius:14px;background:white}
+    .summary-card small{display:block;color:var(--muted);font-weight:800}.summary-card strong{display:block;margin-top:3px;font-size:28px}
+    .summary-card.ok{border-color:#AAB5A5;background:#F3F7F1}.summary-card.warn{border-color:#D7B991;background:#FFF8EF}
+    .progress{height:14px;margin-top:14px;overflow:hidden;border-radius:999px;background:var(--soft)}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--success));transition:.2s ease}
+    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
+    .role-guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+    .role-card{padding:13px;border:1px solid var(--border);border-radius:13px;background:white}.role-card strong{display:block}.role-card span{display:block;margin-top:3px;color:var(--muted);font-size:14px}
+    .role-badge{display:inline-flex!important;padding:4px 9px;border-radius:999px;font-size:13px!important;font-weight:900}
+    .role-assistant{color:#485769!important;background:#E7EDF3}.role-iwaguchi{color:#6F4C55!important;background:#F2E5E8}.role-owner{color:#40513B!important;background:#E7EFE4}
+    .phases{display:grid;gap:12px}
+    .phase{border:1px solid var(--border);border-radius:17px;background:white;overflow:hidden}
+    .phase-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;background:var(--soft)}
+    .phase-number{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;color:white;background:var(--accent-dark);font-weight:900}
+    .phase-head small{display:block;color:var(--muted);font-weight:800}.phase-head strong{display:block;font-size:20px}
+    .phase-count{min-width:70px;text-align:right;color:var(--accent-dark);font-weight:900}
+    .task-list{display:grid;gap:8px;padding:13px}
+    .task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    .task.done{border-color:#AAB5A5;background:#F6F9F4}.task input{margin-top:3px}
+    .task strong{display:block}.task p{margin:3px 0 0;color:var(--muted);font-size:14px}.task .optional{color:var(--warning);font-size:12px;font-weight:900}
+    .quick-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+    .quick-link{min-height:82px;display:flex;flex-direction:column;justify-content:center;padding:12px;border:1px solid var(--border);border-radius:13px;background:white;text-decoration:none;font-weight:900}
+    .quick-link span{display:block;margin-top:2px;color:var(--muted);font-size:13px;font-weight:700}
+    .auto-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}
+    .auto-card{padding:13px;border:1px solid var(--border);border-radius:13px;background:white}
+    .auto-card.ok{border-color:#AAB5A5;background:#F3F7F1}.auto-card.ng{border-color:#D4A6AA;background:#FDF2F3}
+    .auto-card strong,.auto-card span{display:block}.auto-card span{margin-top:3px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+    .completion{padding:18px;border:3px solid var(--border);border-radius:17px;background:white}
+    .completion.ok{border-color:#AAB5A5;background:#F3F7F1;color:#40513B}.completion.warn{border-color:#D7B991;background:#FFF8EF;color:#70481F}
+    .completion strong{display:block;font-size:31px}.completion span{display:block;margin-top:4px;font-weight:850}
+    .file-input{display:none}
+    .toast{position:fixed;left:50%;bottom:22px;z-index:100;width:min(620px,calc(100% - 24px));padding:15px 18px;border-radius:14px;color:white;background:#3B3436;box-shadow:0 14px 36px rgba(0,0,0,.23);transform:translate(-50%,130%);transition:.2s ease;font-weight:850}.toast.show{transform:translate(-50%,0)}.toast.error{background:var(--danger)}
+    @media(max-width:1000px){.summary,.auto-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:720px){body{font-size:16px}.app{width:min(100% - 16px,1480px);padding-top:8px}.head{flex-direction:column;align-items:stretch}.summary,.auto-grid,.grid3,.role-guide,.quick-links{grid-template-columns:1fr}.full{grid-column:auto}.phase-head{grid-template-columns:auto minmax(0,1fr)}.phase-count{grid-column:1/-1;text-align:left}.task{grid-template-columns:auto minmax(0,1fr)}.task .role-badge{grid-column:2}.buttons .btn{width:100%}}
+    @media print{.login,.links,.buttons,.quick-links,.internal-notice{display:none!important}body{background:white}.app{width:100%;padding:0}.hero,.panel{box-shadow:none;break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login">
+    <div class="login-card">
+      <p class="brand">DPRO EYE SALON LINE</p>
+      <h1>導入・納品進行</h1>
+      <p class="muted">岩口さんとDPRO制作・検査側で、初期設定・乗り換え・本番開始までを管理します。</p>
+      <label>管理コード<input id="loginCode" type="password" inputmode="numeric" autocomplete="off" maxlength="20" placeholder="管理コード"></label>
+      <div class="buttons" style="margin-top:14px">
+        <button id="loginButton" class="btn primary" type="button">内部進行管理を開く</button>
+        <button id="clearCode" class="btn danger" type="button">削除</button>
+      </div>
+      <div id="loginStatus" class="status">管理コードを入力してください。</div>
+    </div>
+  </section>
+
+  <main id="app" class="app" hidden>
+    <section class="hero">
+      <div class="head">
+        <div>
+          <p class="brand">DPRO EYE SALON LINE</p>
+          <h1>導入・乗り換え・納品進行</h1>
+          <p class="muted">店舗オーナーへ技術作業を依頼せず、岩口さんとDPRO制作・検査側で完了させます。</p>
+        </div>
+        <div class="links">
+          <a href="./settings.html">店舗設定</a>
+          <a href="./migration.html">既存システム移行</a>
+          <a href="./release-check.html">DPRO内部最終検査</a>
+        </div>
+      </div>
+      <div class="internal-notice">
+        このページはDPRO内部用です。system-check・release-check・GitHub・Worker・Supabaseを店舗オーナーへ操作させません。
+      </div>
+      <div id="deliveryWorkflow" class="summary">
+        <article id="allCard" class="summary-card"><small>全必須作業</small><strong>0/0</strong><span class="muted">集計中</span></article>
+        <article id="iwaguchiCard" class="summary-card"><small>岩口さん操作</small><strong>0/0</strong><span class="muted">アカウント・実操作</span></article>
+        <article id="assistantCard" class="summary-card"><small>DPRO制作・検査</small><strong>0/0</strong><span class="muted">設計・コード・検査</span></article>
+        <article id="ownerCard" class="summary-card"><small>店舗オーナー確認</small><strong>0/0</strong><span class="muted">情報提供と最終承認のみ</span></article>
+      </div>
+      <div class="progress"><span id="progressBar"></span></div>
+      <div id="overallStatus" class="status">進行状況を読み込んでいます…</div>
+    </section>
+
+    <section class="panel">
+      <div class="head">
+        <div><h2>導入店舗情報</h2><span class="muted">この端末のブラウザへ保存します。サーバーや顧客DBへは送信しません。</span></div>
+        <div class="buttons">
+          <button id="exportButton" class="btn secondary" type="button">進行状況をJSON保存</button>
+          <button id="importButton" class="btn secondary" type="button">JSONを読込</button>
+          <button id="printButton" class="btn blue" type="button">印刷</button>
+          <button id="resetButton" class="btn danger" type="button">進行を初期化</button>
+          <input id="importFile" class="file-input" type="file" accept=".json,application/json">
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:13px">
+        <label>店舗名<input id="projectShopName" placeholder="例：○○アイサロン"></label>
+        <label>オーナー名<input id="projectOwnerName" placeholder="担当者名"></label>
+        <label>本番開始予定日<input id="projectLaunchDate" type="date"></label>
+        <label>既存システム<select id="projectSource"><option value="">選択してください</option><option>リピッテ</option><option>別の予約システム</option><option>紙・Excel中心</option><option>新規開業</option></select></label>
+        <label>LINE公式アカウント<select id="projectLine"><option value="">選択してください</option><option>既存アカウントを使用</option><option>新規作成</option><option>確認中</option></select></label>
+        <label>進行担当<input id="projectManager" value="岩口"></label>
+        <label class="full">導入メモ<textarea id="projectNotes" placeholder="店舗固有の注意点、移行元の仕様、確認待ち事項"></textarea></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>作業分担</h2>
+      <div class="role-guide">
+        <article class="role-card"><span class="role-badge role-assistant">DPRO制作・検査</span><strong>私が行う作業</strong><span>設計、コード、YML、構文検査、API確認、不具合修正、納品判定。</span></article>
+        <article class="role-card"><span class="role-badge role-iwaguchi">岩口さん</span><strong>アカウント操作</strong><span>GitHub Commit、SQL、Worker Deploy、LINE・LIFF設定、実機操作。</span></article>
+        <article class="role-card"><span class="role-badge role-owner">店舗オーナー</span><strong>情報提供と確認のみ</strong><span>店舗情報、CSV出力、予約・カルテの最終確認、本番開始了承。</span></article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head"><div><h2>導入作業チェックリスト</h2><span class="muted">必須作業がすべて完了すると「納品準備完了」になります。</span></div></div>
+      <div id="phaseList" class="phases" style="margin-top:13px"></div>
+    </section>
+
+    <section class="panel">
+      <h2>作業画面へ移動</h2>
+      <div class="quick-links" style="margin-top:12px">
+        <a class="quick-link" href="./settings.html"><strong>店舗設定</strong><span>営業時間・スタッフ・メニュー・施術席</span></a>
+        <a class="quick-link" href="./migration.html"><strong>既存システム移行</strong><span>顧客CSV・将来予約・LINE再連携</span></a>
+        <a class="quick-link" href="./index.html"><strong>お客様予約</strong><span>実際の予約導線を確認</span></a>
+        <a class="quick-link" href="./owner.html"><strong>オーナーPC</strong><span>予約・顧客・カルテ・再来店</span></a>
+        <a class="quick-link" href="./owner-ipad.html"><strong>店舗iPad</strong><span>施術進行・写真カルテ</span></a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="head">
+        <div><h2>DPRO内部・読み取り検査</h2><span class="muted">設定、移行基盤、Worker、営業前判定を変更せず確認します。</span></div>
+        <button id="autoCheckButton" class="btn primary" type="button">内部検査を実行</button>
+      </div>
+      <div id="autoCheckStatus" class="status">まだ実行していません。</div>
+      <div id="autoCheckGrid" class="auto-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div id="completionBox" class="completion warn">
+        <strong id="completionTitle">導入作業中</strong>
+        <span id="completionDetail">必須作業を完了してください。</span>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const config = window.DPRO_EYE_CONFIG;
+      const params = new URLSearchParams(location.search);
+      const isDemo = params.get("demo") === "1";
+      const $ = selector => document.querySelector(selector);
+      const STORAGE_KEY = `dpro_eye_delivery_workflow_${config.SHOP_CODE}`;
+      const VERSION = "EYE-19-DELIVERY-WORKFLOW-20260723";
+      const state = {
+        adminCode:"",
+        data:{meta:{},tasks:{},updated_at:""},
+        autoChecks:[],
+      };
+
+      const PHASES = [
+        {
+          id:"collect",title:"店舗情報を集める",subtitle:"オーナーは情報提供だけ",
+          tasks:[
+            {id:"shop_profile",role:"owner",title:"店舗名・住所・電話番号・営業時間・定休日を受領",detail:"店舗オーナーが情報を伝え、DPRO側で設定します。"},
+            {id:"menu_list",role:"owner",title:"メニュー・料金・施術時間・再来店目安を受領",detail:"ラッシュ、エクステ、眉、セット、オプションを整理します。"},
+            {id:"staff_list",role:"owner",title:"スタッフ名・対応メニュー・勤務時間を受領",detail:"施術席数と同時予約上限も確認します。"},
+            {id:"policy",role:"owner",title:"予約変更・キャンセル・注意事項を確認",detail:"店舗独自ルールを予約画面へ反映します。"},
+          ]
+        },
+        {
+          id:"build",title:"店舗別設定を反映",subtitle:"DPRO制作・検査＋岩口さん",
+          tasks:[
+            {id:"design_review",role:"assistant",title:"店舗別の設定方針と変更範囲を精査",detail:"不要機能を増やさず、既存標準で対応できる範囲を決定します。"},
+            {id:"settings_apply",role:"iwaguchi",title:"店舗設定へ営業時間・スタッフ・メニューを入力",detail:"店舗設定ガイドの警告がなくなるまで確認します。"},
+            {id:"ui_check",role:"assistant",title:"PC・スマホ・iPadの表示と既存機能影響を検査",detail:"文字サイズ、崩れ、二重予約、過去日時、カルテ保護を確認します。"},
+            {id:"demo_prepare",role:"iwaguchi",title:"店舗別デモデータを準備",detail:"本番データを使わず、操作確認用の安全なデータを用意します。"},
+          ]
+        },
+        {
+          id:"migration",title:"既存システムから安全に乗り換える",subtitle:"該当店舗だけ実施",
+          tasks:[
+            {id:"csv_export",role:"owner",title:"既存システムから顧客CSV・将来予約CSVを出力",detail:"オーナーが既存サービスで行う数少ない操作です。",optional:true},
+            {id:"csv_mapping",role:"assistant",title:"CSV列対応・電話番号正規化・重複方針を確認",detail:"本登録前にエラー、重複、統合候補を検査します。",optional:true},
+            {id:"csv_preview",role:"iwaguchi",title:"移行画面でプレビューを実行",detail:"即登録せず、件数・エラー・重複候補を確認します。",optional:true},
+            {id:"csv_commit",role:"iwaguchi",title:"承認済みデータだけを本登録",detail:"少数サンプルを確認後、顧客・将来予約を登録します。",optional:true},
+            {id:"line_relink",role:"owner",title:"既存顧客のLINE再連携方法を店舗へ案内",detail:"顧客情報を失わず、新しいLINEユーザーIDへ紐づけます。",optional:true},
+          ]
+        },
+        {
+          id:"line",title:"LINE・公開設定",subtitle:"岩口さんのアカウント操作",
+          tasks:[
+            {id:"line_account",role:"iwaguchi",title:"LINE公式アカウントの管理権限と店舗情報を確認",detail:"店舗アカウントで公開する内容を確定します。"},
+            {id:"liff_config",role:"iwaguchi",title:"LIFF ID・エンドポイントURLを設定",detail:"予約画面と会員ページをLINE内で開けるようにします。"},
+            {id:"rich_menu",role:"iwaguchi",title:"リッチメニューへ予約・会員ページを接続",detail:"オーナー用・内部検査用URLはお客様へ表示しません。"},
+            {id:"line_real_device",role:"iwaguchi",title:"実際のLINE端末で予約導線を確認",detail:"LIFF初期化、顧客照合、予約完了まで確認します。"},
+          ]
+        },
+        {
+          id:"internal",title:"DPRO内部検査",subtitle:"オーナーへ操作させない",
+          tasks:[
+            {id:"github_check",role:"assistant",title:"GitHub反映・HTML・JavaScript・YMLを検査",detail:"Actions、Pages、構文、必須ファイル、旧スクリプト再混入を確認します。"},
+            {id:"api_check",role:"assistant",title:"Worker・Supabase・Storage・APIを検査",detail:"電話番号正規化、30分単位、重複防止、非公開写真を確認します。"},
+            {id:"release_check",role:"iwaguchi",title:"DPRO内部の営業前最終検査を実行",detail:"オーナーには見せず、営業開始可能になるまでDPRO側で修正します。"},
+            {id:"production_plan",role:"assistant",title:"本番切替条件・バックアップ・戻し方を確認",detail:"デモガード解除前に店舗コード、管理コード、切替日を確認します。"},
+          ]
+        },
+        {
+          id:"owner_test",title:"店舗オーナー最終確認",subtitle:"日常操作だけ確認",
+          tasks:[
+            {id:"owner_reservation",role:"owner",title:"お客様予約を1件操作して確認",detail:"メニュー、日時、担当者、予約完了画面を確認します。"},
+            {id:"owner_pc_test",role:"owner",title:"オーナーPCで来店・施術・完了を確認",detail:"GitHubや営業前チェックは操作しません。"},
+            {id:"owner_ipad_test",role:"owner",title:"iPadで今回カルテ・写真を確認",detail:"前回カルテが上書きされないことを実操作で確認します。"},
+            {id:"owner_approve",role:"owner",title:"店舗名・料金・営業時間・開始日を最終承認",detail:"店舗運用に必要な表示だけを確認します。"},
+          ]
+        },
+        {
+          id:"handoff",title:"本番開始・納品",subtitle:"岩口さんとDPRO制作・検査側で完了",
+          tasks:[
+            {id:"cutover",role:"iwaguchi",title:"本番切替・公開URL・LINE導線を確定",detail:"切替時間を決め、旧予約受付の停止と新予約開始を合わせます。"},
+            {id:"owner_sheet",role:"assistant",title:"A4縦1枚のオーナー様用操作体験シートを納品",detail:"営業前チェックは掲載せず、日常操作だけを案内します。"},
+            {id:"delivery_urls",role:"assistant",title:"予約・会員・PC・iPad・店舗設定URLを整理",detail:"DPRO内部検査URLは内部資料だけへ記録します。"},
+            {id:"post_launch",role:"iwaguchi",title:"本番開始後の予約・通知・カルテを確認",detail:"初回予約を確認し、問題があれば即時修正します。"},
+            {id:"delivery_complete",role:"assistant",title:"納品完了判定と変更履歴を確定",detail:"検査結果、バージョン、バックアップ、残課題を記録します。"},
+          ]
+        },
+      ];
+
+      const ROLE_LABELS = {
+        assistant:"DPRO制作・検査",
+        iwaguchi:"岩口さん",
+        owner:"店舗オーナー",
+      };
+
+      function toast(message,error=false) {
+        const node = $("#toast");
+        node.textContent = message;
+        node.className = `toast show${error ? " error" : ""}`;
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => node.className = "toast",3500);
+      }
+
+      function adminHeaders() {
+        return {"X-DPRO-ADMIN-CODE":state.adminCode};
+      }
+
+      async function fetchJson(url,options={}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(),20000);
+        try {
+          const response = await fetch(url,{cache:"no-store",...options,signal:controller.signal});
+          const data = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(data?.message || `HTTP ${response.status}`);
+          return data;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function defaultData() {
+        return {
+          version:VERSION,
+          meta:{shop_name:"",owner_name:"",launch_date:"",source:"",line_account:"",manager:"岩口",notes:""},
+          tasks:{},
+          updated_at:new Date().toISOString(),
+        };
+      }
+
+      function loadData() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          state.data = saved && typeof saved === "object" ? saved : defaultData();
+        } catch {
+          state.data = defaultData();
+        }
+        state.data.meta ||= defaultData().meta;
+        state.data.tasks ||= {};
+      }
+
+      function saveData() {
+        state.data.version = VERSION;
+        state.data.updated_at = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(state.data));
+      }
+
+      function allTasks() {
+        return PHASES.flatMap(phase => phase.tasks.map(task => ({...task,phase_id:phase.id})));
+      }
+      function requiredTasks() { return allTasks().filter(task => !task.optional); }
+      function roleClass(role) {
+        return {assistant:"role-assistant",iwaguchi:"role-iwaguchi",owner:"role-owner"}[role] || "";
+      }
+      function isDone(task) { return state.data.tasks[task.id] === true; }
+
+      function renderMeta() {
+        const meta = state.data.meta;
+        $("#projectShopName").value = meta.shop_name || "";
+        $("#projectOwnerName").value = meta.owner_name || "";
+        $("#projectLaunchDate").value = meta.launch_date || "";
+        $("#projectSource").value = meta.source || "";
+        $("#projectLine").value = meta.line_account || "";
+        $("#projectManager").value = meta.manager || "岩口";
+        $("#projectNotes").value = meta.notes || "";
+      }
+
+      function collectMeta() {
+        state.data.meta = {
+          shop_name:$("#projectShopName").value.trim(),
+          owner_name:$("#projectOwnerName").value.trim(),
+          launch_date:$("#projectLaunchDate").value,
+          source:$("#projectSource").value,
+          line_account:$("#projectLine").value,
+          manager:$("#projectManager").value.trim(),
+          notes:$("#projectNotes").value.trim(),
+        };
+        saveData();
+      }
+
+      function renderPhases() {
+        const container = $("#phaseList");
+        container.replaceChildren();
+
+        PHASES.forEach((phase,index) => {
+          const article = document.createElement("article");
+          article.className = "phase";
+          const head = document.createElement("div");
+          head.className = "phase-head";
+          const number = document.createElement("span");
+          number.className = "phase-number";
+          number.textContent = index + 1;
+          const title = document.createElement("div");
+          const small = document.createElement("small");
+          small.textContent = phase.subtitle;
+          const strong = document.createElement("strong");
+          strong.textContent = phase.title;
+          title.append(small,strong);
+          const doneCount = phase.tasks.filter(isDone).length;
+          const count = document.createElement("span");
+          count.className = "phase-count";
+          count.textContent = `${doneCount}/${phase.tasks.length}`;
+          head.append(number,title,count);
+
+          const list = document.createElement("div");
+          list.className = "task-list";
+
+          phase.tasks.forEach(task => {
+            const row = document.createElement("label");
+            row.className = `task${isDone(task) ? " done" : ""}`;
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = isDone(task);
+            checkbox.addEventListener("change",() => {
+              state.data.tasks[task.id] = checkbox.checked;
+              saveData();
+              renderAll();
+            });
+            const body = document.createElement("div");
+            const taskTitle = document.createElement("strong");
+            taskTitle.textContent = task.title;
+            const detail = document.createElement("p");
+            detail.textContent = task.detail;
+            body.append(taskTitle,detail);
+            if (task.optional) {
+              const optional = document.createElement("span");
+              optional.className = "optional";
+              optional.textContent = "移行対象店舗のみ";
+              body.append(optional);
+            }
+            const role = document.createElement("span");
+            role.className = `role-badge ${roleClass(task.role)}`;
+            role.textContent = ROLE_LABELS[task.role];
+            row.append(checkbox,body,role);
+            list.append(row);
+          });
+
+          article.append(head,list);
+          container.append(article);
+        });
+      }
+
+      function roleStats(role) {
+        const tasks = requiredTasks().filter(task => task.role === role);
+        return {total:tasks.length,done:tasks.filter(isDone).length};
+      }
+
+      function setSummary(card,done,total,detail) {
+        card.className = `summary-card ${done === total && total ? "ok" : "warn"}`;
+        card.querySelector("strong").textContent = `${done}/${total}`;
+        card.querySelector("span").textContent = detail;
+      }
+
+      function renderSummary() {
+        const required = requiredTasks();
+        const done = required.filter(isDone).length;
+        const percent = required.length ? Math.round(done / required.length * 100) : 0;
+        setSummary($("#allCard"),done,required.length,`${percent}% 完了`);
+        for (const [role,selector] of [["iwaguchi","#iwaguchiCard"],["assistant","#assistantCard"],["owner","#ownerCard"]]) {
+          const stats = roleStats(role);
+          setSummary($(selector),stats.done,stats.total,ROLE_LABELS[role]);
+        }
+        $("#progressBar").style.width = `${percent}%`;
+        const complete = done === required.length && required.length > 0;
+        $("#overallStatus").className = `status ${complete ? "ok" : "warn"}`;
+        $("#overallStatus").textContent = complete
+          ? "必須作業はすべて完了しています。DPRO内部検査結果を確認してください。"
+          : `必須作業があと ${required.length - done}件あります。`;
+        const box = $("#completionBox");
+        box.className = `completion ${complete ? "ok" : "warn"}`;
+        $("#completionTitle").textContent = complete ? "納品準備完了" : "導入作業中";
+        $("#completionDetail").textContent = complete
+          ? "店舗オーナーの承認、本番切替、初回予約確認を記録済みです。"
+          : `必須チェック ${done}/${required.length}。残りを岩口さんとDPRO制作・検査側で進めます。`;
+      }
+
+      function renderAll() {
+        renderMeta();
+        renderPhases();
+        renderSummary();
+      }
+
+      function setDemoLinks() {
+        if (!isDemo) return;
+        document.querySelectorAll("a[href^='./']").forEach(link => {
+          const url = new URL(link.getAttribute("href"),location.href);
+          url.searchParams.set("demo","1");
+          link.href = url.href;
+        });
+      }
+
+      async function runAutoChecks() {
+        $("#autoCheckButton").disabled = true;
+        $("#autoCheckStatus").className = "status";
+        $("#autoCheckStatus").textContent = "DPRO内部の読み取り検査を実行しています…";
+        $("#autoCheckGrid").replaceChildren();
+
+        const checks = [
+          {key:"health",label:"Worker・Supabase",request:() => fetchJson(config.API.health),valid:data => data?.ok === true && data?.database?.ok === true},
+          {key:"settings",label:"店舗設定",request:() => fetchJson(config.API.admin_settings,{headers:adminHeaders()}),valid:data => data?.ok === true && Boolean(data?.settings?.shop) && Array.isArray(data?.settings?.staff) && Array.isArray(data?.settings?.services)},
+          {key:"migration",label:"移行基盤",request:() => fetchJson(config.API.admin_migrations,{headers:adminHeaders()}),valid:data => data?.ok === true || Array.isArray(data?.migrations)},
+          {key:"release",label:"営業前判定",request:() => fetchJson(config.API.admin_release_check,{headers:adminHeaders()}),valid:data => typeof data?.demo_ready === "boolean" && typeof data?.production_ready === "boolean"},
+        ];
+
+        const results = await Promise.all(checks.map(async check => {
+          try {
+            const data = await check.request();
+            return {
+              key:check.key,label:check.label,ok:check.valid(data),
+              detail:check.key === "release"
+                ? `demo_ready=${data?.demo_ready} / production_ready=${data?.production_ready}`
+                : "正常応答",
+            };
+          } catch (error) {
+            return {key:check.key,label:check.label,ok:false,detail:error.message};
+          }
+        }));
+
+        state.autoChecks = results;
+        results.forEach(result => {
+          const card = document.createElement("article");
+          card.className = `auto-card ${result.ok ? "ok" : "ng"}`;
+          const strong = document.createElement("strong");
+          strong.textContent = `${result.ok ? "✓" : "×"} ${result.label}`;
+          const detail = document.createElement("span");
+          detail.textContent = result.detail;
+          card.append(strong,detail);
+          $("#autoCheckGrid").append(card);
+        });
+
+        const allOk = results.every(result => result.ok);
+        $("#autoCheckStatus").className = `status ${allOk ? "ok" : "ng"}`;
+        $("#autoCheckStatus").textContent = allOk
+          ? "DPRO内部の読み取り検査はすべて正常です。"
+          : "確認が必要な内部項目があります。オーナーには依頼せず、DPRO側で修正します。";
+        $("#autoCheckButton").disabled = false;
+      }
+
+      function exportData() {
+        collectMeta();
+        const payload = {
+          product:config.PRODUCT_NAME,
+          shop_code:config.SHOP_CODE,
+          exported_at:new Date().toISOString(),
+          workflow:state.data,
+          auto_checks:state.autoChecks,
+        };
+        const blob = new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `dpro-eye-delivery-${state.data.meta.shop_name || config.SHOP_CODE}.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href),1000);
+      }
+
+      async function importData(file) {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const workflow = parsed.workflow || parsed;
+        if (!workflow || typeof workflow !== "object") throw new Error("進行データの形式ではありません。");
+        state.data = {
+          ...defaultData(),
+          ...workflow,
+          meta:{...defaultData().meta,...(workflow.meta || {})},
+          tasks:workflow.tasks || {},
+        };
+        saveData();
+        renderAll();
+      }
+
+      async function login() {
+        const code = $("#loginCode").value.trim();
+        if (!code) {
+          $("#loginStatus").className = "status ng";
+          $("#loginStatus").textContent = "管理コードを入力してください。";
+          return;
+        }
+        $("#loginButton").disabled = true;
+        $("#loginStatus").className = "status";
+        $("#loginStatus").textContent = "管理権限を確認しています…";
+        try {
+          await fetchJson(config.API.admin_login,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({admin_code:code}),
+          });
+          state.adminCode = code;
+          localStorage.setItem(config.STORAGE_KEYS.admin_code,code);
+          $("#loginScreen").hidden = true;
+          $("#app").hidden = false;
+          loadData();
+          renderAll();
+          setDemoLinks();
+        } catch (error) {
+          $("#loginStatus").className = "status ng";
+          $("#loginStatus").textContent = error.message;
+        } finally {
+          $("#loginButton").disabled = false;
+        }
+      }
+
+      $("#loginButton").addEventListener("click",login);
+      $("#loginCode").addEventListener("keydown",event => { if (event.key === "Enter") login(); });
+      $("#clearCode").addEventListener("click",() => {
+        localStorage.removeItem(config.STORAGE_KEYS.admin_code);
+        $("#loginCode").value = "";
+        $("#loginStatus").className = "status";
+        $("#loginStatus").textContent = "管理コードを削除しました。";
+      });
+
+      ["#projectShopName","#projectOwnerName","#projectLaunchDate","#projectSource","#projectLine","#projectManager","#projectNotes"].forEach(selector => {
+        $(selector).addEventListener("input",collectMeta);
+        $(selector).addEventListener("change",collectMeta);
+      });
+
+      $("#autoCheckButton").addEventListener("click",runAutoChecks);
+      $("#exportButton").addEventListener("click",exportData);
+      $("#importButton").addEventListener("click",() => $("#importFile").click());
+      $("#importFile").addEventListener("change",async event => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          await importData(file);
+          toast("進行状況を読み込みました。");
+        } catch (error) {
+          toast(error.message,true);
+        } finally {
+          event.target.value = "";
+        }
+      });
+      $("#printButton").addEventListener("click",() => window.print());
+      $("#resetButton").addEventListener("click",() => {
+        if (!confirm("この端末に保存した導入進行を初期化しますか？")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state.data = defaultData();
+        renderAll();
+        toast("導入進行を初期化しました。");
+      });
+
+      const savedCode = localStorage.getItem(config.STORAGE_KEYS.admin_code) || "";
+      $("#loginCode").value = isDemo ? config.DEMO.admin_code : savedCode;
+      if (isDemo) login();
+    })();
+  </script>
+</body>
+</html>

@@ -191,6 +191,7 @@
           <a id="ownerLink" href="./owner.html">オーナー管理</a>
           <a id="settingsLink" href="./settings.html">店舗設定</a>
           <a id="systemLink" href="./system-check.html">統合システムチェック</a>
+          <a id="deliveryLink" href="./delivery.html">導入・納品進行</a>
         </div>
       </div>
 
@@ -285,7 +286,7 @@
       const isDemo = params.get("demo") === "1";
       const $ = selector => document.querySelector(selector);
       const state = {adminCode:"",running:false};
-      const VERSION = "EYE-18-R3-DEMO-RESTORE-FIX-20260723";
+      const VERSION = "EYE-19-DELIVERY-WORKFLOW-20260723";
 
       const attr = (name,value) => `${name}="${value}"`;
       const fn = name => `function ${name}(`;
@@ -335,6 +336,14 @@
             configScript(),attr("id","settingsModeBar"),
             attr("id","settingsChecklist"),attr("id","settingsValidation"),
             fn("settingsIssues"),fn("confirmSettingsSave"),"beforeunload",
+          ],
+        },
+        {
+          key:"delivery",name:"導入・納品進行",url:config.PAGES.delivery,
+          markers:[
+            configScript(),attr("id","deliveryWorkflow"),
+            "店舗オーナーへ技術作業を依頼せず",
+            "function runAutoChecks(",
           ],
         },
         {
@@ -408,6 +417,14 @@
             ["owner",attr("id","followupSummary")],
             ["owner",fn("validFutureReservation")],
             ["owner",fn("recommendedFollowupMessage")],
+          ],
+        },
+        {
+          key:"delivery_flow",label:"導入・乗り換え・納品の内部進行",
+          requirements:[
+            ["delivery",attr("id","deliveryWorkflow")],
+            ["delivery","店舗オーナーへ技術作業を依頼せず"],
+            ["delivery",fn("runAutoChecks")],
           ],
         },
         {
