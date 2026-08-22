@@ -1,0 +1,21 @@
+
+/* DPRO TUTORIAL EYE R3 FIRST10 LOADER V1.0 / additive only */
+(() => {
+  "use strict";
+  const supported = new Set([
+    "owner.html",
+    "owner-ipad.html",
+    "staff-ipad-login.html",
+    "settings.html"
+  ]);
+  const page = location.pathname.split("/").pop() || "index.html";
+  if (!supported.has(page)) return;
+  document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("dproTutorialRuntime")) return;
+    const script = document.createElement("script");
+    script.id = "dproTutorialRuntime";
+    script.src = "./dpro-tutorial.js";
+    script.defer = true;
+    document.head.append(script);
+  }, { once:true });
+})();

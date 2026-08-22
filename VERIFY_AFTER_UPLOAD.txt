@@ -1,0 +1,4 @@
+Verify only:
+- owner.html shows the fixed 「操作ガイド」 launcher
+- opening the launcher asks role: オーナー・管理者 / スタッフ
+- do not confirm/save/send/change reservation status during this verification
