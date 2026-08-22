@@ -3,14 +3,27 @@
 
   const REPOSITORY_NAME = "dpro-eye-salon-line";
   const GITHUB_OWNER = "dpromstk2000-lab";
-  const API_BASE = "https://dpro-eye-salon-line-api.dpromstk2000.workers.dev";
+  const API_BASE =
+    "https://cbknucemarcpbscirzyv.supabase.co/functions/v1/eye-product-ready-v2";
 
   const pageBase = `https://${GITHUB_OWNER}.github.io/${REPOSITORY_NAME}/`;
 
-  window.DPRO_EYE_CONFIG = Object.freeze({
+  const bootUrl = new URL(location.href);
+  const bootIsDemo = bootUrl.searchParams.get("demo") === "1";
+  if (!bootIsDemo && bootUrl.searchParams.has("line_user_id")) {
+    bootUrl.searchParams.delete("line_user_id");
+    history.replaceState(null, "", bootUrl.pathname + bootUrl.search + bootUrl.hash);
+  }
+
+  const CONFIG = Object.freeze({
     PRODUCT_NAME: "DPRO まつげ・眉サロン LINE",
     PRODUCT_NAME_EN: "DPRO EYE SALON LINE",
     VERSION: "EYE-22-DPRO-NEXT-STANDARD-LOCK-20260723",
+    PRODUCT_READY_WORKER_VERSION:
+      "EYE-PR-EDGE-2.2-LIMITED-STAFF-20260822",
+    PRODUCT_READY_DATABASE_VERSION:
+      "EYE-11-MIGRATION-SCHEMA-20260718",
+    PRODUCT_READY_ADAPTER_VERSION: "DPRO-CONTROL-ADAPTER-1.0",
     SHOP_CODE: "dpro_eye_demo",
     TIMEZONE: "Asia/Tokyo",
     SLOT_MINUTES: 30,
@@ -26,7 +39,9 @@
       member: `${pageBase}member.html`,
       owner: `${pageBase}owner.html`,
       owner_ipad: `${pageBase}owner-ipad.html`,
+      staff_ipad_login: `${pageBase}staff-ipad-login.html`,
       settings: `${pageBase}settings.html`,
+      business_calendar: `${pageBase}business-calendar.html`,
       system_check: `${pageBase}system-check.html`,
       release_check: `${pageBase}release-check.html`,
       migration: `${pageBase}migration.html`,
@@ -38,7 +53,7 @@
 
     API: Object.freeze({
       root: `${API_BASE}/`,
-      health: `${API_BASE}/health`,
+      health: `${API_BASE}/api/health`,
       shop: `${API_BASE}/api/public/shop`,
       services: `${API_BASE}/api/public/services`,
       staff: `${API_BASE}/api/public/staff`,
@@ -50,6 +65,10 @@
       reservation_reschedule:
         `${API_BASE}/api/public/reservation.reschedule`,
       member_reservations: `${API_BASE}/api/member/reservations`,
+
+      staff_login: `${API_BASE}/api/product-ready/staff/login`,
+      staff_me: `${API_BASE}/api/product-ready/staff/me`,
+
       admin_login: `${API_BASE}/api/admin/login`,
       admin_dashboard: `${API_BASE}/api/admin/dashboard`,
       admin_customer_search: `${API_BASE}/api/admin/customers/search`,
@@ -70,6 +89,9 @@
         `${API_BASE}/api/admin/release-check`,
       admin_demo_restore:
         `${API_BASE}/api/admin/demo-restore`,
+      admin_business_calendar:
+        `${API_BASE}/api/admin/business-calendar`,
+
       migration_link_request:
         `${API_BASE}/api/public/migration/link.request`,
       migration_link_confirm:
@@ -119,6 +141,8 @@
 
     STORAGE_KEYS: Object.freeze({
       admin_code: "dpro_eye_admin_code",
+      staff_session: "dpro_eye_staff_session",
+      staff_session_expires: "dpro_eye_staff_session_expires",
     }),
 
     DEMO: Object.freeze({
@@ -150,5 +174,136 @@
       mobile_body_px: 16,
       button_height_px: 52,
     }),
+  });
+
+  window.DPRO_EYE_CONFIG = CONFIG;
+
+  const nativeFetch = window.fetch.bind(window);
+  const staffRoutes = new Set([
+    "GET /api/admin/dashboard",
+    "GET /api/admin/customers/search",
+    "GET /api/admin/customer.detail",
+    "PATCH /api/admin/reservation.status",
+    "POST /api/admin/carte.save",
+    "POST /api/admin/carte.photo.upload",
+  ]);
+
+  function logicalApiPath(url) {
+    const prefix = "/functions/v1/eye-product-ready-v2";
+    return url.pathname.startsWith(prefix)
+      ? url.pathname.slice(prefix.length) || "/"
+      : url.pathname;
+  }
+
+  function currentStaffSession() {
+    const token = sessionStorage.getItem(CONFIG.STORAGE_KEYS.staff_session) || "";
+    const expires = Date.parse(
+      sessionStorage.getItem(CONFIG.STORAGE_KEYS.staff_session_expires) || ""
+    );
+    if (!token) return "";
+    if (Number.isFinite(expires) && expires <= Date.now()) {
+      sessionStorage.removeItem(CONFIG.STORAGE_KEYS.staff_session);
+      sessionStorage.removeItem(CONFIG.STORAGE_KEYS.staff_session_expires);
+      return "";
+    }
+    return token;
+  }
+
+  function lineIdToken() {
+    if (bootIsDemo) return "";
+    try {
+      if (!window.liff?.isLoggedIn?.()) return "";
+      return window.liff?.getIDToken?.() || "";
+    } catch {
+      return "";
+    }
+  }
+
+  window.fetch = async (input, options = {}) => {
+    const rawUrl =
+      input instanceof Request ? input.url :
+      input instanceof URL ? input.href : String(input);
+    let url;
+    try {
+      url = new URL(rawUrl, location.href);
+    } catch {
+      return nativeFetch(input, options);
+    }
+
+    if (!url.href.startsWith(API_BASE)) {
+      return nativeFetch(input, options);
+    }
+
+    const method = String(
+      options.method || (input instanceof Request ? input.method : "GET")
+    ).toUpperCase();
+    const path = logicalApiPath(url);
+    const requestKey = `${method} ${path}`;
+    const staffMode =
+      new URLSearchParams(location.search).get("staff") === "1";
+    const staffToken = currentStaffSession();
+
+    if (
+      staffMode && staffToken &&
+      method === "POST" && path === "/api/admin/login"
+    ) {
+      return new Response(
+        JSON.stringify({ ok:true, authenticated:true, staff_session:true }),
+        {
+          status:200,
+          headers:{ "Content-Type":"application/json; charset=utf-8" },
+        }
+      );
+    }
+
+    const headers = new Headers(
+      options.headers || (input instanceof Request ? input.headers : undefined)
+    );
+
+    const idToken = lineIdToken();
+    if (idToken) headers.set("X-DPRO-LINE-ID-TOKEN", idToken);
+
+    if (staffMode && staffToken && staffRoutes.has(requestKey)) {
+      headers.delete("X-DPRO-ADMIN-CODE");
+      headers.set("Authorization", `Bearer ${staffToken}`);
+    }
+
+    return nativeFetch(input, { ...options, headers });
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const pathname = location.pathname;
+    const params = new URLSearchParams(location.search);
+    const staffMode = params.get("staff") === "1";
+    const staffToken = currentStaffSession();
+
+    if (pathname.endsWith("/settings.html")) {
+      const actions = document.querySelector(".top-actions");
+      if (actions && !document.getElementById("productReadyCalendarLink")) {
+        const a = document.createElement("a");
+        a.id = "productReadyCalendarLink";
+        a.textContent = "臨時休業・特別営業";
+        a.href = params.get("demo") === "1"
+          ? "./business-calendar.html?demo=1"
+          : "./business-calendar.html";
+        actions.prepend(a);
+      }
+    }
+
+    if (
+      pathname.endsWith("/owner-ipad.html") &&
+      staffMode && staffToken && params.get("demo") !== "1"
+    ) {
+      const input = document.getElementById("loginCode");
+      const button = document.getElementById("loginButton");
+      if (input && button) {
+        input.value = "staff-session";
+        button.click();
+        setTimeout(
+          () => localStorage.removeItem(CONFIG.STORAGE_KEYS.admin_code),
+          500
+        );
+      }
+    }
   });
 })();

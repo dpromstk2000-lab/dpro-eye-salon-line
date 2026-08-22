@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6F4C55">
+<title>臨時休業・特別営業｜DPRO EYE SALON</title>
+<script src="./config.js"></script>
+<style>
+:root{--bg:#F7F3EF;--surface:#fff;--soft:#F2EAE5;--accent:#A86F7D;--dark:#6F4C55;--text:#2F2B2C;--muted:#6E6567;--border:#DED1CA;--ok:#64745F;--warn:#A96F32;--ng:#A14E55;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-size:17px;line-height:1.65}.page{width:min(1000px,calc(100% - 24px));margin:0 auto;padding:20px 0 45px}.head,.panel{border:1px solid var(--border);border-radius:20px;background:#fff;box-shadow:0 12px 34px rgba(78,53,61,.07)}.head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:20px}.panel{padding:20px;margin-top:14px}.brand{margin:0;color:var(--dark);font-size:12px;font-weight:900;letter-spacing:.12em}h1{margin:2px 0 0;font-size:30px}h2{margin:0 0 5px;font-size:23px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}label{display:block;font-weight:850}input,select{width:100%;min-height:52px;margin-top:6px;padding:9px 12px;border:2px solid var(--border);border-radius:12px;background:#fff;font:inherit}.full{grid-column:1/-1}.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.btn,a.btn{display:inline-flex;min-height:50px;align-items:center;justify-content:center;padding:9px 16px;border:0;border-radius:12px;text-decoration:none;font:inherit;font-weight:900;cursor:pointer}.primary{color:#fff;background:var(--accent)}.secondary{color:var(--dark);background:var(--soft)}.danger{color:#fff;background:var(--ng)}.status{padding:12px 14px;border-radius:12px;background:var(--soft);color:var(--muted);font-weight:800}.status.ok{background:#E7EFE4;color:#40513B}.status.ng{background:#F7E6E7;color:#7E343A}.list{display:grid;gap:9px;margin-top:12px}.item{display:grid;grid-template-columns:140px 1fr auto;gap:12px;align-items:center;padding:14px;border:1px solid var(--border);border-radius:14px}.item strong{color:var(--dark)}.badge{display:inline-flex;padding:3px 8px;border-radius:99px;background:var(--soft);font-size:13px;font-weight:900}.empty{padding:18px;border:1px dashed var(--border);border-radius:13px;color:var(--muted);text-align:center}.login{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end}.special{display:none}.special.show{display:grid}@media(max-width:700px){.head{align-items:stretch;flex-direction:column}.grid,.login{grid-template-columns:1fr}.full{grid-column:auto}.item{grid-template-columns:1fr}.page{width:min(100% - 14px,1000px);padding-top:8px}}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="head"><div><p class="brand">DPRO EYE SALON LINE</p><h1>臨時休業・特別営業</h1><div class="muted">通常定休日とは別に、店舗全体の例外営業日を設定します。</div></div><a id="back" class="btn secondary" href="./settings.html">店舗設定へ戻る</a></header>
+<section class="panel">
+<h2>管理コード</h2>
+<div class="login"><label>管理コード<input id="adminCode" type="password" inputmode="numeric" autocomplete="off" maxlength="20" placeholder="管理コード"></label><button id="load" class="btn primary" type="button">設定を開く</button></div>
+<div id="status" class="status" style="margin-top:12px">管理コードを入力してください。</div>
+</section>
+<section id="editor" class="panel" hidden>
+<h2>例外営業日を追加</h2>
+<div class="grid">
+<label>日付<input id="date" type="date"></label>
+<label>種別<select id="type"><option value="closed">臨時休業</option><option value="special_open">特別営業</option></select></label>
+<div id="specialTimes" class="grid full special"><label>開店<input id="openTime" type="time" step="1800" value="10:00"></label><label>閉店<input id="closeTime" type="time" step="1800" value="18:00"></label></div>
+<label class="full">理由<input id="reason" maxlength="500" placeholder="例：研修のため／祝日特別営業"></label>
+</div>
+<div class="row"><button id="save" class="btn primary" type="button">保存</button><button id="reload" class="btn secondary" type="button">再読込</button></div>
+</section>
+<section id="listPanel" class="panel" hidden><h2>登録済み</h2><div id="list" class="list"></div></section>
+</main>
+<script>
+(() => {
+  "use strict";
+  const config=window.DPRO_EYE_CONFIG;
+  const params=new URLSearchParams(location.search);
+  const isDemo=params.get("demo")==="1";
+  const $=id=>document.getElementById(id);
+  let code="";
+  if(isDemo){$("back").href="./settings.html?demo=1";$("adminCode").value=config.DEMO.admin_code}
+  else $("adminCode").value=localStorage.getItem(config.STORAGE_KEYS.admin_code)||"";
+  function setStatus(text,mode=""){$("status").textContent=text;$("status").className=`status ${mode}`.trim()}
+  function headers(json=false){const h={"X-DPRO-ADMIN-CODE":code};if(json)h["Content-Type"]="application/json";return h}
+  function typeUi(){$("specialTimes").classList.toggle("show",$("type").value==="special_open")}
+  async function api(options={}){const res=await fetch(config.API.admin_business_calendar,{cache:"no-store",...options});const data=await res.json().catch(()=>null);if(!res.ok)throw new Error(data?.message||`HTTP ${res.status}`);return data}
+  async function load(){code=$("adminCode").value.trim();if(!code)return setStatus("管理コードを入力してください。","ng");$("load").disabled=true;setStatus("読み込んでいます…");try{const data=await api({headers:headers()});if(!isDemo)localStorage.setItem(config.STORAGE_KEYS.admin_code,code);render(data.exceptions||[]);$("editor").hidden=false;$("listPanel").hidden=false;setStatus("臨時休業・特別営業を読み込みました。","ok")}catch(e){setStatus(e.message,"ng")}finally{$("load").disabled=false}}
+  function render(rows){const box=$("list");box.replaceChildren();if(!rows.length){const e=document.createElement("div");e.className="empty";e.textContent="登録済みの例外営業日はありません。";box.append(e);return}for(const row of rows){const item=document.createElement("div");item.className="item";const date=document.createElement("strong");date.textContent=row.date;const detail=document.createElement("div");const badge=document.createElement("span");badge.className="badge";badge.textContent=row.type==="special_open"?"特別営業":"臨時休業";const text=document.createElement("div");text.textContent=row.type==="special_open"?`${row.open_time||""}〜${row.close_time||""} ${row.reason||""}`:(row.reason||"終日休業");detail.append(badge,text);const del=document.createElement("button");del.className="btn danger";del.type="button";del.textContent="削除";del.addEventListener("click",()=>remove(row.date));item.append(date,detail,del);box.append(item)}}
+  async function save(){const payload={date:$("date").value,type:$("type").value,reason:$("reason").value.trim()};if(payload.type==="special_open"){payload.open_time=$("openTime").value;payload.close_time=$("closeTime").value}if(!payload.date)return alert("日付を選択してください。");$("save").disabled=true;try{const data=await api({method:"POST",headers:headers(true),body:JSON.stringify(payload)});render(data.exceptions||[]);setStatus("保存しました。","ok");$("reason").value=""}catch(e){setStatus(e.message,"ng")}finally{$("save").disabled=false}}
+  async function remove(date){if(!confirm(`${date} の設定を削除しますか？`))return;try{const data=await api({method:"DELETE",headers:headers(true),body:JSON.stringify({date})});render(data.exceptions||[]);setStatus("削除しました。","ok")}catch(e){setStatus(e.message,"ng")}}
+  $("type").addEventListener("change",typeUi);$("load").addEventListener("click",load);$("reload").addEventListener("click",load);$("save").addEventListener("click",save);typeUi();if(isDemo)load();
+})();
+</script>
+</body>
+</html>
