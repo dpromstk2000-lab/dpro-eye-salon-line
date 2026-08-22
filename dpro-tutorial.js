@@ -73,6 +73,7 @@
     node.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});
     return true;
   }
+  function guideUrl(){ const u=new URL("./dpro-guide-center.html",location.href); const rp=new URLSearchParams(location.search).get("dpro_role"); const r=state.role||([ROLE_ADMIN,ROLE_STAFF].includes(rp)?rp:ROLE_ADMIN); u.searchParams.set("dpro_role",r); return u.href; }
   function targetUrl(card) {
     const u = new URL(`./${card.page}`, location.href);
     const now = new URL(location.href);
@@ -92,7 +93,7 @@
       .dpt-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.dpt-head strong{font-size:19px}.dpt-x{border:0;background:#F2EAE5;color:#6F4C55;border-radius:10px;min-width:42px;min-height:42px;font-size:20px;cursor:pointer}
       .dpt-kicker{color:#A86F7D;font-size:12px;font-weight:900;letter-spacing:.06em}.dpt-progress{height:8px;border-radius:99px;background:#F2EAE5;overflow:hidden;margin:12px 0}.dpt-progress span{display:block;height:100%;background:#A86F7D}
       .dpt-why,.dpt-safe{margin-top:11px;padding:11px 12px;border-radius:12px;background:#FAF7F2;color:#6E6567;font-size:14px}.dpt-safe{border-left:4px solid #A96F32;background:#FFF5E8;color:#70481F}
-      .dpt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.dpt-btn{min-height:46px;border:0;border-radius:12px;padding:9px 13px;font:900 14px/1.2 inherit;cursor:pointer}.dpt-primary{color:#fff;background:#A86F7D}.dpt-secondary{color:#6F4C55;background:#F2EAE5}.dpt-danger{color:#7E343A;background:#F7E6E7}.dpt-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.dpt-role{min-height:82px;border:2px solid #DED1CA;border-radius:14px;padding:12px;background:#fff;text-align:left;cursor:pointer}.dpt-role b{display:block;color:#6F4C55}.dpt-role span{display:block;margin-top:4px;color:#6E6567;font-size:13px}.dpt-note{margin-top:9px;color:#6E6567;font-size:13px}
+      .dpt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.dpt-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;border:0;border-radius:12px;padding:9px 13px;font:900 14px/1.2 inherit;cursor:pointer}.dpt-primary{color:#fff;background:#A86F7D}.dpt-secondary{color:#6F4C55;background:#F2EAE5}.dpt-danger{color:#7E343A;background:#F7E6E7}.dpt-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.dpt-role{min-height:82px;border:2px solid #DED1CA;border-radius:14px;padding:12px;background:#fff;text-align:left;cursor:pointer}.dpt-role b{display:block;color:#6F4C55}.dpt-role span{display:block;margin-top:4px;color:#6E6567;font-size:13px}.dpt-note{margin-top:9px;color:#6E6567;font-size:13px}
       @media(max-width:520px){#dproTutorialLauncher{right:10px;bottom:10px}#dproTutorialPanel{left:8px;right:8px;bottom:70px;width:auto;max-height:calc(100vh - 84px);border-radius:18px}.dpt-role-grid{grid-template-columns:1fr}.dpro-guide-target-active{scroll-margin-bottom:360px!important}}
       @media(prefers-reduced-motion:reduce){#dproTutorialPanel *{scroll-behavior:auto!important}}
     `;
@@ -114,7 +115,7 @@
     clearHighlight();
     ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>どの立場で確認しますか？</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div>
       <div class="dpt-role-grid"><button class="dpt-role" data-role="${ROLE_ADMIN}"><b>オーナー・管理者</b><span>6章15カードの全体版。スタッフ専用入口も管理者の確認事項として含みます。</span></button><button class="dpt-role" data-role="${ROLE_STAFF}"><b>スタッフ</b><span>スタッフ専用ログインと、許可された店舗iPadの日常操作だけを確認します。</span></button></div>
-      <div class="dpt-note">ガイドは予約確定・状態変更・保存・送信・認証を自動実行しません。</div>`;
+      <div class="dpt-note">ガイドは予約確定・状態変更・保存・送信・認証を自動実行しません。</div><div class="dpt-actions"><a class="dpt-btn dpt-secondary" data-guide href="${guideUrl()}">詳しいGuide Center</a></div>`;
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelectorAll("[data-role]").forEach(b=>b.onclick=()=>{
       state={status:"IN_PROGRESS",role:b.dataset.role,index:0}; save(); renderCard();
@@ -134,7 +135,7 @@
       <div class="dpt-why"><b>${escapeHtml(card.chapter_title)}</b><br>${escapeHtml(card.chapter_why||"")}</div>
       <p>${escapeHtml(card.action)}</p>
       <div class="dpt-safe">${onPage?(found?'オレンジ枠の場所を確認してください。':'対象が現在表示されていないため、説明カードとして安全に表示しています。'):`対象画面：${escapeHtml(card.page)}。自動では移動しません。`}</div>
-      <div class="dpt-actions">${!onPage?'<button class="dpt-btn dpt-primary" data-open>対象画面を開く</button>':''}<button class="dpt-btn dpt-primary" data-next>${state.index===cards.length-1?'完了':'次へ'}</button>${state.index>0?'<button class="dpt-btn dpt-secondary" data-prev>戻る</button>':''}<button class="dpt-btn dpt-danger" data-skip>今回はスキップ</button></div>`;
+      <div class="dpt-actions">${!onPage?'<button class="dpt-btn dpt-primary" data-open>対象画面を開く</button>':''}<button class="dpt-btn dpt-primary" data-next>${state.index===cards.length-1?'完了':'次へ'}</button>${state.index>0?'<button class="dpt-btn dpt-secondary" data-prev>戻る</button>':''}<button class="dpt-btn dpt-danger" data-skip>今回はスキップ</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-next]").onclick=()=>{ state.index++; state.status=state.index>=cards.length?"COMPLETED":"IN_PROGRESS"; save(); renderCard(); };
     const prev=ui.panel.querySelector("[data-prev]"); if(prev) prev.onclick=()=>{state.index=Math.max(0,state.index-1);state.status="IN_PROGRESS";save();renderCard();};
@@ -144,14 +145,14 @@
 
   function renderDone() {
     clearHighlight();
-    ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>操作ガイドを完了しました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>必要な時はいつでも最初から再生できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-replay>最初から見る</button><button class="dpt-btn dpt-secondary" data-role-change>役割を変更</button></div>`;
+    ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>操作ガイドを完了しました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>必要な時はいつでも最初から再生できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-replay>最初から見る</button><button class="dpt-btn dpt-secondary" data-role-change>役割を変更</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-replay]").onclick=()=>{state.index=0;state.status="IN_PROGRESS";save();renderCard();};
     ui.panel.querySelector("[data-role-change]").onclick=()=>{state={status:"NOT_STARTED",role:"",index:0};save();rolePicker();};
   }
   function renderSkipped() {
     clearHighlight();
-    ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>今回はスキップしました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>状態は保存されています。操作ガイドからいつでも再開できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-resume>続きから再開</button><button class="dpt-btn dpt-secondary" data-replay>最初から見る</button></div>`;
+    ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>今回はスキップしました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>状態は保存されています。操作ガイドからいつでも再開できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-resume>続きから再開</button><button class="dpt-btn dpt-secondary" data-replay>最初から見る</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-resume]").onclick=()=>{state.status="IN_PROGRESS";save();renderCard();};
     ui.panel.querySelector("[data-replay]").onclick=()=>{state.index=0;state.status="IN_PROGRESS";save();renderCard();};
