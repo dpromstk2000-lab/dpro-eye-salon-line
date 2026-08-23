@@ -30,13 +30,19 @@
     return a.feature_link || "#";
   }
   function first10Href(){
+    if(role===ROLE_CUSTOMER) return new URL("./member.html",location.href).href;
     const page = role===ROLE_STAFF ? "staff-ipad-login.html" : "owner.html";
     const u=new URL(`./${page}`,location.href);
     u.searchParams.set("dpro_tutorial","1");
-    u.searchParams.set("dpro_role",role===ROLE_CUSTOMER?ROLE_ADMIN:role);
+    u.searchParams.set("dpro_role",role);
     return u.href;
   }
-  function renderRole(){ $("#roleBadge").textContent=`表示：${roleName}`; $("#guideLead").textContent = role===ROLE_STAFF ? "スタッフ専用ログインと、許可された店舗iPad操作を検索して確認できます。" : role===ROLE_CUSTOMER ? "LINE予約・予約確認・日時変更など、お客様側の操作を確認できます。" : "予約・店舗iPad・顧客・再来店・店舗設定を、必要な時に検索して確認できます。"; }
+  function renderRole(){
+    $("#roleBadge").textContent=`表示：${roleName}`;
+    $("#guideLead").textContent = role===ROLE_STAFF ? "スタッフ専用ログインと、許可された店舗iPad操作を検索して確認できます。" : role===ROLE_CUSTOMER ? "LINE予約・予約確認・日時変更など、お客様側の操作を確認できます。" : "予約・店舗iPad・顧客・再来店・店舗設定を、必要な時に検索して確認できます。";
+    const customerReference = role===ROLE_CUSTOMER;
+    ["first10Top","first10Replay"].forEach(id=>{ const el=$("#"+id); if(el) el.hidden=customerReference; });
+  }
   function renderCategories(){
     const box=$("#categoryList");
     const items=[{id:"ALL",name:"すべて"},...categories];
