@@ -90,14 +90,82 @@
       #dproTutorialLauncher{position:fixed;right:18px;bottom:18px;z-index:2147483500;min-height:50px;border:0;border-radius:999px;padding:11px 17px;color:#fff;background:#6F4C55;box-shadow:0 10px 30px rgba(0,0,0,.23);font:900 14px/1.2 system-ui,-apple-system,"Noto Sans JP",sans-serif;cursor:pointer}
       #dproTutorialPanel{position:fixed;right:18px;bottom:82px;z-index:2147483600;width:min(430px,calc(100vw - 28px));max-height:min(630px,calc(100vh - 110px));overflow:auto;padding:18px;border:1px solid #DED1CA;border-radius:20px;background:#fff;color:#2F2B2C;box-shadow:0 18px 52px rgba(0,0,0,.26);font:16px/1.65 system-ui,-apple-system,"Noto Sans JP",sans-serif}
       #dproTutorialPanel[hidden]{display:none!important}#dproTutorialPanel *{box-sizing:border-box}
-      .dpt-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.dpt-head strong{font-size:19px}.dpt-x{border:0;background:#F2EAE5;color:#6F4C55;border-radius:10px;min-width:42px;min-height:42px;font-size:20px;cursor:pointer}
+      .dpt-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.dpt-head strong{font-size:19px}.dpt-drag-handle{flex:0 0 auto;align-self:flex-start;min-height:42px;border:1px solid #DED1CA;border-radius:10px;padding:8px 11px;background:#fff;color:#6F4C55;font:900 13px/1 system-ui,-apple-system,"Noto Sans JP",sans-serif;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}.dpt-drag-handle:active,#dproTutorialPanel.dpt-dragging .dpt-drag-handle{cursor:grabbing;background:#F2EAE5}.dpt-x{border:0;background:#F2EAE5;color:#6F4C55;border-radius:10px;min-width:42px;min-height:42px;font-size:20px;cursor:pointer}
       .dpt-kicker{color:#A86F7D;font-size:12px;font-weight:900;letter-spacing:.06em}.dpt-progress{height:8px;border-radius:99px;background:#F2EAE5;overflow:hidden;margin:12px 0}.dpt-progress span{display:block;height:100%;background:#A86F7D}
       .dpt-why,.dpt-safe{margin-top:11px;padding:11px 12px;border-radius:12px;background:#FAF7F2;color:#6E6567;font-size:14px}.dpt-safe{border-left:4px solid #A96F32;background:#FFF5E8;color:#70481F}
       .dpt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.dpt-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;border:0;border-radius:12px;padding:9px 13px;font:900 14px/1.2 inherit;cursor:pointer}.dpt-primary{color:#fff;background:#A86F7D}.dpt-secondary{color:#6F4C55;background:#F2EAE5}.dpt-danger{color:#7E343A;background:#F7E6E7}.dpt-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.dpt-role{min-height:82px;border:2px solid #DED1CA;border-radius:14px;padding:12px;background:#fff;text-align:left;cursor:pointer}.dpt-role b{display:block;color:#6F4C55}.dpt-role span{display:block;margin-top:4px;color:#6E6567;font-size:13px}.dpt-note{margin-top:9px;color:#6E6567;font-size:13px}
-      @media(max-width:520px){#dproTutorialLauncher{right:10px;bottom:10px}#dproTutorialPanel{left:8px;right:8px;bottom:70px;width:auto;max-height:calc(100vh - 84px);border-radius:18px}.dpt-role-grid{grid-template-columns:1fr}.dpro-guide-target-active{scroll-margin-bottom:360px!important}}
+      @media(max-width:520px){#dproTutorialLauncher{right:10px;bottom:10px}#dproTutorialPanel{left:8px;right:8px;bottom:70px;width:auto;max-height:calc(100vh - 84px);border-radius:18px}.dpt-drag-handle{min-height:40px;padding:7px 9px}.dpt-role-grid{grid-template-columns:1fr}.dpro-guide-target-active{scroll-margin-bottom:360px!important}}
       @media(prefers-reduced-motion:reduce){#dproTutorialPanel *{scroll-behavior:auto!important}}
     `;
     document.head.append(s);
+  }
+
+  const DRAG_SAFE_MARGIN = 10;
+  let dragState = null;
+
+  function clampNumber(value,min,max){ return Math.min(Math.max(value,min),Math.max(min,max)); }
+  function clampDraggedPanel(){
+    const panel=ui?.panel;
+    if (!panel || panel.dataset.dproDragged!=="1" || panel.hidden) return;
+    let rect=panel.getBoundingClientRect();
+    const safeWidth=Math.max(1,window.innerWidth-(DRAG_SAFE_MARGIN*2));
+    if (rect.width>safeWidth) { panel.style.width=`${safeWidth}px`; rect=panel.getBoundingClientRect(); }
+    const maxLeft=Math.max(DRAG_SAFE_MARGIN,window.innerWidth-rect.width-DRAG_SAFE_MARGIN);
+    const maxTop=Math.max(DRAG_SAFE_MARGIN,window.innerHeight-rect.height-DRAG_SAFE_MARGIN);
+    panel.style.left=`${clampNumber(rect.left,DRAG_SAFE_MARGIN,maxLeft)}px`;
+    panel.style.top=`${clampNumber(rect.top,DRAG_SAFE_MARGIN,maxTop)}px`;
+    panel.style.right="auto";
+    panel.style.bottom="auto";
+  }
+  function endPanelDrag(e){
+    if (!dragState || (e && e.pointerId!==dragState.pointerId)) return;
+    const {handle,pointerId}=dragState;
+    dragState=null;
+    ui.panel.classList.remove("dpt-dragging");
+    try { if(handle.hasPointerCapture?.(pointerId)) handle.releasePointerCapture(pointerId); } catch {}
+  }
+  function installDragHandle(){
+    const head=ui.panel.querySelector(".dpt-head");
+    if (!head || head.querySelector(".dpt-drag-handle")) return;
+    const handle=document.createElement("button");
+    handle.type="button";
+    handle.className="dpt-drag-handle";
+    handle.textContent="↕ 移動";
+    handle.setAttribute("aria-label","説明カードをドラッグして移動");
+    handle.title="この部分をドラッグして説明カードを移動できます";
+    const close=head.querySelector("[data-close]");
+    if (close) head.insertBefore(handle,close); else head.append(handle);
+    handle.addEventListener("pointerdown",e=>{
+      if (e.pointerType==="mouse" && e.button!==0) return;
+      let rect=ui.panel.getBoundingClientRect();
+      dragState={pointerId:e.pointerId,handle,dx:e.clientX-rect.left,dy:e.clientY-rect.top};
+      ui.panel.dataset.dproDragged="1";
+      ui.panel.style.left=`${rect.left}px`;
+      ui.panel.style.top=`${rect.top}px`;
+      ui.panel.style.right="auto";
+      ui.panel.style.bottom="auto";
+      ui.panel.style.width=`${Math.min(rect.width,Math.max(1,window.innerWidth-(DRAG_SAFE_MARGIN*2)))}px`;
+      rect=ui.panel.getBoundingClientRect();
+      const maxLeft=Math.max(DRAG_SAFE_MARGIN,window.innerWidth-rect.width-DRAG_SAFE_MARGIN);
+      const maxTop=Math.max(DRAG_SAFE_MARGIN,window.innerHeight-rect.height-DRAG_SAFE_MARGIN);
+      ui.panel.style.left=`${clampNumber(rect.left,DRAG_SAFE_MARGIN,maxLeft)}px`;
+      ui.panel.style.top=`${clampNumber(rect.top,DRAG_SAFE_MARGIN,maxTop)}px`;
+      ui.panel.classList.add("dpt-dragging");
+      try { handle.setPointerCapture?.(e.pointerId); } catch {}
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    handle.addEventListener("pointermove",e=>{
+      if (!dragState || e.pointerId!==dragState.pointerId) return;
+      const rect=ui.panel.getBoundingClientRect();
+      const maxLeft=Math.max(DRAG_SAFE_MARGIN,window.innerWidth-rect.width-DRAG_SAFE_MARGIN);
+      const maxTop=Math.max(DRAG_SAFE_MARGIN,window.innerHeight-rect.height-DRAG_SAFE_MARGIN);
+      ui.panel.style.left=`${clampNumber(e.clientX-dragState.dx,DRAG_SAFE_MARGIN,maxLeft)}px`;
+      ui.panel.style.top=`${clampNumber(e.clientY-dragState.dy,DRAG_SAFE_MARGIN,maxTop)}px`;
+      e.preventDefault();
+    });
+    handle.addEventListener("pointerup",endPanelDrag);
+    handle.addEventListener("pointercancel",endPanelDrag);
   }
 
   function makeUI() {
@@ -116,6 +184,8 @@
     ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>どの立場で確認しますか？</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div>
       <div class="dpt-role-grid"><button class="dpt-role" data-role="${ROLE_ADMIN}"><b>オーナー・管理者</b><span>6章15カードの全体版。スタッフ専用入口も管理者の確認事項として含みます。</span></button><button class="dpt-role" data-role="${ROLE_STAFF}"><b>スタッフ</b><span>スタッフ専用ログインと、許可された店舗iPadの日常操作だけを確認します。</span></button></div>
       <div class="dpt-note">ガイドは予約確定・状態変更・保存・送信・認証を自動実行しません。</div><div class="dpt-actions"><a class="dpt-btn dpt-secondary" data-guide href="${guideUrl()}">詳しいGuide Center</a></div>`;
+    installDragHandle();
+    clampDraggedPanel();
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelectorAll("[data-role]").forEach(b=>b.onclick=()=>{
       state={status:"IN_PROGRESS",role:b.dataset.role,index:0}; save(); renderCard();
@@ -136,6 +206,8 @@
       <p>${escapeHtml(card.action)}</p>
       <div class="dpt-safe">${onPage?(found?'オレンジ枠の場所を確認してください。':'対象が現在表示されていないため、説明カードとして安全に表示しています。'):`対象画面：${escapeHtml(card.page)}。自動では移動しません。`}</div>
       <div class="dpt-actions">${!onPage?'<button class="dpt-btn dpt-primary" data-open>対象画面を開く</button>':''}<button class="dpt-btn dpt-primary" data-next>${state.index===cards.length-1?'完了':'次へ'}</button>${state.index>0?'<button class="dpt-btn dpt-secondary" data-prev>戻る</button>':''}<button class="dpt-btn dpt-danger" data-skip>今回はスキップ</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
+    installDragHandle();
+    clampDraggedPanel();
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-next]").onclick=()=>{ state.index++; state.status=state.index>=cards.length?"COMPLETED":"IN_PROGRESS"; save(); renderCard(); };
     const prev=ui.panel.querySelector("[data-prev]"); if(prev) prev.onclick=()=>{state.index=Math.max(0,state.index-1);state.status="IN_PROGRESS";save();renderCard();};
@@ -146,6 +218,8 @@
   function renderDone() {
     clearHighlight();
     ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>操作ガイドを完了しました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>必要な時はいつでも最初から再生できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-replay>最初から見る</button><button class="dpt-btn dpt-secondary" data-role-change>役割を変更</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
+    installDragHandle();
+    clampDraggedPanel();
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-replay]").onclick=()=>{state.index=0;state.status="IN_PROGRESS";save();renderCard();};
     ui.panel.querySelector("[data-role-change]").onclick=()=>{state={status:"NOT_STARTED",role:"",index:0};save();rolePicker();};
@@ -153,14 +227,17 @@
   function renderSkipped() {
     clearHighlight();
     ui.panel.innerHTML=`<div class="dpt-head"><div><div class="dpt-kicker">FIRST 10 MINUTES</div><strong>今回はスキップしました</strong></div><button class="dpt-x" data-close aria-label="閉じる">×</button></div><p>状態は保存されています。操作ガイドからいつでも再開できます。</p><div class="dpt-actions"><button class="dpt-btn dpt-primary" data-resume>続きから再開</button><button class="dpt-btn dpt-secondary" data-replay>最初から見る</button><a class="dpt-btn dpt-secondary" href="${guideUrl()}">Guide Center</a></div>`;
+    installDragHandle();
+    clampDraggedPanel();
     ui.panel.querySelector("[data-close]").onclick=closePanel;
     ui.panel.querySelector("[data-resume]").onclick=()=>{state.status="IN_PROGRESS";save();renderCard();};
     ui.panel.querySelector("[data-replay]").onclick=()=>{state.index=0;state.status="IN_PROGRESS";save();renderCard();};
   }
   function escapeHtml(x){ return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   function closePanel(){ui.panel.hidden=true;clearHighlight();ui.launcher.focus();}
-  function openPanel(){ui.panel.hidden=false;bindTargets(); if(!state.role||state.status==="NOT_STARTED")rolePicker(); else if(state.status==="COMPLETED")renderDone(); else if(state.status==="SKIPPED")renderSkipped(); else renderCard(); setTimeout(()=>ui.panel.querySelector("button")?.focus(),0);}
+  function openPanel(){ui.panel.hidden=false;bindTargets(); if(!state.role||state.status==="NOT_STARTED")rolePicker(); else if(state.status==="COMPLETED")renderDone(); else if(state.status==="SKIPPED")renderSkipped(); else renderCard(); setTimeout(()=>ui.panel.querySelector("button:not(.dpt-drag-handle)")?.focus(),0);}
 
+  window.addEventListener("resize",()=>requestAnimationFrame(clampDraggedPanel));
   bindTargets();
   const params=new URLSearchParams(location.search);
   const roleParam=params.get("dpro_role");
